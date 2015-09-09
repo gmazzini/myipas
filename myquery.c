@@ -18,7 +18,7 @@ int main(){
 	for(;;){
 		scanf("%s",ip);
 		if(feof(stdin))break;
-		sendto(sockfd,ip,(int)strlen(ip),0,(struct sockaddr *)&servaddr,sizeof(servaddr));
+		sendto(sockfd,ip,strlen(ip),0,(struct sockaddr *)&servaddr,sizeof(servaddr));
 		n=recvfrom(sockfd,recvline,100,0,NULL,NULL);
 		recvline[n]=0;
 		printf("%s",recvline);
