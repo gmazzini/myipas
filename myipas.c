@@ -35,75 +35,73 @@ static int myipcmp(const void *p1, const void *p2){
 
 // Binary search with maximum steps for ipclass search
 long myipsearch(unsigned long ip_tocheck){
-  long zinit,zend,myclass;
-  unsigned long ip_mask;
-  int i;
-  zinit=0;
-  zend=totipasclass-1;
-  for(i=0;i<MAXSTEPS;i++){
-    myclass=(zinit+zend)/2;
-    ip_mask=mymask[myipasclass[myclass].cidr];
-    if((ip_tocheck&ip_mask)==myipasclass[myclass].ipv4)break;
-    if((ip_tocheck&ip_mask)>myipasclass[myclass].ipv4)zinit=myclass+1;
-    else zend=myclass-1;
-    if(zinit>zend||zinit>=totipasclass||zend<0)return -1;
-  }
-  return myclass;
+	long zinit,zend,myclass;
+	unsigned long ip_mask;
+	int i;
+	
+	zinit=0;
+	zend=totipasclass-1;
+	for(i=0;i<MAXSTEPS;i++){
+		myclass=(zinit+zend)/2;
+		ip_mask=mymask[myipasclass[myclass].cidr];
+		if((ip_tocheck&ip_mask)==myipasclass[myclass].ipv4)break;
+		if((ip_tocheck&ip_mask)>myipasclass[myclass].ipv4)zinit=myclass+1;
+		else zend=myclass-1;
+		if(zinit>zend||zinit>=totipasclass||zend<0)return -1;
+	}
+	return myclass;
 }
 
 int main(int argc, char**argv){
-  int i,lenmesg;
-  socklen_t len;
-  FILE *fp;
-  struct sockaddr_in netip,servaddr,cliaddr;
-  char buf[BUFMSG],mesg[BUFMSG];
-  unsigned long iplook;
-  long myclass;
-  unsigned long asret;
-
-  // initialization
-  for(i=0;i<=32;i++)mymask[i]=~((1<<(32-i))-1);
-  myipasclass=(struct ipas_class *)malloc(TOTNETS*sizeof(struct ipas_class)); 
-
-  // read data 
-  fp=fopen(FILENETS,"rt");
-  for(totipasclass=0;;){
-    fscanf(fp,"%s %hu %lu",buf,&myipasclass[totipasclass].cidr,&myipasclass[totipasclass].as);
-    if(feof(fp))break;
-    inet_pton(AF_INET,buf,&(netip.sin_addr));
-    myipasclass[totipasclass].ipv4=ntohl(netip.sin_addr.s_addr)&mymask[myipasclass[totipasclass].cidr];
-    totipasclass++;
-  }
-  fclose(fp);
-  qsort(myipasclass,totipasclass,sizeof(struct ipas_class),myipcmp);
-
-  printf("running...\n"); fflush(stdout);
-
-  // bindind
-  sockfd=socket(AF_INET,SOCK_DGRAM,IPPROTO_UDP);
-  memset((char *)&servaddr,0,sizeof(servaddr));
-  servaddr.sin_family=AF_INET;
-  servaddr.sin_addr.s_addr=htonl(INADDR_ANY);
-  servaddr.sin_port=htons(LISTENPORT);
-  bind(sockfd,(struct sockaddr *)&servaddr,sizeof(servaddr));
-  
-  len=sizeof(struct sockaddr_in);
-  for(;;){
-    // receive request and launch a processing thread
-    lenmesg=recvfrom(sockfd,mesg,BUFMSG,0,(struct sockaddr *)&cliaddr,&len);
-    *(mesg+lenmesg)='\0';
-
-    inet_pton(AF_INET,mesg,&(netip.sin_addr));
-    iplook=ntohl(netip.sin_addr.s_addr);
-    for(i=32;i>=8;i--){
-      myclass=myipsearch(iplook&mymask[i]);
-      if(myclass!=-1)break;
-    }
-    if(myclass>=0)asret=myipasclass[myclass].as;
-    else asret=0;
-
-    sprintf(buf,"%ld %s\n",asret,mesg);
-    sendto(sockfd,buf,strlen(buf),0,(struct sockaddr *)&cliaddr,sizeof(cliaddr));
-    
-  }
+	int i,lenmesg;
+	socklen_t len;
+	FILE *fp;
+	struct sockaddr_in netip,servaddr,cliaddr;
+	char buf[BUFMSG],mesg[BUFMSG];
+	unsigned long iplook;
+	long myclass;
+	unsigned long asret;
+	
+	// initialization
+	for(i=0;i<=32;i++)mymask[i]=~((1<<(32-i))-1);
+	myipasclass=(struct ipas_class *)malloc(TOTNETS*sizeof(struct ipas_class));
+	
+	// read data
+	fp=fopen(FILENETS,"rt");
+	for(totipasclass=0;;){
+		fscanf(fp,"%s %hu %lu",buf,&myipasclass[totipasclass].cidr,&myipasclass[totipasclass].as);
+		if(feof(fp))break;
+		inet_pton(AF_INET,buf,&(netip.sin_addr));
+		myipasclass[totipasclass].ipv4=ntohl(netip.sin_addr.s_addr)&mymask[myipasclass[totipasclass].cidr];
+		totipasclass++;
+	}
+	fclose(fp);
+	qsort(myipasclass,totipasclass,sizeof(struct ipas_class),myipcmp);
+	
+	printf("running...\n"); fflush(stdout);
+	
+	// bindind
+	sockfd=socket(AF_INET,SOCK_DGRAM,IPPROTO_UDP);
+	memset((char *)&servaddr,0,sizeof(servaddr));
+	servaddr.sin_family=AF_INET;
+	servaddr.sin_addr.s_addr=htonl(INADDR_ANY);
+	servaddr.sin_port=htons(LISTENPORT);
+	bind(sockfd,(struct sockaddr *)&servaddr,sizeof(servaddr));
+	len=sizeof(struct sockaddr_in);
+	
+	for(;;){
+		// receive request and launch a processing thread
+		lenmesg=recvfrom(sockfd,mesg,BUFMSG,0,(struct sockaddr *)&cliaddr,&len);
+		*(mesg+lenmesg)='\0';
+		inet_pton(AF_INET,mesg,&(netip.sin_addr));
+		iplook=ntohl(netip.sin_addr.s_addr);
+		for(i=32;i>=8;i--){
+			myclass=myipsearch(iplook&mymask[i]);
+			if(myclass!=-1)break;
+		}
+		if(myclass>=0)asret=myipasclass[myclass].as;
+		else asret=0;
+		sprintf(buf,"%ld %s\n",asret,mesg);
+		sendto(sockfd,buf,strlen(buf),0,(struct sockaddr *)&cliaddr,sizeof(cliaddr));
+	}
 }
