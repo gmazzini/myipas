@@ -15,9 +15,9 @@
 #define FILENETS "/home/gmazzini/asn3.txt"
 
 struct ipas_class {
-  unsigned long ipv4;
-  short int cidr;
-  unsigned long as;
+	unsigned long ipv4;
+	short int cidr;
+	unsigned long as;
 };
 
 int sockfd;
@@ -27,10 +27,10 @@ unsigned long totipasclass;
 
 // comparison function
 static int myipcmp(const void *p1, const void *p2){
-  long ret;
-  ret=((struct ipas_class *)p1)->ipv4-((struct ipas_class*)p2)->ipv4;
-  if(ret==0)return 0;
-  return (ret>0)?1:-1;
+	long ret;
+	ret=((struct ipas_class *)p1)->ipv4-((struct ipas_class*)p2)->ipv4;
+	if(ret==0)return 0;
+	return (ret>0)?1:-1;
 }
 
 // Binary search with maximum steps for ipclass search
