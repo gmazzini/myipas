@@ -10,7 +10,7 @@ int main(){
 	char recvline[100],ip[100];
 	
 	sockfd=socket(AF_INET,SOCK_DGRAM,0);
-	bzero((void *)&servaddr,sizeof(servaddr));
+	bzero((char *)&servaddr,sizeof(servaddr));
 	servaddr.sin_family = AF_INET;
 	servaddr.sin_addr.s_addr=inet_addr("127.0.0.1");
 	servaddr.sin_port=htons(5555);
