@@ -1,3 +1,5 @@
+all: myipas myquery
+
 myipas: myipas.c
 	gcc -Wunused -o myipas myipas.c -lpthread
 
