@@ -1,5 +1,6 @@
-// myipas v0.03 2015 by GM
+// myipas 2015-16 by GM
 // changelog (appears on github since v0.03)
+// v0.04 change of FILENETS repository
 
 #include <sys/socket.h>
 #include <arpa/inet.h>
@@ -13,7 +14,7 @@
 #define LISTENPORT 5555
 #define TOTNETS 1000000
 #define MAXSTEPS 40
-#define FILENETS "/home/gmazzini/asn3.txt"
+#define FILENETS "/myipas/asn3.txt"
 
 struct ipas_class {
 	unsigned long ipv4;
