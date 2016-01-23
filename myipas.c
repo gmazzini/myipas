@@ -89,21 +89,6 @@ void *manage(void *arg_void){
 	if(!mystop && (*(myarg->mesg+6))!=0){mystop=1; totmalformed++; }
 	if(!mystop && (*(myarg->mesg+7))!=0){mystop=1; totmalformed++; }
 	
-	// define the ip to check to implement the profiled port
-	if(!mystop){
-		ip_tocheck=ntohl(myarg->cliaddr.sin_addr.s_addr);
-		if((ip_tocheck&IPMASK12)==IPCLASS){
-			ipidx=ip_tocheck-IPCLASS;
-			if(myprofile[ipidx]!=0)ip_tocheck=myprofile[ipidx];
-		}
-	}
-	
-	// define the filter class
-	if(!mystop){
-		myclass=myipsearch(ip_tocheck);
-		if(myclass==-1){mystop=1; totoutscope++; }
-	}
-	
 	// domain name analisys
 	if(!mystop){
 		lenanswer=0;
@@ -125,7 +110,6 @@ void *manage(void *arg_void){
 	
 	// request analisys
 	if(!mystop){
-		myipclass[myclass].totquery++;
 		totallquery++;
 		
 		// query type
@@ -157,51 +141,6 @@ void *manage(void *arg_void){
 								myloadcommonblacklist();
 								sprintf(auxbuf,"common black list reloaded");
 							}
-							// insert
-							else if(strcmp(aux2,"insert")==0){
-								for(aux2=++aux1;*aux1!='\0';aux1++)if(*aux1=='/')break;
-								if(*aux1=='\0')sprintf(auxbuf,"missed source IP");
-								else {
-									*aux1='\0';
-									// check ipsrc inside 10.32.0.0/12
-									inet_pton(AF_INET,aux2,&(netip.sin_addr));
-									ipsrcaddr=ntohl(netip.sin_addr.s_addr);
-									if((ipsrcaddr&IPMASK12)!=IPCLASS)sprintf(auxbuf,"wrong source IP");
-									else {
-										ipidx=ipsrcaddr-IPCLASS;
-										for(aux2=++aux1;*aux1!='\0';aux1++)if(*aux1=='/')break;
-										if(*aux1=='\0')sprintf(auxbuf,"missed profile IP");
-										else {
-											*aux1='\0';
-											// check ipprof inside 127.127.0.0/16
-											inet_pton(AF_INET,aux2,&(netip.sin_addr));
-											ipprofaddr=ntohl(netip.sin_addr.s_addr);
-											if((ipprofaddr&IPMASK16)!=IPPROF)sprintf(auxbuf,"wrong profile IP");
-											else {
-												myprofile[ipidx]=ipprofaddr;
-												sprintf(auxbuf,"user profile inserted");
-											}
-										}
-									}
-								}
-							}
-							// delete
-							else if(strcmp(aux2,"delete")==0){
-								for(aux2=++aux1;*aux1!='\0';aux1++)if(*aux1=='/')break;
-								if(*aux1=='\0')sprintf(auxbuf,"missed source IP");
-								else {
-									*aux1='\0';
-									// check ipsrc inside 10.32.0.0/12
-									inet_pton(AF_INET,aux2,&(netip.sin_addr));
-									ipsrcaddr=ntohl(netip.sin_addr.s_addr);
-									if((ipsrcaddr&IPMASK12)!=IPCLASS)sprintf(auxbuf,"wrong source IP");
-									else {
-										ipidx=ipsrcaddr-IPCLASS;
-										myprofile[ipidx]=0;
-										sprintf(auxbuf,"user profile removed");
-									}
-								}
-							}
 							// class
 							else if(strcmp(aux2,"class")==0){
 								for(aux2=++aux1;*aux1!='\0';aux1++)if(*aux1=='/')break;
@@ -223,29 +162,6 @@ void *manage(void *arg_void){
 									}
 								}
 							}
-							// stat
-							else if(strcmp(aux2,"stats")==0){
-								for(aux2=++aux1;*aux1!='\0';aux1++)if(*aux1=='/')break;
-								if(*aux1=='\0')sprintf(auxbuf,"missed IP");
-								else {
-									*aux1='\0';
-									inet_pton(AF_INET,aux2,&(netip.sin_addr));
-									ipsrcaddr=ntohl(netip.sin_addr.s_addr);
-									mystatus=myipsearch(ipsrcaddr);
-									if(mystatus==-1)sprintf(auxbuf,"IP not configured");
-									else {
-										curtime=time(NULL);
-										myuptime=difftime(curtime,starttime);
-										ipsrcaddr=htonl(myipclass[mystatus].ipv4);
-										inet_ntop(AF_INET,&ipsrcaddr,ipbuf,sizeof(ipbuf));
-										sprintf(auxbuf,"IPnet=%s/%d id=%s uptime=%.0lf totquery=%lu filtered=%lu",ipbuf,myipclass[mystatus].cidr,myipclass[mystatus].id,myuptime,myipclass[mystatus].totquery,myipclass[mystatus].totfiltered);
-									}
-								}
-							}
-							// status
-							else if(strcmp(aux2,"status")==0){
-								sprintf(auxbuf,"start=%s totallquery=%'lu totallfiltered=%'lu totmalformed=%'lu totoutscope=%'lu",cstarttime,totallquery,totallfiltered,totmalformed,totoutscope);
-							}
 							// unknown
 							else sprintf(auxbuf,"command unknown");
 						}
@@ -260,80 +176,6 @@ void *manage(void *arg_void){
 				aux1=recv+12+lenanswer;
 				aux1[0]=192; aux1[1]=12; aux1[2]=0; aux1[3]=16; aux1[4]=0; aux1[5]=1; aux1[6]=0; aux1[7]=0; aux1[8]=14; aux1[9]=16; aux1[10]=0; aux1[12]=lenaux; aux1[11]=aux1[12]+1;
 				memcpy(aux1+13,auxbuf,lenaux);
-			}
-		}
-		else  {
-			// user whitelist
-			wlok=0;
-			if((query==1||query==28) && domsearch(myipclass[myclass].mywl,myipclass[myclass].nmywl,dominio))wlok=1;
-			// user blacklist
-			blok=0;
-			if(!wlok && (query==1||query==28) && domsearch(myipclass[myclass].mybl,myipclass[myclass].nmybl,dominio))blok=1;
-			// common black list
-			cblok=0;
-			if(!wlok && !blok && (query==1||query==28) && myipclass[myclass].bl && domsearch(commonblacklist,totcommonblacklist,dominio))cblok=1;
-			// set splash
-			if(cblok || blok){
-				myipclass[myclass].totfiltered++;
-				totallfiltered++;
-				if(query==28)lenrecv=12+lenanswer+28;
-				else lenrecv=12+lenanswer+16;
-				if(lenrecv<BUFMSG){
-					recv[0]=*myarg->mesg; recv[1]=*(myarg->mesg+1); recv[2]=129; recv[3]=128; recv[4]=*(myarg->mesg+4); recv[5]=*(myarg->mesg+5); recv[6]=0; recv[7]=1; recv[8]=0; recv[9]=0; recv[10]=0; recv[11]=0;
-					memcpy(recv+12,myarg->mesg+12,lenanswer);
-					aux1=recv+12+lenanswer;
-					if(query==28){
-						aux1[0]=192; aux1[1]=12; aux1[2]=0; aux1[3]=28; aux1[4]=0; aux1[5]=1; aux1[6]=0; aux1[7]=0; aux1[8]=14; aux1[9]=16; aux1[10]=0; aux1[11]=16;
-						inet_pton(AF_INET6,ipv6splash,&(reqaddr6.sin6_addr));
-						memcpy(aux1+12,&reqaddr6.sin6_addr.s6_addr,16);
-					}
-					else {
-						aux1[0]=192; aux1[1]=12; aux1[2]=0; aux1[3]=1; aux1[4]=0; aux1[5]=1; aux1[6]=0; aux1[7]=0; aux1[8]=14; aux1[9]=16; aux1[10]=0; aux1[11]=4;
-						inet_pton(AF_INET,ipv4splash,&(reqaddr.sin_addr));
-						memcpy(aux1+12,&reqaddr.sin_addr.s_addr,4);
-					}
-				}
-			}
-			
-			// resolution
-			else {
-				sockreq=socket(AF_INET,SOCK_DGRAM,IPPROTO_UDP);
-				tv.tv_sec=0;
-				tv.tv_usec=TIMEOUTUSEC;
-				setsockopt(sockreq,SOL_SOCKET,SO_RCVTIMEO,&tv,sizeof(tv));
-				memset((char *)&reqaddr,0,sizeof(reqaddr));
-				reqaddr.sin_family=AF_INET;
-				reqaddr.sin_addr.s_addr=inet_addr(dnserver);
-				reqaddr.sin_port=htons(53);
-				sendto(sockreq,myarg->mesg,myarg->lenmesg,0,(struct sockaddr *)&reqaddr,sizeof(reqaddr));
-				lenrecv=recvfrom(sockreq,recv,BUFMSG,0,NULL,NULL);
-				close(sockreq);
-				if(lenrecv<1){
-					sockreq=socket(AF_INET,SOCK_DGRAM,IPPROTO_UDP);
-					tv.tv_sec=0;
-					tv.tv_usec=TIMEOUTUSEC;
-					setsockopt(sockreq,SOL_SOCKET,SO_RCVTIMEO,&tv,sizeof(tv));
-					memset((char *)&reqaddr,0,sizeof(reqaddr));
-					reqaddr.sin_family=AF_INET;
-					reqaddr.sin_addr.s_addr=inet_addr(bkp1dns);
-					reqaddr.sin_port=htons(53);
-					sendto(sockreq,myarg->mesg,myarg->lenmesg,0,(struct sockaddr *)&reqaddr,sizeof(reqaddr));
-					lenrecv=recvfrom(sockreq,recv,BUFMSG,0,NULL,NULL);
-					close(sockreq);
-				}
-				if(lenrecv<1){
-					sockreq=socket(AF_INET,SOCK_DGRAM,IPPROTO_UDP);
-					tv.tv_sec=0;
-					tv.tv_usec=TIMEOUTUSEC;
-					setsockopt(sockreq,SOL_SOCKET,SO_RCVTIMEO,&tv,sizeof(tv));
-					memset((char *)&reqaddr,0,sizeof(reqaddr));
-					reqaddr.sin_family=AF_INET;
-					reqaddr.sin_addr.s_addr=inet_addr(bkp2dns);
-					reqaddr.sin_port=htons(53);
-					sendto(sockreq,myarg->mesg,myarg->lenmesg,0,(struct sockaddr *)&reqaddr,sizeof(reqaddr));
-					lenrecv=recvfrom(sockreq,recv,BUFMSG,0,NULL,NULL);
-					close(sockreq);
-				}
 			}
 		}
 		
