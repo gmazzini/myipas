@@ -137,39 +137,20 @@ void *manage(void *arg_void){
 						else {
 							*aux1='\0';
 							inet_pton(AF_INET,aux2,&(netip.sin_addr));
-																inet_pton(AF_INET,aux2,&(netip.sin_addr));
-									ipsrcaddr=ntohl(netip.sin_addr.s_addr);
-					
-					
-					
-						inet_pton(AF_INET,mesg,&(netip.sin_addr));
-		iplook=ntohl(netip.sin_addr.s_addr);
-		for(i=32;i>=8;i--){
-			myclass=myipsearch(iplook&mymask[i]);
-			if(myclass!=-1)break;
-		}
-		if(myclass>=0)asret=myipasclass[myclass].as;
-		else asret=0;
-		sprintf(buf,"%ld %s\n",asret,mesg);
-					
-					
-									if((ipsrcaddr&IPMASK12)!=IPCLASS)sprintf(auxbuf,"wrong source IP");
-									else {
-										ipidx=ipsrcaddr-IPCLASS;
-										if(myprofile[ipidx]==0)sprintf(auxbuf,"user profile IP %s without class",aux2);
-										else {
-											ipclassaddr=htonl(myprofile[ipidx]);
-											inet_ntop(AF_INET,&ipclassaddr,ipbuf,sizeof(ipbuf));
-											sprintf(auxbuf,"user profile IP %s into class %s",aux2,ipbuf);
-										}
-									}
-								}
+							ipsrcaddr=ntohl(netip.sin_addr.s_addr);
+							for(i=32;i>=8;i--){
+								myclass=myipsearch(ipsrcaddr&mymask[i]);
+								if(myclass!=-1)break;
 							}
-							// unknown
-							else sprintf(auxbuf,"command unknown");
+							if(myclass>=0)asret=myipasclass[myclass].as;
+							else asret=0;
+							sprintf(auxbuf,"%ld %s",asret,mesg);
 						}
 					}
+					// unknown
+					else sprintf(auxbuf,"command unknown");
 				}
+				
 			}
 			lenaux=strlen(auxbuf);
 			lenrecv=12+lenanswer+13+lenaux;
