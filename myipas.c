@@ -122,34 +122,37 @@ void *manage(void *arg_void){
 			if(*aux1=='\0')sprintf(auxbuf,"request malfomed");
 			else {
 				for(aux2=++aux1;*aux1!='\0';aux1++)if(*aux1=='/')break;
-				if(*aux1=='\0')sprintf(auxbuf,"missed password");
+				if(*aux1=='\0')sprintf(auxbuf,"missed command");
 				else {
 					*aux1='\0';
-					if(strcmp(aux2,mypassword)!=0)sprintf(auxbuf,"wrong password");
-					else {
+					// reload configuration
+					if(strcmp(aux2,"reload")==0){
+						myconfig();
+						sprintf(auxbuf,"configuration reloaded");
+					}
+					// ipas
+					else if(strcmp(aux2,"ipas")==0){
 						for(aux2=++aux1;*aux1!='\0';aux1++)if(*aux1=='/')break;
-						if(*aux1=='\0')sprintf(auxbuf,"missed command");
+						if(*aux1=='\0')sprintf(auxbuf,"missed source IP");
 						else {
 							*aux1='\0';
-							// reload configuration
-							if(strcmp(aux2,"reload")==0){
-								myconfig();
-								sprintf(auxbuf,"configuration reloaded");
-							}
-							// reload common black list
-							else if(strcmp(aux2,"recbl")==0){
-								myloadcommonblacklist();
-								sprintf(auxbuf,"common black list reloaded");
-							}
-							// class
-							else if(strcmp(aux2,"class")==0){
-								for(aux2=++aux1;*aux1!='\0';aux1++)if(*aux1=='/')break;
-								if(*aux1=='\0')sprintf(auxbuf,"missed source IP");
-								else {
-									*aux1='\0';
-									// check ipsrc inside 10.32.0.0/12
-									inet_pton(AF_INET,aux2,&(netip.sin_addr));
+							inet_pton(AF_INET,aux2,&(netip.sin_addr));
+																inet_pton(AF_INET,aux2,&(netip.sin_addr));
 									ipsrcaddr=ntohl(netip.sin_addr.s_addr);
+					
+					
+					
+						inet_pton(AF_INET,mesg,&(netip.sin_addr));
+		iplook=ntohl(netip.sin_addr.s_addr);
+		for(i=32;i>=8;i--){
+			myclass=myipsearch(iplook&mymask[i]);
+			if(myclass!=-1)break;
+		}
+		if(myclass>=0)asret=myipasclass[myclass].as;
+		else asret=0;
+		sprintf(buf,"%ld %s\n",asret,mesg);
+					
+					
 									if((ipsrcaddr&IPMASK12)!=IPCLASS)sprintf(auxbuf,"wrong source IP");
 									else {
 										ipidx=ipsrcaddr-IPCLASS;
@@ -233,19 +236,4 @@ int main(int argc, char**argv){
 		if(++j==NTHREAD)j=0;
 	}
 	
-	for(;;){
-		// receive request and launch a processing thread
-		lenmesg=recvfrom(sockfd,mesg,BUFMSG,0,(struct sockaddr *)&cliaddr,&len);
-		*(mesg+lenmesg)='\0';
-		inet_pton(AF_INET,mesg,&(netip.sin_addr));
-		iplook=ntohl(netip.sin_addr.s_addr);
-		for(i=32;i>=8;i--){
-			myclass=myipsearch(iplook&mymask[i]);
-			if(myclass!=-1)break;
-		}
-		if(myclass>=0)asret=myipasclass[myclass].as;
-		else asret=0;
-		sprintf(buf,"%ld %s\n",asret,mesg);
-		sendto(sockfd,buf,strlen(buf),0,(struct sockaddr *)&cliaddr,sizeof(cliaddr));
-	}
 }
