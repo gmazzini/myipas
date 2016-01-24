@@ -185,6 +185,8 @@ int main(int argc, char**argv){
 	for(i=0;i<=32;i++)mymask[i]=~((1<<(32-i))-1);
 	myipasclass=(struct ipas_class *)malloc(TOTNETS*sizeof(struct ipas_class));
 	tid=(pthread_t *)malloc(NTHREAD*sizeof(pthread_t));
+	myargs=(struct arg_pass *)malloc(NTHREAD*sizeof(struct arg_pass));
+	for(i=0;i<NTHREAD;i++)myargs[i].mesg=(char *)malloc(BUFMSG*sizeof(char));
 	
 	// read data
 	fp=fopen(FILENETS,"rt");
@@ -197,8 +199,6 @@ int main(int argc, char**argv){
 	}
 	fclose(fp);
 	qsort(myipasclass,totipasclass,sizeof(struct ipas_class),myipcmp);
-	
-	printf("running...\n"); fflush(stdout);
 	
 	// bindind
 	sockfd=socket(AF_INET,SOCK_DGRAM,IPPROTO_UDP);
