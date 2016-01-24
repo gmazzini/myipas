@@ -90,6 +90,8 @@ void *manage(void *arg_void){
 	if(!mystop && (*(myarg->mesg+6))!=0){mystop=1; totmalformed++; }
 	if(!mystop && (*(myarg->mesg+7))!=0){mystop=1; totmalformed++; }
 	
+	prinf("mystop:%d\n",mystop); fflush(stdout);
+	
 	// domain name analisys
 	if(!mystop){
 		lenanswer=0;
@@ -116,6 +118,8 @@ void *manage(void *arg_void){
 		// query type
 		query=*(aux2+2);
 		lenanswer+=5;
+		
+		printf("query:%d\n",query); fflush(stdout);
 		
 		// command processing
 		if(query==16 && strncmp(dominio,"cmd",3)==0){
