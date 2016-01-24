@@ -66,6 +66,7 @@ long myipsearch(unsigned long ip_tocheck){
 void myconfig(){
 	FILE *fp;
 	char buf[BUFMSG];
+	struct sockaddr_in netip;
 	
 	// read data
 	fp=fopen(FILENETS,"rt");
@@ -201,9 +202,7 @@ int main(int argc, char**argv){
 	struct arg_pass *myargs;
 	int i,j;
 	socklen_t len;
-	FILE *fp;
-	struct sockaddr_in netip,servaddr;
-	char buf[BUFMSG];
+	struct sockaddr_in servaddr;
 	
 	// initialization
 	for(i=0;i<=32;i++)mymask[i]=~((1<<(32-i))-1);
