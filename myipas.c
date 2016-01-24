@@ -23,6 +23,11 @@ struct ipas_class {
 	short int cidr;
 	unsigned long as;
 };
+struct arg_pass {
+	char *mesg;
+	int lenmesg;
+	struct sockaddr_in cliaddr;
+};
 
 int sockfd;
 struct ipas_class *myipasclass=NULL;
