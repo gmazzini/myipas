@@ -72,6 +72,9 @@ void *manage(void *arg_void){
 	struct sockaddr_in netip;
 	char *recv,*auxbuf,*dominio,*aux1,*aux2;
 	
+	printf("entro\n"); fflush(stdout);
+	
+	
 	recv=(char *)malloc(BUFMSG*sizeof(char));
 	auxbuf=(char *)malloc(BUFMSG*sizeof(char));
 	dominio=(char *)malloc(BUFMSG*sizeof(char));
