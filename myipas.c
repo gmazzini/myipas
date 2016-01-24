@@ -29,10 +29,11 @@ struct arg_pass {
 	struct sockaddr_in cliaddr;
 };
 
+pthread_t *tid;
 int sockfd;
 struct ipas_class *myipasclass=NULL;
 unsigned long mymask[33];
-unsigned long totipasclass,totallquery;
+unsigned long totipasclass,totallquery,totmalformed;
 
 // comparison function
 static int myipcmp(const void *p1, const void *p2){
@@ -63,11 +64,11 @@ long myipsearch(unsigned long ip_tocheck){
 
 void *manage(void *arg_void){
 	struct arg_pass *myarg=(struct arg_pass *)arg_void;
-	int sockreq,lenrecv,i,j,ml,lenaux,lenanswer,mystop;
+	int lenrecv,i,j,ml,lenaux,lenanswer,mystop;
 	long myclass;
 	unsigned int query;
 	unsigned long asret;
-	unsigned long ipsrcaddr,ipprofaddr;
+	unsigned long ipsrcaddr;
 	struct sockaddr_in netip;
 	char *recv,*auxbuf,*dominio,*aux1,*aux2;
 	
@@ -144,7 +145,7 @@ void *manage(void *arg_void){
 							}
 							if(myclass>=0)asret=myipasclass[myclass].as;
 							else asret=0;
-							sprintf(auxbuf,"%ld %s",asret,mesg);
+							sprintf(auxbuf,"%ld %s",asret,aux2);
 						}
 					}
 					// unknown
@@ -174,11 +175,12 @@ void *manage(void *arg_void){
 }
 
 int main(int argc, char**argv){
-	int i,j,lenmesg;
+	struct arg_pass *myargs;
+	int i,j;
 	socklen_t len;
 	FILE *fp;
 	struct sockaddr_in netip,servaddr;
-	char buf[BUFMSG],mesg[BUFMSG];
+	char buf[BUFMSG];
 	
 	// initialization
 	for(i=0;i<=32;i++)mymask[i]=~((1<<(32-i))-1);
