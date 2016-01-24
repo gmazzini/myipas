@@ -198,6 +198,8 @@ int main(int argc, char**argv){
 	fclose(fp);
 	qsort(myipasclass,totipasclass,sizeof(struct ipas_class),myipcmp);
 	
+	printf("running...\n"); fflush(stdout);
+	
 	// bindind
 	sockfd=socket(AF_INET,SOCK_DGRAM,IPPROTO_UDP);
 	memset((char *)&servaddr,0,sizeof(servaddr));
@@ -206,6 +208,8 @@ int main(int argc, char**argv){
 	servaddr.sin_port=htons(LISTENPORT);
 	bind(sockfd,(struct sockaddr *)&servaddr,sizeof(servaddr));
 	len=sizeof(struct sockaddr_in);
+	
+	printf("binding up...\n"); fflush(stdout);
 	
 	for(j=0;;){
 		// receive request and launch a processing thread
