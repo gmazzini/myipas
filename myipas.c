@@ -128,7 +128,6 @@ void *manage(void *arg_void){
 					*aux1='\0';
 					// reload configuration
 					if(strcmp(aux2,"reload")==0){
-						myconfig();
 						sprintf(auxbuf,"configuration reloaded");
 					}
 					// ipas
