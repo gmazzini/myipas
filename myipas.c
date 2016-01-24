@@ -90,7 +90,7 @@ void *manage(void *arg_void){
 	if(!mystop && (*(myarg->mesg+6))!=0){mystop=1; totmalformed++; }
 	if(!mystop && (*(myarg->mesg+7))!=0){mystop=1; totmalformed++; }
 	
-	prinf("mystop:%d\n",mystop); fflush(stdout);
+	printf("mystop:%d\n",mystop); fflush(stdout);
 	
 	// domain name analisys
 	if(!mystop){
