@@ -119,6 +119,8 @@ void *manage(void *arg_void){
 		
 		// command processing
 		if(query==16 && strncmp(dominio,"cmd",3)==0){
+			printf("%s\n",dominio); fflush(stdout);
+			
 			for(aux1=dominio;*aux1!='\0';aux1++)if(*aux1=='/')break;
 			if(*aux1=='\0')sprintf(auxbuf,"request malfomed");
 			else {
