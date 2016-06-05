@@ -149,6 +149,7 @@ void *manage(void *arg_void){
           // reload configuration
           if(strcmp(aux2,"reload")==0){
             myconfig();
+            totallquery=totmalformed=0;
             sprintf(auxbuf,"configuration reloaded");
           }
           // ipas
