@@ -178,7 +178,7 @@ void *manage(void *arg_void){
             sprintf(auxbuf,"counters reset");
           }
           // unknown
-          else sprintf(auxbuf,"command unknown");
+          else sprintf(auxbuf,"command unknown %s",aux2);
         }
       }
       lenaux=strlen(auxbuf);
