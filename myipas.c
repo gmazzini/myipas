@@ -173,7 +173,7 @@ void *manage(void *arg_void){
             sprintf(auxbuf,"totallquery=%'lu totmalformed=%'lu",totallquery,totmalformed);
           }
           // reset
-          if(strcmp(aux2,"reset")==0){
+          else if(strcmp(aux2,"reset")==0){
             totallquery=totmalformed=0;
             sprintf(auxbuf,"counters reset");
           }
