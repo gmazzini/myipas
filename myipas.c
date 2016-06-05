@@ -160,7 +160,7 @@ void *manage(void *arg_void){
               inet_pton(AF_INET,aux2,&(netip.sin_addr));
               ipsrcaddr=ntohl(netip.sin_addr.s_addr);
               for(i=32;i>=8;i--){
-                yclass=myipsearch(ipsrcaddr&mymask[i]);
+                myclass=myipsearch(ipsrcaddr&mymask[i]);
                 if(myclass!=-1)break;
               }
               if(myclass>=0)asret=myipasclass[myclass].as;
