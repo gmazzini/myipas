@@ -149,7 +149,6 @@ void *manage(void *arg_void){
           // reload configuration
           if(strcmp(aux2,"reload")==0){
             myconfig();
-            totallquery=totmalformed=0;
             sprintf(auxbuf,"configuration reloaded");
           }
           // ipas
@@ -172,6 +171,11 @@ void *manage(void *arg_void){
           // status
           else if(strcmp(aux2,"status")==0){
             sprintf(auxbuf,"totallquery=%'lu totmalformed=%'lu",totallquery,totmalformed);
+          }
+          // reset
+          if(strcmp(aux2,"reset")==0){
+            totallquery=totmalformed=0;
+            sprintf(auxbuf,"counters reset");
           }
           // unknown
           else sprintf(auxbuf,"command unknown");
