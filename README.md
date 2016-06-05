@@ -12,3 +12,4 @@ cmd/ipas/<ipv4>/ to obtain the as for such an ipv4
 
 cmd/status/ to obtain a short status of query
 
+file is on /myipas/asn.txt and is composed by rows with three elements, space separated: IP CIDR ASN
