@@ -2,7 +2,7 @@
 // changelog (appears on github since v0.03)
 // v0.04 change of FILENETS repository
 // v0.05 thread implementation and dns query
-// v0.06 file path /myipas/asn.txt
+// v0.06 file path /myipas/asn.txt and /cmd/reset/
 
 #include <sys/socket.h>
 #include <arpa/inet.h>
