@@ -2,6 +2,7 @@
 // changelog (appears on github since v0.03)
 // v0.04 change of FILENETS repository
 // v0.05 thread implementation and dns query
+// v0.06 file path /myipas/asn.txt
 
 #include <sys/socket.h>
 #include <arpa/inet.h>
@@ -16,7 +17,7 @@
 #define LISTENPORT 5555
 #define TOTNETS 1000000
 #define MAXSTEPS 40
-#define FILENETS "/myipas/asn3.txt"
+#define FILENETS "/myipas/asn.txt"
 
 struct ipas_class {
 	unsigned long ipv4;
