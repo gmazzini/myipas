@@ -8,9 +8,8 @@ cd /home/www/fulltable.mazzini.org
 
 for i in "00" "01" "02" "03" "04" "05" "06" "07" "08" "09" "10" "11" "12" "13" "14" "15" "16" "18" "19" "20" "21";
 do
-	curl -4 http://data.ris.ripe.net/rrc$i/latest-bview.gz > latest-bview.gz
-	bgpdump/bgpdump latest-bview.gz | awk 'BEGIN{al=0; nn="";}{if(al==0 && $1=="PREFIX:" && nn!=$2){printf("%s ",$2); al=1; nn=$2} if(al==1 && $1=="ASPATH:"){print $(NF); al=0;}}' 
-> oo$i
+  curl -4 http://data.ris.ripe.net/rrc$i/latest-bview.gz > latest-bview.gz
+  bgpdump/bgpdump latest-bview.gz | awk 'BEGIN{al=0; nn="";}{if(al==0 && $1=="PREFIX:" && nn!=$2){printf("%s ",$2); al=1; nn=$2} if(al==1 && $1=="ASPATH:"){print $(NF); al=0;}}' > oo$i
 done
 rm -rf latest-bview.gz
 
@@ -18,7 +17,7 @@ rm -rf latest-bview.gz
 rm -rf ooall
 for i in "00" "01" "02" "03" "04" "05" "06" "07" "08" "09" "10" "11" "12" "13" "14" "15" "16" "18" "19" "20" "21";
 do
-	cat oo$i >> ooall
+  cat oo$i >> ooall
 done
 
 sort ooall > oosort
