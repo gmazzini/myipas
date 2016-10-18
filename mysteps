@@ -18,10 +18,13 @@ rm -rf ooall
 for i in "00" "01" "02" "03" "04" "05" "06" "07" "08" "09" "10" "11" "12" "13" "14" "15" "16" "18" "19" "20" "21";
 do
   cat oo$i >> ooall
+  rm -rf oo$i
 done
 
-sort ooall > oosort
+sort -n -t . -k 1,1 -k 2,2 -k 3,3 -k 4,4 ooall > oosort
 rm -rf ooall
 
 cat oosort | awk 'BEGIN{nn="";}{if(nn!=$1 && $1!="0.0.0.0/0" && $1!~"::"){print $0; nn=$1;}}' > oounique
 cat oounique | awk '{split($1,nn,"/");print nn[1],nn[2],$2}' > oofinal
+rm -rf oosort
+rm -rf oounique
