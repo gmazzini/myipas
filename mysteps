@@ -1,0 +1,32 @@
+!#/bin/bash
+
+## hg clone https://bitbucket.org/ripencc/bgpdump
+## wget https://raw.githubusercontent.com/gmazzini/myipas/master/myipas.c
+## curl https://raw.githubusercontent.com/gmazzini/myipas/master/mysteps > /home/www/fulltable.mazzini.org/mysteps
+
+cd /home/www/fulltable.mazzini.org
+
+for i in "00" "01" "02" "03" "04" "05" "06" "07" "08" "09" "10" "11" "12" "13" "14" "15" "16" "18" "19" "20" "21";
+do
+	wget -4 http://data.ris.ripe.net/rrc$i/latest-bview.gz
+	bgpdump/bgpdump latest-bview.gz | awk 'BEGIN{al=0; nn="";}{if(al==0 && $1=="PREFIX:" && nn!=$2){printf("%s ",$2); al=1; nn=$2} if(al==1 && $1=="ASPATH:"){print $(NF); al=0;}}' 
+> oo$i
+	rm -rf latest-bview.gz
+done
+
+
+rm -rf ooall
+for i in "00" "01" "02" "03" "04" "05" "06" "07" "08" "09" "10" "11" "12" "13" "14" "15" "16" "18" "19" "20" "21";
+do
+	cat oo$i >> ooall
+	rm -rf oo$i
+done
+
+sort ooall > oosort
+rm -rf ooall
+
+cat oosort | awk 'BEGIN{nn="";}{if(nn!=$1 && $1!="0.0.0.0/0" && $1!~"::"){print $0; nn=$1;}}' > oounique
+rm -rf oosort
+
+cat oounique | awk '{split($1,nn,"/");print nn[1],nn[2],$2}' > oofinal
+rm -rf oounique
