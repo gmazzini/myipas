@@ -17,7 +17,7 @@
 #define BUFMSG 10000
 #define NTHREAD 256
 #define LISTENPORT 5555
-#define TOTNETS 1000000
+#define TOTNETS 2000000
 #define MAXSTEPS 40
 #define FILENETS "/home/www/fulltable/m4-1.txt"
 
