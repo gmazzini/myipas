@@ -1,4 +1,4 @@
-// myipas 2015-16 by GM
+// myipas 2015-25 by GM
 // changelog (appears on github since v0.03)
 // v0.04 change of FILENETS repository
 // v0.05 thread implementation and dns query
