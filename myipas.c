@@ -11,6 +11,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <locale.h>
+#include <ctype.h>
 
 #define BUFMSG 10000
 #define NTHREAD 256
