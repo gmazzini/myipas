@@ -1,3 +1,4 @@
+<pre>
 written by Gianluca Mazzini gianluca@mazzini.org started in 2015
 ip to as resolution with dns query
 command may be given by usung a dns query with TXT mode, in the following example dig -p 5555 @169.197.82.144 +short -t TXT cmd/ipas/64.52.4.0/
@@ -10,3 +11,4 @@ cmd/reset/ to reset the status counters
 
 file is composed by rows with three elements, space separated: IP/CIDR,ASN
 file is collected on http://fulltable.mazzini.org
+</pre>
