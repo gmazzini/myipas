@@ -2,7 +2,7 @@ written by Gianluca Mazzini gianluca@mazzini.org started in 2015
 
 ip to as resolution with dns query
 
-command may be given by usung a dns query with TXT mode, in the following example dig -p 5555 @195.62.186.41 +short -t TXT cmd/ipas/8.8.8.8/
+command may be given by usung a dns query with TXT mode, in the following example dig -p 5555 @169.197.82.144 +short -t TXT cmd/ipas/64.52.4.0/
 
 list of commands
 
