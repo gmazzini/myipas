@@ -68,15 +68,24 @@ long myipsearch(unsigned long ip_tocheck){
 // ip to as configuration file
 void myconfig(){
   FILE *fp;
+  int i,ii,j;
   char buf[BUFMSG];
   struct sockaddr_in netip;
   
   // read data
   fp=fopen(FILENETS,"rt");
   for(totipasclass=0;;){
-    fscanf(fp,"%s %hu %lu",buf,&myipasclass[totipasclass].cidr,&myipasclass[totipasclass].as);
-    if(feof(fp))break;
+    if(fgets(buf,BUFMSG,fp)==NULL)break;
+    j=strlen(buf);
+    for(i=0;i<j;i++)if(buf[i]=='/')break;
+    if(i==j)continue;
+    buf[i]='\0';
+    for(ii=i+1;ii<j;ii++)if(buf[ii]==',')break;
+    if(i==j)continue;
+    buf[ii]='\0';
     inet_pton(AF_INET,buf,&(netip.sin_addr));
+    myipasclass[totipasclass].cidr=atoi(buf+i+1);
+    myipasclass[totipasclass].as=atoi(buf+ii+1);
     myipasclass[totipasclass].ipv4=ntohl(netip.sin_addr.s_addr)&mymask[myipasclass[totipasclass].cidr];
     totipasclass++;
   }
