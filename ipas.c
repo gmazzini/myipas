@@ -19,7 +19,7 @@
 #define LISTENPORT 5555
 #define TOTNETS 1000000
 #define MAXSTEPS 40
-#define FILENETS "/home/tools/asn.txt"
+#define FILENETS "/home/www/fulltable/m4-1.txt"
 
 struct ipas_class {
   unsigned long ipv4;
