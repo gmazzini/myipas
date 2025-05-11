@@ -8,7 +8,7 @@ list of commands
 
 cmd/reload/ for runtime ip to as configuration reloading
 
-cmd/ipas/<ipv4>/ to obtain the as for such an ipv4
+cmd/ipas/\<ipv4\>/ to obtain the as for such an ipv4
 
 cmd/status/ to obtain a short status of query
 
