@@ -123,7 +123,7 @@ int main() {
     }
     if(masked)for(i=0;i<payload_len;i++)buf[i]^=mb[i%4];
     buf[payload_len]='\0';
-    printf("%s",buf);
+    printf("%s\n\n",buf);
 
 
     /*
