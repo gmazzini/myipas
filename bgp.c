@@ -40,7 +40,7 @@ int main() {
   struct hostent *server;
   struct sockaddr_in serv_addr = {0};
   char buffer[2048];
-  uint8_t hh[2],mm[200],len,mb[4];
+  uint8_t hh[6],mm[200],len,mb[4];
   uint32_t mask;
   
   const char *data="{"
