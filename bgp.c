@@ -75,11 +75,8 @@ int main() {
   SSL_set_fd(ssl,sockfd);
   SSL_connect(ssl);
   
-  printf("1\n");
   SSL_write(ssl,header,strlen(header));
-  printf("2\n");
   n=SSL_read(ssl,buffer,2048);
-  printf("3 %d\n",n);
   len=strlen(data);
   hh[0]=0x81;
   hh[1]=0x80 | (uint8_t)strlen(data);
@@ -92,10 +89,70 @@ int main() {
   for(i=0;i<len;i++)mm[i]=data[i]^mb[i%4];
   SSL_write(ssl,hh,6);
   SSL_write(ssl,mm,len);
-
-  printf("4\n");
-
+  
   for(;;){
+
+    char buffer[2048];
+    uint8_t hh[6],mm[200],len,mb[4],opcode,final,masked,ext[8];
+    uint32_t mask;
+    uint64_t payload_len;
+
+
+
+    SSL_read(ssl,hdr,2);
+    opcode=hh[0]&0x0F;
+    final=hh[0]&0x80;
+    masked=hh[1]&0x80;
+    payload_len=hdr[1]&0x7F;
+    if(payload_len==126){
+      SSL_read(ssl,ext,2);
+      payload_len=(ext[0]<<8)|ext[1];
+    } else if (payload_len==127){
+      SSL_read(ssl,ext,8);
+      payload_len=0;
+      for(i=0;i<8;i++)payload_len=(payload_len << 8)|ext[i];
+    }
+
+    uint8_t mask[4];
+    if (masked) SSL_read(ssl, mask, 4);
+
+    uint8_t *payload = malloc(payload_len);
+    if (SSL_read(ssl, payload, payload_len) <= 0) {
+        free(payload);
+        return -1;
+    }
+
+    if (opcode == 0x8) {
+        printf("Close frame received\n");
+        free(payload);
+        return -1;
+    } else if (opcode == 0x9) {
+        // Respond with PONG
+        uint8_t pong[6] = {0x8A, 0x80};  // FIN + PONG + no payload
+        pong[2] = pong[3] = pong[4] = pong[5] = 0;
+        SSL_write(ssl, pong, 6);
+        free(payload);
+        return 0;
+    }
+
+    if (masked) {
+        for (uint64_t i = 0; i < payload_len; i++) {
+            payload[i] ^= mask[i % 4];
+        }
+    }
+
+    size_t copy_len = (payload_len < maxlen - 1) ? payload_len : maxlen - 1;
+    memcpy(out, payload, copy_len);
+    out[copy_len] = '\0';
+
+    free(payload);
+    return copy_len;
+
+
+
+
+
+    
     n=SSL_read(ssl,buffer,2048);
     buffer[n]='\0';
     printf("%s",buffer);
