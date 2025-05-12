@@ -39,9 +39,9 @@ int main() {
   int sockfd,n,i;
   struct hostent *server;
   struct sockaddr_in serv_addr = {0};
-  char buffer[2048];
-  uint8_t hh[6],mm[200],len,mb[4];
+  uint8_t hh[6],mm[200],len,mb[4],opcode,final,masked,ext[8],pong[6];
   uint32_t mask;
+  uint64_t payload_len;
   
   const char *data="{"
     "\"type\": \"ris_subscribe\","
@@ -60,6 +60,8 @@ int main() {
 
   signal(SIGUSR1,handle_signal);
   signal(SIGUSR2,handle_signal);
+
+  buf=malloc(65000);
     
   SSL_library_init();
   SSL_load_error_strings();
@@ -76,7 +78,7 @@ int main() {
   SSL_connect(ssl);
   
   SSL_write(ssl,header,strlen(header));
-  n=SSL_read(ssl,buffer,2048);
+  n=SSL_read(ssl,buf,65000);
   len=strlen(data);
   hh[0]=0x81;
   hh[1]=0x80 | (uint8_t)strlen(data);
@@ -91,13 +93,9 @@ int main() {
   SSL_write(ssl,mm,len);
   
   for(;;){
-
-    char buffer[2048];
-    uint8_t hh[6],mm[200],len,mb[4],opcode,final,masked,ext[8];
+    uint8_t hh[6],mm[200],len,mb[4],opcode,final,masked,ext[8],pong[6];
     uint32_t mask;
     uint64_t payload_len;
-
-
 
     SSL_read(ssl,hdr,2);
     opcode=hh[0]&0x0F;
@@ -107,47 +105,25 @@ int main() {
     if(payload_len==126){
       SSL_read(ssl,ext,2);
       payload_len=(ext[0]<<8)|ext[1];
-    } else if (payload_len==127){
+    }
+     else if (payload_len==127){
       SSL_read(ssl,ext,8);
       payload_len=0;
       for(i=0;i<8;i++)payload_len=(payload_len << 8)|ext[i];
     }
     if(masked)SSL_read(ssl,mb,4);
-
-    buf=malloc(payload_len);
     SSL_read(ssl,buf,payload_len);
- <= 
-
-    if(opcode == 0x9) {
-        // Respond with PONG
-        uint8_t pong[6] = {0x8A, 0x80};  // FIN + PONG + no payload
-        pong[2] = pong[3] = pong[4] = pong[5] = 0;
-        SSL_write(ssl, pong, 6);
-        free(payload);
-        return 0;
+    if(opcode==0x8)continue;
+    if(opcode==0x9){
+      pong[0]=0x8A;
+      pong[1]=0x80;
+      pong[2]=pong[3]=pong[4]=pong[5]=0;
+      SSL_write(ssl,pong,6);
+      continue;
     }
-
-    if (masked) {
-        for (uint64_t i = 0; i < payload_len; i++) {
-            payload[i] ^= mask[i % 4];
-        }
-    }
-
-    size_t copy_len = (payload_len < maxlen - 1) ? payload_len : maxlen - 1;
-    memcpy(out, payload, copy_len);
-    out[copy_len] = '\0';
-
-    free(payload);
-    return copy_len;
-
-
-
-
-
-    
-    n=SSL_read(ssl,buffer,2048);
-    buffer[n]='\0';
-    printf("%s",buffer);
+    if(masked)for(i=0;i<payload_len;i++)buf[i]^=mb[i%4];
+    buf[payload_len]='\0';
+    printf("%s",buf);
 
 
     /*
