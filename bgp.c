@@ -36,10 +36,13 @@ int main() {
   const SSL_METHOD *method;
   SSL_CTX *ctx;
   SSL *ssl;
-  int sockfd,n;
+  int sockfd,n,i;
   struct hostent *server;
   struct sockaddr_in serv_addr = {0};
   char buffer[2048];
+  uint8_t hh[2],mm[200],len,mb[4];
+  uint32_t mask;
+  
   const char *data="{"
     "\"type\": \"ris_subscribe\","
     "\"data\": {\"host\": \"rrc00\","
@@ -77,7 +80,19 @@ int main() {
   printf("2\n");
   n=SSL_read(ssl,buffer,2048);
   printf("3 %d\n",n);
-  SSL_write(ssl,data,strlen(data));
+  len=strlen(data);
+  hh[0]=0x81;
+  hh[1]=0x80 | (uint8_t)strlen(data);
+  mask=rand() & 0x7FFFFFFF;
+  mb[0]=(mask>>24)&0xFF;
+  mb[1]=(mask>>16)&0xFF;
+  mb[2]=(mask>>8)&0xFF;
+  mb[3]=mask&0xFF;
+  memcpy(hh+2,mb,4);
+  for(i=0;i<len;i++)mm[i]=data[i]^mb[i%4];
+  fwrite(hh,1,6,fp);
+  fwrite(mm,1,len,fp);
+
   printf("4\n");
 
   for(;;){
