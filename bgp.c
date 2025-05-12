@@ -39,7 +39,7 @@ int main() {
   int sockfd,n,i;
   struct hostent *server;
   struct sockaddr_in serv_addr = {0};
-  uint8_t hh[6],mm[200],len,mb[4],opcode,final,masked,ext[8],pong[6],*buf;
+  uint8_t hh[6],mm[200],len,mb[4],opcode,final,masked,ext[8],pong[6],*buf,*data;
   uint32_t mask;
   uint64_t payload_len;
   
@@ -93,33 +93,37 @@ int main() {
   SSL_write(ssl,mm,len);
   
   for(;;){
-    SSL_read(ssl,hh,2);
-    opcode=hh[0]&0x0F;
-    final=hh[0]&0x80;
-    masked=hh[1]&0x80;
-    payload_len=hh[1]&0x7F;
-    if(payload_len==126){
-      SSL_read(ssl,ext,2);
-      payload_len=(ext[0]<<8)|ext[1];
+    data=buf;
+    for(;;){
+      SSL_read(ssl,hh,2);
+      opcode=hh[0]&0x0F;
+      final=hh[0]&0x80;
+      masked=hh[1]&0x80;
+      payload_len=hh[1]&0x7F;
+      if(payload_len==126){
+        SSL_read(ssl,ext,2);
+        payload_len=(ext[0]<<8)|ext[1];
+      }
+      else if (payload_len==127){
+        SSL_read(ssl,ext,8);
+        payload_len=0;
+        for(i=0;i<8;i++)payload_len=(payload_len << 8)|ext[i];
+      }
+      if(masked)SSL_read(ssl,mb,4);
+      SSL_read(ssl,data,payload_len);
+      if(opcode==0x8)continue;
+      if(opcode==0x9){
+        pong[0]=0x8A; pong[1]=0x80;
+        pong[2]=pong[3]=pong[4]=pong[5]=0;
+        SSL_write(ssl,pong,6);
+        continue;
+      }
+      if(masked)for(i=0;i<payload_len;i++)data[i]^=mb[i%4];
+      data+=payload_len;
+      if(final)break;
     }
-     else if (payload_len==127){
-      SSL_read(ssl,ext,8);
-      payload_len=0;
-      for(i=0;i<8;i++)payload_len=(payload_len << 8)|ext[i];
-    }
-    if(masked)SSL_read(ssl,mb,4);
-    SSL_read(ssl,buf,payload_len);
-    if(opcode==0x8)continue;
-    if(opcode==0x9){
-      pong[0]=0x8A;
-      pong[1]=0x80;
-      pong[2]=pong[3]=pong[4]=pong[5]=0;
-      SSL_write(ssl,pong,6);
-      continue;
-    }
-    if(masked)for(i=0;i<payload_len;i++)buf[i]^=mb[i%4];
-    buf[payload_len]='\0';
-    printf("%d %s\n\n",final,buf);
+    *data='\0';
+    printf("%s\n\n",buf);
 
 
     /*
