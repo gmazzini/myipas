@@ -70,40 +70,35 @@ void write_frame(SSL *ssl, const char *msg) {
 }
 
 int main() {
-    signal(SIGUSR1, handle_signal);
-    signal(SIGUSR2, handle_signal);
+  const SSL_METHOD *method;
+  SSL_CTX *ctx;
+  SSL *ssl;
+  int sockfd;
+  struct hostent *server;
+  struct sockaddr_in serv_addr = {0};
+  char buffer[2048];
+  const char *json = "{\"type\": \"ris_subscribe\", \"data\": {\"host\": \"rrc00\", \"moreSpecific\": \"true\" }}";
 
-    // Init OpenSSL
-    SSL_library_init();
-    SSL_load_error_strings();
-    const SSL_METHOD *method = TLS_client_method();
-    SSL_CTX *ctx = SSL_CTX_new(method);
-    SSL *ssl;
-
-    // Socket TCP
-    int sockfd = socket(AF_INET, SOCK_STREAM, 0);
-    struct hostent *server = gethostbyname(HOST);
-    struct sockaddr_in serv_addr = {0};
-
-    serv_addr.sin_family = AF_INET;
-    serv_addr.sin_port = htons(PORT);
-    memcpy(&serv_addr.sin_addr.s_addr, server->h_addr, server->h_length);
-
-    connect(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr));
-
-    ssl = SSL_new(ctx);
-    SSL_set_fd(ssl, sockfd);
-    if (SSL_connect(ssl) <= 0) {
-        ERR_print_errors_fp(stderr);
-        return 1;
-    }
-
-    send_handshake(ssl);
-    char buffer[2048];
-    SSL_read(ssl, buffer, sizeof(buffer)); // read handshake response
-
-    const char *json = "{\"type\": \"ris_subscribe\", \"data\": {\"host\": \"rrc00\", \"moreSpecific\": \"true\" }}";
-    write_frame(ssl, json);
+  signal(SIGUSR1,handle_signal);
+  signal(SIGUSR2,handle_signal);
+    
+  SSL_library_init();
+  SSL_load_error_strings();
+  method=TLS_client_method();
+  ctx=SSL_CTX_new(method);
+  sockfd=socket(AF_INET,SOCK_STREAM,0);
+  server=gethostbyname(HOST);
+  serv_addr.sin_family=AF_INET;
+  serv_addr.sin_port=htons(PORT);
+  memcpy(&serv_addr.sin_addr.s_addr,server->h_addr,server->h_length);
+  connect(sockfd,(struct sockaddr *)&serv_addr,sizeof(serv_addr));
+  ssl=SSL_new(ctx);
+  SSL_set_fd(ssl,sockfd);
+  SSL_connect(ssl);
+  send_handshake(ssl);
+  
+  SSL_read(ssl, buffer, sizeof(buffer));
+  write_frame(ssl, json);
 
     while (1) {
         int n = SSL_read(ssl, buffer, sizeof(buffer) - 1);
