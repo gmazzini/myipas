@@ -73,7 +73,7 @@ int main() {
   const SSL_METHOD *method;
   SSL_CTX *ctx;
   SSL *ssl;
-  int sockfd;
+  int sockfd,n;
   struct hostent *server;
   struct sockaddr_in serv_addr = {0};
   char buffer[2048];
@@ -97,16 +97,15 @@ int main() {
   SSL_connect(ssl);
   send_handshake(ssl);
   
-  SSL_read(ssl, buffer, sizeof(buffer));
-  write_frame(ssl, json);
+  SSL_read(ssl,buffer,2048);
+  write_frame(ssl,json);
+  for(;;){
+    n=SSL_read(ssl,buffer,2048);
+    buffer[n]='\0';
+    printf("%s",buffer);
 
-    while (1) {
-        int n = SSL_read(ssl, buffer, sizeof(buffer) - 1);
-        if (n <= 0) break;
 
-        buffer[n] = '\0';
-
-        // Semplice parsing dimostrativo
+    /*
         if (strstr(buffer, "announcements")) {
             if (strstr(buffer, ":")) {
                 ip6[ip6_count++] = strdup(buffer); // esempio
@@ -129,6 +128,12 @@ int main() {
             fclose(f);
             dump_ipv6 = 0;
         }
+
+      */
+      
+
+
+      
     }
 
     SSL_shutdown(ssl);
