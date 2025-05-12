@@ -81,8 +81,8 @@ int main() {
   n=SSL_read(ssl,buf,65000);
   len=strlen(data);
   hh[0]=0x81;
-  hh[1]=0x80 | (uint8_t)strlen(data);
-  mask=rand() & 0x7FFFFFFF;
+  hh[1]=0x80|len;
+  mask=rand()&0x7FFFFFFF;
   mb[0]=(mask>>24)&0xFF;
   mb[1]=(mask>>16)&0xFF;
   mb[2]=(mask>>8)&0xFF;
@@ -97,11 +97,11 @@ int main() {
     uint32_t mask;
     uint64_t payload_len;
 
-    SSL_read(ssl,hdr,2);
+    SSL_read(ssl,hh,2);
     opcode=hh[0]&0x0F;
     final=hh[0]&0x80;
     masked=hh[1]&0x80;
-    payload_len=hdr[1]&0x7F;
+    payload_len=hh[1]&0x7F;
     if(payload_len==126){
       SSL_read(ssl,ext,2);
       payload_len=(ext[0]<<8)|ext[1];
