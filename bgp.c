@@ -112,21 +112,13 @@ int main() {
       payload_len=0;
       for(i=0;i<8;i++)payload_len=(payload_len << 8)|ext[i];
     }
+    if(masked)SSL_read(ssl,mb,4);
 
-    uint8_t mask[4];
-    if (masked) SSL_read(ssl, mask, 4);
+    buf=malloc(payload_len);
+    SSL_read(ssl,buf,payload_len);
+ <= 
 
-    uint8_t *payload = malloc(payload_len);
-    if (SSL_read(ssl, payload, payload_len) <= 0) {
-        free(payload);
-        return -1;
-    }
-
-    if (opcode == 0x8) {
-        printf("Close frame received\n");
-        free(payload);
-        return -1;
-    } else if (opcode == 0x9) {
+    if(opcode == 0x9) {
         // Respond with PONG
         uint8_t pong[6] = {0x8A, 0x80};  // FIN + PONG + no payload
         pong[2] = pong[3] = pong[4] = pong[5] = 0;
