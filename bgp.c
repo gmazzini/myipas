@@ -39,7 +39,7 @@ int main() {
   int sockfd,n,i;
   struct hostent *server;
   struct sockaddr_in serv_addr = {0};
-  uint8_t hh[6],mm[200],len,mb[4],opcode,final,masked,ext[8],pong[6],*buf,*data;
+  uint8_t hh[6],mm[200],len,mb[4],opcode,final,masked,ext[8],pong[6],*buf,*in;
   uint32_t mask;
   uint64_t payload_len;
   
@@ -93,7 +93,7 @@ int main() {
   SSL_write(ssl,mm,len);
   
   for(;;){
-    data=buf;
+    in=buf;
     for(;;){
       SSL_read(ssl,hh,2);
       opcode=hh[0]&0x0F;
@@ -110,7 +110,7 @@ int main() {
         for(i=0;i<8;i++)payload_len=(payload_len << 8)|ext[i];
       }
       if(masked)SSL_read(ssl,mb,4);
-      SSL_read(ssl,data,payload_len);
+      SSL_read(ssl,in,payload_len);
       if(opcode==0x8)continue;
       if(opcode==0x9){
         pong[0]=0x8A; pong[1]=0x80;
@@ -118,11 +118,11 @@ int main() {
         SSL_write(ssl,pong,6);
         continue;
       }
-      if(masked)for(i=0;i<payload_len;i++)data[i]^=mb[i%4];
-      data+=payload_len;
+      if(masked)for(i=0;i<payload_len;i++)in[i]^=mb[i%4];
+      in+=payload_len;
       if(final)break;
     }
-    *data='\0';
+    *in='\0';
     printf("%s\n\n",buf);
 
 
