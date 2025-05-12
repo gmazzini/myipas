@@ -66,7 +66,7 @@ int main() {
     "\"data\": {\"host\": \"rrc00\","
     "\"moreSpecific\": \"true\" }"
   "}";
-  const chat *header=
+  const char *header=
     "GET /v1/ws/?client=gm1 HTTP/1.1\r\n"
     "Host: rrc14.ripe.net\r\n"
     "Accept: */*\r\n"
