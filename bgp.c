@@ -93,10 +93,6 @@ int main() {
   SSL_write(ssl,mm,len);
   
   for(;;){
-    uint8_t hh[6],mm[200],len,mb[4],opcode,final,masked,ext[8],pong[6];
-    uint32_t mask;
-    uint64_t payload_len;
-
     SSL_read(ssl,hh,2);
     opcode=hh[0]&0x0F;
     final=hh[0]&0x80;
@@ -123,7 +119,7 @@ int main() {
     }
     if(masked)for(i=0;i<payload_len;i++)buf[i]^=mb[i%4];
     buf[payload_len]='\0';
-    printf("%s\n\n",buf);
+    printf("%d %s\n\n",final,buf);
 
 
     /*
