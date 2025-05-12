@@ -32,21 +32,6 @@ void handle_signal(int sig){
   else if(sig==SIGUSR2)dump_ipv6=1;
 }
 
-// Invia handshake WebSocket
-void send_handshake(SSL *ssl) {
-    char req[1024];
-    snprintf(req, sizeof(req),
-        "GET /v1/ws/?client=gm1 HTTP/1.1\r\n"
-        "Host: %s\r\n"
-        "Accept: */*\r\n"
-        "Connection: Upgrade\r\n"
-        "Upgrade: websocket\r\n"
-        "Sec-WebSocket-Version: 13\r\n"
-        "Sec-WebSocket-Key: %s\r\n"
-        "\r\n", HOST, WS_KEY);
-    SSL_write(ssl, req, strlen(req));
-}
-
 // Scrive frame WebSocket
 void write_frame(SSL *ssl, const char *msg) {
     size_t len = strlen(msg);
@@ -76,7 +61,20 @@ int main() {
   struct hostent *server;
   struct sockaddr_in serv_addr = {0};
   char buffer[2048];
-  const char *json = "{\"type\": \"ris_subscribe\", \"data\": {\"host\": \"rrc00\", \"moreSpecific\": \"true\" }}";
+  const char *data="{
+    \"type\": \"ris_subscribe\", 
+    \"data\": {\"host\": \"rrc00\",
+    \"moreSpecific\": \"true\" }
+  }";
+  const chat *header=
+    "GET /v1/ws/?client=gm1 HTTP/1.1\r\n"
+    "Host: rrc14.ripe.net\r\n"
+    "Accept: */*\r\n"
+    "Connection: Upgrade\r\n"
+    "Upgrade: websocket\r\n"
+    "Sec-WebSocket-Version: 13\r\n"
+    "Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\n"
+    "\r\n";
 
   signal(SIGUSR1,handle_signal);
   signal(SIGUSR2,handle_signal);
@@ -94,14 +92,15 @@ int main() {
   ssl=SSL_new(ctx);
   SSL_set_fd(ssl,sockfd);
   SSL_connect(ssl);
-  printf("1\n");
-  send_handshake(ssl);
-  printf("2\n");
   
+  printf("1\n");
+  SSL_write(ssl,header,strlen(header));
+  printf("2\n");
   SSL_read(ssl,buffer,2048);
   printf("3\n");
-  write_frame(ssl,json);
+  SSL_write(ssl,data,strlen(data));
   printf("4\n");
+
   for(;;){
     n=SSL_read(ssl,buffer,2048);
     buffer[n]='\0';
