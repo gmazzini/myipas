@@ -90,8 +90,8 @@ int main() {
   mb[3]=mask&0xFF;
   memcpy(hh+2,mb,4);
   for(i=0;i<len;i++)mm[i]=data[i]^mb[i%4];
-  fwrite(hh,1,6,fp);
-  fwrite(mm,1,len,fp);
+  SSL_write(ssl,hh,6);
+  SSL_write(ssl,mm,len);
 
   printf("4\n");
 
