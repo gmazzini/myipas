@@ -27,10 +27,9 @@ char *ip4[1000];
 char *ip6[1000];
 int ip4_count = 0, ip6_count = 0;
 
-// Handler di segnale
-void handle_signal(int sig) {
-    if (sig == SIGUSR1) dump_ipv4 = 1;
-    else if (sig == SIGUSR2) dump_ipv6 = 1;
+void handle_signal(int sig){
+  if(sig==SIGUSR1)dump_ipv4=1;
+  else if(sig==SIGUSR2)dump_ipv6=1;
 }
 
 // Invia handshake WebSocket
@@ -95,10 +94,14 @@ int main() {
   ssl=SSL_new(ctx);
   SSL_set_fd(ssl,sockfd);
   SSL_connect(ssl);
+  printf("1\n");
   send_handshake(ssl);
+  printf("2\n");
   
   SSL_read(ssl,buffer,2048);
+  printf("3\n");
   write_frame(ssl,json);
+  printf("4\n");
   for(;;){
     n=SSL_read(ssl,buffer,2048);
     buffer[n]='\0';
