@@ -39,7 +39,7 @@ int main() {
   int sockfd,n,i;
   struct hostent *server;
   struct sockaddr_in serv_addr = {0};
-  uint8_t hh[6],mm[200],len,mb[4],opcode,final,masked,ext[8],pong[6];
+  uint8_t hh[6],mm[200],len,mb[4],opcode,final,masked,ext[8],pong[6],*buf;
   uint32_t mask;
   uint64_t payload_len;
   
