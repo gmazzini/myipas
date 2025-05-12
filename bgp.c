@@ -32,27 +32,6 @@ void handle_signal(int sig){
   else if(sig==SIGUSR2)dump_ipv6=1;
 }
 
-// Scrive frame WebSocket
-void write_frame(SSL *ssl, const char *msg) {
-    size_t len = strlen(msg);
-    unsigned char header[10];
-    int hlen = 0;
-
-    header[0] = 0x81; // FIN + text
-    if (len < 126) {
-        header[1] = len;
-        hlen = 2;
-    } else {
-        header[1] = 126;
-        header[2] = (len >> 8) & 0xFF;
-        header[3] = len & 0xFF;
-        hlen = 4;
-    }
-
-    SSL_write(ssl, header, hlen);
-    SSL_write(ssl, msg, len);
-}
-
 int main() {
   const SSL_METHOD *method;
   SSL_CTX *ctx;
@@ -96,8 +75,8 @@ int main() {
   printf("1\n");
   SSL_write(ssl,header,strlen(header));
   printf("2\n");
-  SSL_read(ssl,buffer,2048);
-  printf("3\n");
+  n=SSL_read(ssl,buffer,2048);
+  printf("3 %d\n",n);
   SSL_write(ssl,data,strlen(data));
   printf("4\n");
 
