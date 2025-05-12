@@ -61,11 +61,11 @@ int main() {
   struct hostent *server;
   struct sockaddr_in serv_addr = {0};
   char buffer[2048];
-  const char *data="{
-    \"type\": \"ris_subscribe\", 
-    \"data\": {\"host\": \"rrc00\",
-    \"moreSpecific\": \"true\" }
-  }";
+  const char *data="{"
+    "\"type\": \"ris_subscribe\","
+    "\"data\": {\"host\": \"rrc00\","
+    "\"moreSpecific\": \"true\" }"
+  "}";
   const chat *header=
     "GET /v1/ws/?client=gm1 HTTP/1.1\r\n"
     "Host: rrc14.ripe.net\r\n"
