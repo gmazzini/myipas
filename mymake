@@ -1,0 +1,1 @@
+gcc -o bgp bgp.c -lwebsockets -Wunused-variable
