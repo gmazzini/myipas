@@ -168,7 +168,7 @@ void sigint_handler(int sig){
   uint64_t b[4],ip6;
   if(sig==SIGUSR1){
     fp=fopen("m4.txt","wt");
-    fprintf(fp,"# v4: %ld\n",elmv4)
+    fprintf(fp,"# v4: %ld\n",elmv4);
     for(i=0;i<elmv4;i++){
       for(ip4=v4[i].ip,j=0;j<4;j++){a[j]=ip4&0xff; ip4>>=8;}
       fprintf(fp,"%d.%d.%d.%d",a[3],a[2],a[1],a[0]);
@@ -179,7 +179,7 @@ void sigint_handler(int sig){
   }
   if(sig==SIGUSR2){
     fp=fopen("m6.txt","wt");
-    fprintf(fp,"# v6: %ld\n",elmv6)
+    fprintf(fp,"# v6: %ld\n",elmv6);
     for(i=0;i<elmv6;i++){
       for(ip6=v6[i].ip,q=0;q<64;q++)if(ip6&1)break; else ip6>>=1;
       for(ip6=v6[i].ip,j=0;j<4;j++){b[j]=ip6&0xffff; ip6>>=16;}
