@@ -76,6 +76,7 @@ void myconfig(){
   fp=fopen(FILENETS,"rt");
   for(totipasclass=0;;){
     if(fgets(buf,BUFMSG,fp)==NULL)break;
+    if(buf[0]=='#')continue;
     j=strlen(buf);
     for(i=0;i<j;i++)if(buf[i]=='/')break;
     if(i==j)continue;
