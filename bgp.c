@@ -13,11 +13,13 @@ struct v4 {
   uint32_t ip;
   uint8_t cidr;
   uint32_t asn;
+  uint32_t ts;
 } *v4;
 struct v6 {
   uint64_t ip;
   uint8_t cidr;
   uint32_t asn;
+  uint32_t ts;
 } *v6;
 long elmv4=0,elmv6=0;
 uint32_t c4[33],c6[129];
@@ -35,11 +37,12 @@ static const signed char dd[256]={
 };
 
 void myins(char *ptr,int len,uint32_t asn){
-  uint32_t ip4;
+  uint32_t ip4,ts;
   uint8_t found,a[4],cidr;
   uint64_t ip6,b[4];
   long start,end,pos,i,j;
 
+  ts=time();
   for(i=0;i<len;i++)if(ptr[i]==':'){
     for(j=0;j<4;j++)b[j]=0;
     for(i=-1,j=0;j<4;j++){
@@ -75,6 +78,7 @@ void myins(char *ptr,int len,uint32_t asn){
     v6[pos].ip=ip6;
     v6[pos].cidr=cidr;
     v6[pos].asn=asn;
+    v6[pos].ts=ts;
     return;
   }
 
@@ -107,6 +111,7 @@ void myins(char *ptr,int len,uint32_t asn){
   v4[pos].ip=ip4;
   v4[pos].cidr=cidr;
   v4[pos].asn=asn;
+  v4[pos].ts=ts;
 }
 
 int callback_ris(struct lws *wsi,enum lws_callback_reasons reason,void *user,void *in,size_t len){
