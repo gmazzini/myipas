@@ -204,8 +204,8 @@ void sigint_handler(int sig){
     
     case SIGUSR2:
       for(i=0;i<129;i++)c6[i]=0;
-      for(i=0,j=0;i<elmv6;i++)if(ts-v6[i].ts<dts){v6[j]=v6[i]; c6[v6[j].cidr]++; j++;}
-      elmv6=j;
+      // for(i=0,j=0;i<elmv6;i++)if(ts-v6[i].ts<dts){v6[j]=v6[i]; c6[v6[j].cidr]++; j++;}
+      // elmv6=j;
       fp=fopen(V6FILE,"wt");
       fprintf(fp,"# v6_tot: %ld\n",elmv6);
       for(i=0;i<129;i++)if(c6[i]>0)fprintf(fp,"# v6_cidr%d: %ld\n",i,c6[i]);
