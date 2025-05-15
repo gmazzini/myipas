@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdio.h>
-#define HOST "rrc00"
 #define V4FILE "/home/www/fulltable/m4.txt"
 #define V6FILE "/home/www/fulltable/m6.txt"
 #define LENELM 10000000
@@ -26,7 +25,7 @@ uint32_t c4[33],c6[129];
 int interrupted=0;
 uint32_t follow=0;
 struct lws *web_socket=NULL;
-char *subscribe_message="{\"type\": \"ris_subscribe\", \"data\": {\"type\": \"UPDATE\", \"host\": \"HOST\"}}";
+char *subscribe_message="{\"type\": \"ris_subscribe\", \"data\": {\"type\": \"UPDATE\", \"host\": \"rrc00\"}}";
 char *lbuf;
 
 static const signed char dd[256]={
