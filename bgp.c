@@ -180,12 +180,13 @@ void sigint_handler(int sig){
 
   ts=time(NULL);
   dts=1000000000;
+  /*
   fp=fopen(PARFILE,"rt");
   if(fp!=NULL){
     fscanf(fp,"%lu",&dts);
     fclose(fp);
   }
-  
+  */
   switch(sig){
     case SIGUSR1:
       for(i=0;i<33;i++)c4[i]=0;
