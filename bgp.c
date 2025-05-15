@@ -4,6 +4,9 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdio.h>
+#define HOST "rrc00"
+#define V4FILE "/home/www/fulltable/m4.txt"
+#define V6FILE "/home/www/fulltable/m6.txt"
 #define LENELM 10000000
 #define LBUF 100000
 
@@ -18,11 +21,12 @@ struct v6 {
   uint32_t asn;
 } *v6;
 long elmv4=0,elmv6=0;
+uint32_t c4[33],c6[129];
 
 int interrupted=0;
 uint32_t follow=0;
 struct lws *web_socket=NULL;
-char *subscribe_message="{\"type\": \"ris_subscribe\", \"data\": {\"type\": \"UPDATE\", \"host\": \"rrc00\"}}";
+char *subscribe_message="{\"type\": \"ris_subscribe\", \"data\": {\"type\": \"UPDATE\", \"host\": \"HOST\"}}";
 char *lbuf;
 
 static const signed char dd[256]={
@@ -32,8 +36,8 @@ static const signed char dd[256]={
 };
 
 void myins(char *ptr,int len,uint32_t asn){
-  uint32_t ip4,cidr;
-  uint8_t found,a[4];
+  uint32_t ip4;
+  uint8_t found,a[4],cidr;
   uint64_t ip6,b[4];
   long start,end,pos,i,j;
 
@@ -46,6 +50,7 @@ void myins(char *ptr,int len,uint32_t asn){
     }
     for(ip6=0,j=0;j<4;j++){ip6<<=16; ip6|=b[j];}
     for(cidr=0,i++;i<len;i++)cidr=cidr*10+dd[ptr[i]];
+    if(cidr>128)return;
     if(elmv6==0){
       pos=0;
       elmv6=1;
@@ -65,6 +70,7 @@ void myins(char *ptr,int len,uint32_t asn){
         pos=start;
         for(i=elmv6;i>pos;i--)v6[i]=v6[i-1];
         elmv6++;
+        c6[cidr]++;
       }
     }
     v6[pos].ip=ip6;
@@ -76,6 +82,7 @@ void myins(char *ptr,int len,uint32_t asn){
   for(i=-1,j=0;j<4;j++)for(a[j]=0,i++;i<len;i++)if((ptr[i]!='.'&&j<3) || (ptr[i]!='/'&&j==3))a[j]=a[j]*10+dd[ptr[i]]; else break;
   for(ip4=0,j=0;j<4;j++){ip4<<=8; ip4|=a[j];}
   for(cidr=0,i++;i<len;i++)cidr=cidr*10+dd[ptr[i]];
+  if(cidr>32)return;
   if(elmv4==0){
     pos=0;
     elmv4=1;
@@ -95,6 +102,7 @@ void myins(char *ptr,int len,uint32_t asn){
       pos=start;
       for(i=elmv4;i>pos;i--)v4[i]=v4[i-1];
       elmv4++;
+      c4[cidr]++;
     }
   }
   v4[pos].ip=ip4;
@@ -167,8 +175,9 @@ void sigint_handler(int sig){
   uint8_t a[4];
   uint64_t b[4],ip6;
   if(sig==SIGUSR1){
-    fp=fopen("m4.txt","wt");
-    fprintf(fp,"# v4: %ld\n",elmv4);
+    fp=fopen(V4FILE,"wt");
+    fprintf(fp,"# v4_tot: %ld\n",elmv4);
+    for(i=0;i<33;i++)if(c4[i]>0)fprintf(fp,"# v4_cidr%d: %ld\n",i,c4[i]);
     for(i=0;i<elmv4;i++){
       for(ip4=v4[i].ip,j=0;j<4;j++){a[j]=ip4&0xff; ip4>>=8;}
       fprintf(fp,"%d.%d.%d.%d",a[3],a[2],a[1],a[0]);
@@ -178,8 +187,9 @@ void sigint_handler(int sig){
     return;
   }
   if(sig==SIGUSR2){
-    fp=fopen("m6.txt","wt");
-    fprintf(fp,"# v6: %ld\n",elmv6);
+    fp=fopen(V6FILE,"wt");
+    fprintf(fp,"# v6_tot: %ld\n",elmv6);
+    for(i=0;i<129;i++)if(c6[i]>0)fprintf(fp,"# v6_cidr%d: %ld\n",i,c6[i]);
     for(i=0;i<elmv6;i++){
       for(ip6=v6[i].ip,q=0;q<64;q++)if(ip6&1)break; else ip6>>=1;
       for(ip6=v6[i].ip,j=0;j<4;j++){b[j]=ip6&0xffff; ip6>>=16;}
@@ -199,6 +209,7 @@ void sigint_handler(int sig){
 }
 
 int main(void) {
+  uint8_t i;
   struct lws_context_creation_info info;
   struct lws_client_connect_info ccinfo={0};
   struct lws_context *context;
@@ -209,6 +220,8 @@ int main(void) {
   if(v6==NULL)exit(0);
   lbuf=(char *)malloc(LBUF);
   if(lbuf==NULL)exit(0);
+  for(i=0;i<33;i++)c4[i]=0;
+  for(i=0;i<129;i++)c6[i]=0;
 
   signal(SIGINT,sigint_handler);
   signal(SIGUSR1,sigint_handler);
