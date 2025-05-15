@@ -175,10 +175,11 @@ struct lws_protocols protocols[]={
 
 void sigint_handler(int sig){
   FILE *fp;
-  uint32_t i,j,q,ip4;
+  uint32_t i,j,q,ip4,ts;
   uint8_t a[4];
   uint64_t b[4],ip6;
-  if(sig==SIGUSR1){
+  switch(sig){
+    case SIGUSR1:
     fp=fopen(V4FILE,"wt");
     fprintf(fp,"# v4_tot: %ld\n",elmv4);
     for(i=0;i<33;i++)if(c4[i]>0)fprintf(fp,"# v4_cidr%d: %ld\n",i,c4[i]);
@@ -189,8 +190,8 @@ void sigint_handler(int sig){
     }
     fclose(fp);
     return;
-  }
-  if(sig==SIGUSR2){
+    
+    case SIGUSR2:
     fp=fopen(V6FILE,"wt");
     fprintf(fp,"# v6_tot: %ld\n",elmv6);
     for(i=0;i<129;i++)if(c6[i]>0)fprintf(fp,"# v6_cidr%d: %ld\n",i,c6[i]);
@@ -205,11 +206,19 @@ void sigint_handler(int sig){
     }
     fclose(fp);
     return;
-  }
-  if(sig==SIGINT){
+
+    case 34:
+    ts=time();
+    fp=fopen("/homt/www/fulltable/ts.txt","wt");
+    for(q=0,i=0;i<elmv4;i++)if(ipv4[i].ts-ts>1000)q++;
+    fprintf(fp,"%ld\n",q);
+    fclose(fp);
+    return;
+    
+    case SIGINT:
     interrupted=1;
     return;
-  }
+    }
 }
 
 int main(void) {
@@ -230,6 +239,7 @@ int main(void) {
   signal(SIGINT,sigint_handler);
   signal(SIGUSR1,sigint_handler);
   signal(SIGUSR2,sigint_handler);
+  signal(34,sigint_handler);
   memset(&info,0,sizeof(info));
   info.port=CONTEXT_PORT_NO_LISTEN;
   info.protocols=protocols;
