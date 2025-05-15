@@ -73,7 +73,6 @@ void myins(char *ptr,int len,uint32_t asn){
         pos=start;
         for(i=elmv6;i>pos;i--)v6[i]=v6[i-1];
         elmv6++;
-        c6[cidr]++;
       }
     }
     v6[pos].ip=ip6;
@@ -106,7 +105,6 @@ void myins(char *ptr,int len,uint32_t asn){
       pos=start;
       for(i=elmv4;i>pos;i--)v4[i]=v4[i-1];
       elmv4++;
-      c4[cidr]++;
     }
   }
   v4[pos].ip=ip4;
@@ -180,7 +178,7 @@ void sigint_handler(int sig){
   uint8_t a[4],c4[33],c6[129];
   uint64_t b[4],ip6;
 
-  ts=time();
+  ts=time(NULL);
   fp=fopen(PARFILE,"wt");
   if(fp!=NULL){
     fscanf(fp,"%lu",&dts);
@@ -230,7 +228,6 @@ void sigint_handler(int sig){
 }
 
 int main(void) {
-  uint8_t i;
   struct lws_context_creation_info info;
   struct lws_client_connect_info ccinfo={0};
   struct lws_context *context;
