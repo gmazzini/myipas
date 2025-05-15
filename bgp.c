@@ -177,25 +177,21 @@ void sigint_handler(int sig){
   uint32_t i,j,q,ip4,ts,dts;
   uint8_t a[4],c4[33],c6[129];
   uint64_t b[4],ip6;
+  char buf[100];
 
   ts=time(NULL);
   dts=1000000000;
-  /*
   fp=fopen(PARFILE,"rt");
   if(fp!=NULL){
-    fscanf(fp,"%lu",&dts);
+    fgets(buf,100,fp);
+    dts=strtoul(buf,NULL,10);
     fclose(fp);
   }
-  */
-  dts=50;
   switch(sig){
     case SIGUSR1:
       for(i=0;i<33;i++)c4[i]=0;
-      printf("*** %lu %lu\n",elmv4,ts);
-      for(j=0,i=0;i<elmv4;i++)if(ts-v4[i].ts<dts){v4[j]=v4[i]; j++;}
+      for(j=0,i=0;i<elmv4;i++)if(ts-v4[i].ts<dts){v4[j]=v4[i]; c4[v4[j].cidr]++; j++;}
       elmv4=j;
-      printf("%lu %lu %lu\n",ts,i,j);
-
       if(elmv4==0)return;
       fp=fopen(V4FILE,"wt");
       fprintf(fp,"# v4_tot: %ld\n",elmv4);
