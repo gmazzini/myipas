@@ -5,8 +5,8 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <time.h>
-#define V4FILE "/home/www/fulltable/mm4.txt"
-#define V6FILE "/home/www/fulltable/mm6.txt"
+#define V4FILE "/home/www/fulltable/m4.txt"
+#define V6FILE "/home/www/fulltable/m6.txt"
 #define PARFILE "/home/www/fulltable/par.txt"
 #define LENELM 10000000
 #define LBUF 100000
