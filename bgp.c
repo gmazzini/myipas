@@ -43,7 +43,7 @@ void myins(char *ptr,int len,uint32_t asn){
   uint64_t ip6,b[4];
   long start,end,pos,i,j;
 
-  ts=time();
+  ts=time(NULL);
   for(i=0;i<len;i++)if(ptr[i]==':'){
     for(j=0;j<4;j++)b[j]=0;
     for(i=-1,j=0;j<4;j++){
