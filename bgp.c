@@ -189,6 +189,7 @@ void sigint_handler(int sig){
   switch(sig){
     case SIGUSR1:
       for(i=0;i<33;i++)c4[i]=0;
+      printf("*** %lu %lu\n",elmv4,ts);
       for(j=0,i=0;i<elmv4;i++)if(ts-v4[i].ts<dts){v4[j]=v4[i]; j++;}
       elmv4=j;
       printf("%lu %lu %lu\n",ts,i,j);
