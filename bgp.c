@@ -187,6 +187,7 @@ void sigint_handler(int sig){
     fclose(fp);
   }
   */
+  dts=50;
   switch(sig){
     case SIGUSR1:
       for(i=0;i<33;i++)c4[i]=0;
