@@ -191,6 +191,7 @@ void sigint_handler(int sig){
       for(i=0;i<33;i++)c4[i]=0;
       for(j=0,i=0;i<elmv4;i++)if(ts-v4[i].ts<dts){v4[j]=v4[i]; c4[v4[j].cidr]++; j++;}
       elmv4=j;
+      if(elmv4==0)return;
       fp=fopen(V4FILE,"wt");
       fprintf(fp,"# v4_tot: %ld\n",elmv4);
       for(i=0;i<33;i++)if(c4[i]>0)fprintf(fp,"# v4_cidr%d: %ld\n",i,c4[i]);
@@ -206,6 +207,7 @@ void sigint_handler(int sig){
       for(i=0;i<129;i++)c6[i]=0;
       for(j=0,i=0;i<elmv6;i++)if(ts-v6[i].ts<dts){v6[j]=v6[i]; c6[v6[j].cidr]++; j++;}
       elmv6=j;
+      if(elmv6==0)return;
       fp=fopen(V6FILE,"wt");
       fprintf(fp,"# v6_tot: %ld\n",elmv6);
       for(i=0;i<129;i++)if(c6[i]>0)fprintf(fp,"# v6_cidr%d: %ld\n",i,c6[i]);
