@@ -179,17 +179,17 @@ void sigint_handler(int sig){
   uint64_t b[4],ip6;
 
   ts=time(NULL);
-  fp=fopen(PARFILE,"wt");
+  dts=1000000000;
+  fp=fopen(PARFILE,"rt");
   if(fp!=NULL){
     fscanf(fp,"%lu",&dts);
     fclose(fp);
   }
-  else dts=1000000000;
   
   switch(sig){
     case SIGUSR1:
       for(i=0;i<33;i++)c4[i]=0;
-      for(i=0,j=0;i<elmv4;i++)if(ts-v4[i].ts<dts){v4[j]=v4[i]; c4[v4[j].cidr]++; j++;}
+      for(j=0,i=0;i<elmv4;i++)if(ts-v4[i].ts<dts){v4[j]=v4[i]; c4[v4[j].cidr]++; j++;}
       elmv4=j;
       fp=fopen(V4FILE,"wt");
       fprintf(fp,"# v4_tot: %ld\n",elmv4);
@@ -204,8 +204,8 @@ void sigint_handler(int sig){
     
     case SIGUSR2:
       for(i=0;i<129;i++)c6[i]=0;
-      // for(i=0,j=0;i<elmv6;i++)if(ts-v6[i].ts<dts){v6[j]=v6[i]; c6[v6[j].cidr]++; j++;}
-      // elmv6=j;
+      for(j=0,i=0;i<elmv6;i++)if(ts-v6[i].ts<dts){v6[j]=v6[i]; c6[v6[j].cidr]++; j++;}
+      elmv6=j;
       fp=fopen(V6FILE,"wt");
       fprintf(fp,"# v6_tot: %ld\n",elmv6);
       for(i=0;i<129;i++)if(c6[i]>0)fprintf(fp,"# v6_cidr%d: %ld\n",i,c6[i]);
