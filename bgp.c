@@ -5,8 +5,8 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <time.h>
-#define V4FILE "/home/www/fulltable/m4.txt"
-#define V6FILE "/home/www/fulltable/m6.txt"
+#define V4FILE "/home/www/fulltable/mm4.txt"
+#define V6FILE "/home/www/fulltable/mm6.txt"
 #define PARFILE "/home/www/fulltable/par.txt"
 #define LENELM 10000000
 #define LBUF 100000
@@ -191,6 +191,8 @@ void sigint_handler(int sig){
       for(i=0;i<33;i++)c4[i]=0;
       for(j=0,i=0;i<elmv4;i++)if(ts-v4[i].ts<dts){v4[j]=v4[i]; c4[v4[j].cidr]++; j++;}
       elmv4=j;
+      printf("%lu %lu %lu\n",ts,i,j);
+
       if(elmv4==0)return;
       fp=fopen(V4FILE,"wt");
       fprintf(fp,"# v4_tot: %ld\n",elmv4);
