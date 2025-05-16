@@ -185,6 +185,7 @@ int main(){
   uint32_t i,j,e,ip4,asn;
   uint8_t a[4],cidr,len;
   char buf[100],*buf1,*buf2;
+  FILE *fp;
   
   fp=fopen(V4FILE,"rt");
   if(fp==NULL)return 0;
