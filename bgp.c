@@ -8,6 +8,8 @@
 #define V4FILE "/home/www/fulltable/m4.txt"
 #define V6FILE "/home/www/fulltable/m6.txt"
 #define PARFILE "/home/www/fulltable/par.txt"
+#define BKP4FILE "/home/www/fulltable/bkp4.txt"
+#define BKP6FILE "/home/www/fulltable/bkp6.txt"
 #define LENELM 10000000
 #define LBUF 100000
 
@@ -225,6 +227,14 @@ void sigint_handler(int sig){
       return;
     
     case SIGINT:
+      fp=fopen(BKP4FILE,"wb");
+      fwrite(&elmv4,4,1,fp);
+      fwrite(v4,sizeof(struct v4),elmv4,fp);
+      fclose(fp);
+      fp=fopen(BKP6FILE,"wb");
+      fwrite(&elmv6,4,1,fp);
+      fwrite(v6,sizeof(struct v6),elmv6,fp);
+      fclose(fp);
       interrupted=1;
       return;
   }
@@ -234,6 +244,7 @@ int main(void) {
   struct lws_context_creation_info info;
   struct lws_client_connect_info ccinfo={0};
   struct lws_context *context;
+  FILE *fp;
 
   v4=(struct v4 *)malloc(LENELM*sizeof(struct v4));
   if(v4==NULL)exit(0);
@@ -241,7 +252,15 @@ int main(void) {
   if(v6==NULL)exit(0);
   lbuf=(char *)malloc(LBUF);
   if(lbuf==NULL)exit(0);
-
+  fp=fopen(BKP4FILE,"rb");
+  fread(&elmv4,4,1,fp);
+  fread(v4,sizeof(struct v4),elmv4,fp);
+  fclose(fp);
+  fp=fopen(BKP6FILE,"wb");
+  fread(&elmv6,4,1,fp);
+  fread(v6,sizeof(struct v6),elmv6,fp);
+  fclose(fp);
+  
   signal(SIGINT,sigint_handler);
   signal(SIGUSR1,sigint_handler);
   signal(SIGUSR2,sigint_handler);
