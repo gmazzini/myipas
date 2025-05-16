@@ -29,12 +29,12 @@ struct v4 {
   uint32_t ipv4;
   uint8_t cidr;
   uint32_t asn;
-};
+} *v4;
 struct v6 {
   uint64_t ip;
   uint8_t cidr;
   uint32_t asn;
-} *v4;
+} *v6;
 struct arg_pass {
   char *mesg;
   int lenmesg;
