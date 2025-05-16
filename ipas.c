@@ -79,17 +79,12 @@ void *manage(void *arg_void){
   dominio=(char *)malloc(BUFMSG*sizeof(char));
   
   mystop=0;
-  // QR B2 b7
-  if(!mystop && ((*(myarg->mesg+2))&0b10000000)!=0){mystop=1; totmalformed++; }
-  // AA B2 b2
-  if(!mystop && ((*(myarg->mesg+2))&0b00000100)!=0){mystop=1; totmalformed++; }
-  // Z B3 b6
-  if(!mystop && ((*(myarg->mesg+3))&0b01000000)!=0){mystop=1; totmalformed++; }
-  // Rcode B3 b3-0
-  if(!mystop && ((*(myarg->mesg+3))&0b00001111)!=0){mystop=1; totmalformed++; }
-  // Total Answer B6 B7
-  if(!mystop && (*(myarg->mesg+6))!=0){mystop=1; totmalformed++; }
-  if(!mystop && (*(myarg->mesg+7))!=0){mystop=1; totmalformed++; }
+  if(!mystop && ((*(myarg->mesg+2))&0b10000000)!=0)mystop=1;
+  if(!mystop && ((*(myarg->mesg+2))&0b00000100)!=0)mystop=1;
+  if(!mystop && ((*(myarg->mesg+3))&0b01000000)!=0)mystop=1;
+  if(!mystop && ((*(myarg->mesg+3))&0b00001111)!=0)mystop=1;
+  if(!mystop && (*(myarg->mesg+6))!=0)mystop=1;
+  if(!mystop && (*(myarg->mesg+7))!=0)mystop=1;
   
   if(!mystop){
     lenanswer=0;
@@ -98,10 +93,10 @@ void *manage(void *arg_void){
       if(ml==0)break;
       aux2++;
       i+=ml;
-      if(i>=BUFMSG){mystop=1; totmalformed++; break;}
+      if(i>=BUFMSG){mystop=1; break;}
       for(j=0;j<ml;j++)*aux1++=tolower(*aux2++);
       i++;
-      if(i>=BUFMSG){mystop=1; totmalformed++; break;}
+      if(i>=BUFMSG){mystop=1; break;}
       *aux1++='.';
       lenanswer+=ml+1;
     }
@@ -180,7 +175,7 @@ int main(){
   tid=(pthread_t *)malloc(NTHREAD*sizeof(pthread_t));
   myargs=(struct arg_pass *)malloc(NTHREAD*sizeof(struct arg_pass));
   for(i=0;i<NTHREAD;i++)myargs[i].mesg=(char *)malloc(BUFMSG*sizeof(char));
-  totallquery=totmalformed=0;
+  totallquery=0;
   
   sockfd=socket(AF_INET,SOCK_DGRAM,IPPROTO_UDP);
   memset((char *)&servaddr,0,sizeof(servaddr));
