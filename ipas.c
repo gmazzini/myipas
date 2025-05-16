@@ -147,10 +147,9 @@ int main(){
   fp=fopen(V4FILE,"rt");
   if(fp==NULL)return 0;
   fgets(buf,100,fp);
-  buf1=strstr(buf," "); if(buf1==NULL)return 0; else buf1++;
-  buf1=strstr(buf1," "); if(buf1==NULL)return 0; else buf1++;
+  buf1=buf+10;
   buf2=strstr(buf1,"\n"); if(buf2==NULL)return 0; *buf2='\0';
-  for(i++;i<len;i++)elmv4=elmv4*10+dd[buf1[i]];
+  for(i=0;;i++)if(buf[i]!='\n')elmv4=elmv4*10+dd[buf1[i]]; else break;
   printf("%lu\n",elmv4);
   
 
