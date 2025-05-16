@@ -149,26 +149,19 @@ int main(){
   fgets(buf,100,fp);
   buf1=buf+10;
   for(i=0;i<100;i++)if(buf1[i]!='\n')elmv4=elmv4*10+dd[buf1[i]]; else break;
-  printf("%lu\n",elmv4);
-  exit(0);
-
-
-  elmv4=100;
   v4=(struct v4 *)malloc(elmv4*sizeof(struct v4));
   if(v4==NULL)return 0;
   for(e=0;;){
-    if(len=fgets(buf,100,fp)==NULL)break;
+    if(fgets(buf,100,fp)==NULL)break;
     if(buf[0]=='#')continue;
-    for(i=-1,j=0;j<4;j++)for(a[j]=0,i++;i<len;i++)if((buf[i]!='.'&&j<3) || (buf[i]!='/'&&j==3))a[j]=a[j]*10+dd[buf[i]]; else break;
+    for(i=-1,j=0;j<4;j++)for(a[j]=0,i++;i<100;i++)if((buf[i]!='.'&&j<3) || (buf[i]!='/'&&j==3))a[j]=a[j]*10+dd[buf[i]]; else break;
     for(ip4=0,j=0;j<4;j++){ip4<<=8; ip4|=a[j];}
-    for(cidr=0,i++;i<len;i++)if(buf[i]!=',')cidr=cidr*10+dd[buf[i]]; else break;
+    for(cidr=0,i++;i<100;i++)if(buf[i]!=',')cidr=cidr*10+dd[buf[i]]; else break;
     for(asn=0,i++;i<len;i++)if(buf[i]!='\n')asn=asn*10+dd[buf[i]]; else break;
-    printf("%lu\n",e);
     v4[e].ip=ip4;
     v4[e].cidr=cidr;
     v4[e].asn=asn;
     e++;
-    if(e>=elmv4)break;
   }
   fclose(fp);
   
