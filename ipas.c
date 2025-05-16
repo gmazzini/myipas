@@ -148,10 +148,9 @@ int main(){
   if(fp==NULL)return 0;
   fgets(buf,100,fp);
   buf1=buf+10;
-  buf2=strstr(buf1,"\n"); if(buf2==NULL)return 0; *buf2='\0';
-  for(i=0;;i++)if(buf[i]!='\n')elmv4=elmv4*10+dd[buf1[i]]; else break;
+  for(i=0;i<100;i++)if(buf1[i]!='\n')elmv4=elmv4*10+dd[buf1[i]]; else break;
   printf("%lu\n",elmv4);
-  
+  exit(0);
 
 
   elmv4=100;
