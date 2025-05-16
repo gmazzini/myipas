@@ -8,8 +8,8 @@
 #define V4FILE "/home/www/fulltable/m4.txt"
 #define V6FILE "/home/www/fulltable/m6.txt"
 #define PARFILE "/home/www/fulltable/par.txt"
-#define BKP4FILE "/home/www/fulltable/bkp4.txt"
-#define BKP6FILE "/home/www/fulltable/bkp6.txt"
+#define BKP4FILE "/home/www/fulltable/bkp4.raw"
+#define BKP6FILE "/home/www/fulltable/bkp6.raw"
 #define LENELM 10000000
 #define LBUF 100000
 
