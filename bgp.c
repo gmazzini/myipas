@@ -280,7 +280,6 @@ int main(void) {
   ccinfo.origin=ccinfo.address;
   ccinfo.protocol=protocols[0].name;
   ccinfo.ssl_connection=LCCSCF_USE_SSL;
-  ccinfo.address_family=AF_INET;
   web_socket=lws_client_connect_via_info(&ccinfo);
   while(!interrupted){
     lws_service(context,100);
