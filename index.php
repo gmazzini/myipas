@@ -1,5 +1,7 @@
 <?php
-echo "<pre>On the basis of RIPE RIS data sets https://www.ris.ripe.net/\n";
+echo "<pre>";
+echo "On the basis of RIPE RIS data sets https://www.ris.ripe.net/\n";
+echo "List of data collectors https://ris.ripe.net/docs/route-collectors\n";
 echo "Real time collection from RRC00 Amsterdam\n";
 echo "data is hourly updated\n";
 echo "retention is 10 days\n";
