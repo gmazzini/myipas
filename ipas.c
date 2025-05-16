@@ -26,7 +26,7 @@ static const signed char dd[256]={
 };
 
 struct v4 {
-  uint32_t ipv4;
+  uint32_t ip;
   uint8_t cidr;
   uint32_t asn;
 } *v4;
