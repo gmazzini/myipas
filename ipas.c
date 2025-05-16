@@ -39,7 +39,7 @@ struct arg_pass {
   char *mesg;
   int lenmesg;
   struct sockaddr_in cliaddr;
-} *v6;
+} *myarg;
 long elmv4=0,elmv6=0;
 
 pthread_t *tid;
