@@ -44,7 +44,6 @@ long elmv4=0,elmv6=0;
 
 pthread_t *tid;
 int sockfd;
-uint32_t mymask[33];
 
 long mys4(uint32_t ip4,uint8_t cidr){
   long start,end,pos;
@@ -163,6 +162,7 @@ int main(){
     for(ip4=0,j=0;j<4;j++){ip4<<=8; ip4|=a[j];}
     for(cidr=0,i++;i<len;i++)if(buf[i]!=',')cidr=cidr*10+dd[buf[i]]; else break;
     for(asn=0,i++;i<len;i++)if(buf[i]!='\n')asn=asn*10+dd[buf[i]]; else break;
+    printf("%lu\n",e);
     v4[e].ip=ip4;
     v4[e].cidr=cidr;
     v4[e].asn=asn;
@@ -170,12 +170,9 @@ int main(){
   }
   fclose(fp);
   
-  
-  for(i=0;i<=32;i++)mymask[i]=~((1<<(32-i))-1);
   tid=(pthread_t *)malloc(NTHREAD*sizeof(pthread_t));
   myargs=(struct arg_pass *)malloc(NTHREAD*sizeof(struct arg_pass));
   for(i=0;i<NTHREAD;i++)myargs[i].mesg=(char *)malloc(BUFMSG*sizeof(char));
-  
   sockfd=socket(AF_INET,SOCK_DGRAM,IPPROTO_UDP);
   memset((char *)&servaddr,0,sizeof(servaddr));
   servaddr.sin_family=AF_INET;
