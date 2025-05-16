@@ -253,14 +253,17 @@ int main(void) {
   lbuf=(char *)malloc(LBUF);
   if(lbuf==NULL)exit(0);
   fp=fopen(BKP4FILE,"rb");
-  fread(&elmv4,4,1,fp);
-  fread(v4,sizeof(struct v4),elmv4,fp);
-  fclose(fp);
+  if(fp!=NULL){
+    fread(&elmv4,4,1,fp);
+    fread(v4,sizeof(struct v4),elmv4,fp);
+    fclose(fp);
+  }
   fp=fopen(BKP6FILE,"wb");
-  fread(&elmv6,4,1,fp);
-  fread(v6,sizeof(struct v6),elmv6,fp);
-  fclose(fp);
-  
+  if(fp!=NULL){
+    fread(&elmv6,4,1,fp);
+    fread(v6,sizeof(struct v6),elmv6,fp);
+    fclose(fp);
+  }
   signal(SIGINT,sigint_handler);
   signal(SIGUSR1,sigint_handler);
   signal(SIGUSR2,sigint_handler);
