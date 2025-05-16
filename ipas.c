@@ -47,29 +47,20 @@ int sockfd;
 uint32_t mymask[33];
 uint32_t totipasclass,totallquery,totmalformed;
 
-static int myipcmp(const void *p1, const void *p2){
-  long ret;
-  ret=((struct v4 *)p1)->ipv4-((struct v4*)p2)->ipv4;
-  if(ret==0)return 0;
-  return (ret>0)?1:-1;
-}
-
-long myipsearch(unsigned long ip_tocheck){
-  long zinit,zend,myclass;
-  unsigned long ip_mask;
-  int i;
-  
-  zinit=0;
-  zend=totipasclass-1;
-  for(i=0;i<MAXSTEPS;i++){
-    myclass=(zinit+zend)/2;
-    ip_mask=mymask[v4[myclass].cidr];
-    if((ip_tocheck&ip_mask)==v4[myclass].ipv4)break;
-    if((ip_tocheck&ip_mask)>v4[myclass].ipv4)zinit=myclass+1;
-    else zend=myclass-1;
-    if(zinit>zend||zinit>=totipasclass||zend<0)return -1;
+long mys4(uint32_t ip4,uint8_t cidr){
+  long start,end,pos;
+  uint8_t found;
+  start=0;
+  end=elmv4-1;
+  found=0;
+  while(start<=end){
+    pos=start+(end-start)/2;
+    if(ip4==v4[pos].ip && cidr==v4[pos].cidr){found=1; break;}
+    else if(ip4>v4[pos].ip || (ip4==v4[pos].ip && cidr>v4[pos].cidr))start=pos+1;
+    else end=pos-1;
   }
-  return myclass;
+  if(found)return pos;
+  else return -1;
 }
 
 void *manage(void *arg_void){
@@ -81,6 +72,7 @@ void *manage(void *arg_void){
   unsigned long ipsrcaddr;
   struct sockaddr_in netip;
   char *recv,*auxbuf,*dominio,*aux1,*aux2;
+  uint32_t ip4;
   
   recv=(char *)malloc(BUFMSG*sizeof(char));
   auxbuf=(char *)malloc(BUFMSG*sizeof(char));
@@ -141,7 +133,7 @@ void *manage(void *arg_void){
               inet_pton(AF_INET,aux2,&(netip.sin_addr));
               ipsrcaddr=ntohl(netip.sin_addr.s_addr);
               for(i=32;i>=8;i--){
-                myclass=myipsearch(ipsrcaddr&mymask[i]);
+                myclass=mys4(ipsrcaddr&mymask[i]);
                 if(myclass!=-1)break;
               }
               if(myclass>=0)asret=v4[myclass].asn;
