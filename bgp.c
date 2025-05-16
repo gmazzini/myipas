@@ -30,7 +30,7 @@ long elmv4=0,elmv6=0;
 int interrupted=0;
 uint32_t follow=0;
 struct lws *web_socket=NULL;
-char *subscribe_message="{\"type\": \"ris_subscribe\", \"data\": {\"type\": \"UPDATE\", \"host\": \"rrc00\"}}";
+char *subscribe_message="{\"type\": \"ris_subscribe\", \"data\": {\"type\": \"UPDATE\", \"host\": \"rrc11\"}}";
 char *lbuf;
 
 static const signed char dd[256]={
