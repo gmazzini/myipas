@@ -1,9 +1,3 @@
-// ipas 2015-25 by GM
-// changelog (appears on github since v0.03)
-// v0.04 change of FILENETS repository
-// v0.05 thread implementation and dns query
-// v0.06 file path /myipas/asn.txt and /cmd/reset/
-
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
@@ -19,12 +13,12 @@
 #define LISTENPORT 5555
 #define TOTNETS 2000000
 #define MAXSTEPS 40
-#define FILENETS "/home/www/fulltable/m4-1.txt"
+#define FILENETS "/home/www/fulltable/m4.txt"
 
-struct ipas_class {
-  unsigned long ipv4;
-  short int cidr;
-  unsigned long as;
+struct v4 {
+  uint32_t ipv4;
+  uint8_t cidr;
+  uint32_t as;
 };
 struct arg_pass {
   char *mesg;
@@ -34,19 +28,17 @@ struct arg_pass {
 
 pthread_t *tid;
 int sockfd;
-struct ipas_class *myipasclass=NULL;
-unsigned long mymask[33];
-unsigned long totipasclass,totallquery,totmalformed;
+struct v4 *v4=NULL;
+uint32_t mymask[33];
+uint32_t totipasclass,totallquery,totmalformed;
 
-// comparison function
 static int myipcmp(const void *p1, const void *p2){
   long ret;
-  ret=((struct ipas_class *)p1)->ipv4-((struct ipas_class*)p2)->ipv4;
+  ret=((struct v4 *)p1)->ipv4-((struct v4*)p2)->ipv4;
   if(ret==0)return 0;
   return (ret>0)?1:-1;
 }
 
-// Binary search with maximum steps for ipclass search
 long myipsearch(unsigned long ip_tocheck){
   long zinit,zend,myclass;
   unsigned long ip_mask;
@@ -56,23 +48,21 @@ long myipsearch(unsigned long ip_tocheck){
   zend=totipasclass-1;
   for(i=0;i<MAXSTEPS;i++){
     myclass=(zinit+zend)/2;
-    ip_mask=mymask[myipasclass[myclass].cidr];
-    if((ip_tocheck&ip_mask)==myipasclass[myclass].ipv4)break;
-    if((ip_tocheck&ip_mask)>myipasclass[myclass].ipv4)zinit=myclass+1;
+    ip_mask=mymask[v4[myclass].cidr];
+    if((ip_tocheck&ip_mask)==v4[myclass].ipv4)break;
+    if((ip_tocheck&ip_mask)>v4[myclass].ipv4)zinit=myclass+1;
     else zend=myclass-1;
     if(zinit>zend||zinit>=totipasclass||zend<0)return -1;
   }
   return myclass;
 }
 
-// ip to as configuration file
 void myconfig(){
   FILE *fp;
   int i,ii,j;
   char buf[BUFMSG];
   struct sockaddr_in netip;
   
-  // read data
   fp=fopen(FILENETS,"rt");
   for(totipasclass=0;;){
     if(fgets(buf,BUFMSG,fp)==NULL)break;
@@ -85,13 +75,13 @@ void myconfig(){
     if(i==j)continue;
     buf[ii]='\0';
     inet_pton(AF_INET,buf,&(netip.sin_addr));
-    myipasclass[totipasclass].cidr=atoi(buf+i+1);
-    myipasclass[totipasclass].as=atoi(buf+ii+1);
-    myipasclass[totipasclass].ipv4=ntohl(netip.sin_addr.s_addr)&mymask[myipasclass[totipasclass].cidr];
+    v4[totipasclass].cidr=atoi(buf+i+1);
+    v4[totipasclass].as=atoi(buf+ii+1);
+    v4[totipasclass].ipv4=ntohl(netip.sin_addr.s_addr)&mymask[v4[totipasclass].cidr];
     totipasclass++;
   }
   fclose(fp);
-  qsort(myipasclass,totipasclass,sizeof(struct ipas_class),myipcmp);
+  qsort(v4,totipasclass,sizeof(struct v4),myipcmp);
 }
 
 void *manage(void *arg_void){
@@ -108,7 +98,6 @@ void *manage(void *arg_void){
   auxbuf=(char *)malloc(BUFMSG*sizeof(char));
   dominio=(char *)malloc(BUFMSG*sizeof(char));
   
-  // check query header
   mystop=0;
   // QR B2 b7
   if(!mystop && ((*(myarg->mesg+2))&0b10000000)!=0){mystop=1; totmalformed++; }
@@ -122,7 +111,6 @@ void *manage(void *arg_void){
   if(!mystop && (*(myarg->mesg+6))!=0){mystop=1; totmalformed++; }
   if(!mystop && (*(myarg->mesg+7))!=0){mystop=1; totmalformed++; }
   
-  // domain name analisys
   if(!mystop){
     lenanswer=0;
     for(i=0,aux1=dominio,aux2=myarg->mesg+12;;){
@@ -141,15 +129,10 @@ void *manage(void *arg_void){
     else *(--aux1)='\0';
   }
   
-  // request analisys
   if(!mystop){
     totallquery++;
-    
-    // query type
     query=*(aux2+2);
-    lenanswer+=5;
-    
-    // command processing
+    lenanswer+=5;    
     if(query==16 && strncmp(dominio,"cmd",3)==0){
       for(aux1=dominio;*aux1!='\0';aux1++)if(*aux1=='/')break;
       if(*aux1=='\0')sprintf(auxbuf,"request malfomed");
@@ -158,12 +141,10 @@ void *manage(void *arg_void){
         if(*aux1=='\0')sprintf(auxbuf,"missed command");
         else {
           *aux1='\0';
-          // reload configuration
           if(strcmp(aux2,"reload")==0){
             myconfig();
             sprintf(auxbuf,"configuration reloaded");
           }
-          // ipas
           else if(strcmp(aux2,"ipas")==0){
             for(aux2=++aux1;*aux1!='\0';aux1++)if(*aux1=='/')break;
             if(*aux1=='\0')sprintf(auxbuf,"missed source IP");
@@ -175,21 +156,18 @@ void *manage(void *arg_void){
                 myclass=myipsearch(ipsrcaddr&mymask[i]);
                 if(myclass!=-1)break;
               }
-              if(myclass>=0)asret=myipasclass[myclass].as;
+              if(myclass>=0)asret=v4[myclass].as;
               else asret=0;
               sprintf(auxbuf,"%ld %s",asret,aux2);
             }
           }
-          // status
           else if(strcmp(aux2,"status")==0){
             sprintf(auxbuf,"totallquery=%'lu totmalformed=%'lu",totallquery,totmalformed);
           }
-          // reset
           else if(strcmp(aux2,"reset")==0){
             totallquery=totmalformed=0;
             sprintf(auxbuf,"counters reset");
           }
-          // unknown
           else sprintf(auxbuf,"command unknown %s",aux2);
         }
       }
@@ -203,11 +181,8 @@ void *manage(void *arg_void){
         memcpy(aux1+13,auxbuf,lenaux);
       }
     }
-    
-    // answer
     sendto(sockfd,recv,lenrecv,0,(struct sockaddr *)&myarg->cliaddr,sizeof(myarg->cliaddr));
   }
-  
   free(recv);
   free(auxbuf);
   free(dominio);
@@ -220,18 +195,15 @@ int main(int argc, char**argv){
   socklen_t len;
   struct sockaddr_in servaddr;
   
-  // initialization
   for(i=0;i<=32;i++)mymask[i]=~((1<<(32-i))-1);
-  myipasclass=(struct ipas_class *)malloc(TOTNETS*sizeof(struct ipas_class));
+  v4=(struct v4 *)malloc(TOTNETS*sizeof(struct v4));
   tid=(pthread_t *)malloc(NTHREAD*sizeof(pthread_t));
   myargs=(struct arg_pass *)malloc(NTHREAD*sizeof(struct arg_pass));
   for(i=0;i<NTHREAD;i++)myargs[i].mesg=(char *)malloc(BUFMSG*sizeof(char));
   totallquery=totmalformed=0;
   
-  // loading ipas allocations
   myconfig();
   
-  // bindind
   sockfd=socket(AF_INET,SOCK_DGRAM,IPPROTO_UDP);
   memset((char *)&servaddr,0,sizeof(servaddr));
   servaddr.sin_family=AF_INET;
@@ -241,7 +213,6 @@ int main(int argc, char**argv){
   len=sizeof(struct sockaddr_in);
   
   for(j=0;;){
-    // receive request and launch a processing thread
     myargs[j].lenmesg=recvfrom(sockfd,myargs[j].mesg,BUFMSG,0,(struct sockaddr *)&myargs[j].cliaddr,&len);
     pthread_create(&(tid[j]),NULL,&manage,&myargs[j]);
     pthread_detach(tid[j]);
