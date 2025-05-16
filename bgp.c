@@ -122,6 +122,7 @@ int callback_ris(struct lws *wsi,enum lws_callback_reasons reason,void *user,voi
   char *ptr,*buf1,*buf2,*buf3;
   switch (reason){
     case LWS_CALLBACK_CLIENT_ESTABLISHED:
+      lws_set_timer_usecs(wsi,10*LWS_USEC_PER_SEC);
       lws_callback_on_writable(wsi);
       break;
     case LWS_CALLBACK_CLIENT_WRITEABLE:
@@ -163,6 +164,12 @@ int callback_ris(struct lws *wsi,enum lws_callback_reasons reason,void *user,voi
       fprintf(stderr,"Closed Connection\n");
       interrupted=1;
       break;
+    case LWS_CALLBACK_CLIENT_RECEIVE_PONG:
+      break;
+    case LWS_CALLBACK_TIMER:
+      lws_ping(wsi,NULL,0);
+      lws_set_timer_usecs(wsi,10*LWS_USEC_PER_SEC);
+    break;
     default:
       break;
   }
