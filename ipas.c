@@ -177,7 +177,7 @@ void *manage(void *arg_void){
   return NULL;
 }
 
-int main(int argc, char**argv){
+int main(){
   struct arg_pass *myargs;
   socklen_t lennn;
   struct sockaddr_in servaddr;
@@ -187,14 +187,14 @@ int main(int argc, char**argv){
   char buf[100],*buf1,*buf2;
   
   fp=fopen(V4FILE,"rt");
-  if(fp==NULL)return;
+  if(fp==NULL)return 0;
   fgets(buf,100,fp);
-  buf1=strstr(buf," "); if(buf1==NULL)return; else buf1++;
-  buf1=strstr(buf1," "); if(buf1==NULL)return; else buf1++;
-  buf2=strstr(buf1,"\n"); if(buf2==NULL)return; *buf2='\0';
+  buf1=strstr(buf," "); if(buf1==NULL)return 0; else buf1++;
+  buf1=strstr(buf1," "); if(buf1==NULL)return 0; else buf1++;
+  buf2=strstr(buf1,"\n"); if(buf2==NULL)return 0; *buf2='\0';
   for(i++;i<len;i++)elmv4=elmv4*10+dd[buf1[i]];
   v4=(struct v4 *)malloc(elmv4*sizeof(struct v4));
-  if(v4==NULL)return;
+  if(v4==NULL)return 0;
   for(e=0;;){
     if(len=fgets(buf,100,fp)==NULL)break;
     if(buf[0]=='#')continue;
