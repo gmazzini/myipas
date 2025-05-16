@@ -258,7 +258,7 @@ int main(void) {
     fread(v4,sizeof(struct v4),elmv4,fp);
     fclose(fp);
   }
-  fp=fopen(BKP6FILE,"wb");
+  fp=fopen(BKP6FILE,"rb");
   if(fp!=NULL){
     fread(&elmv6,4,1,fp);
     fread(v6,sizeof(struct v6),elmv6,fp);
