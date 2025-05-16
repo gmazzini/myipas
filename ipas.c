@@ -7,10 +7,8 @@
 #include <locale.h>
 #include <ctype.h>
 #include <pthread.h>
-
 #define V4FILE "/home/www/fulltable/m4.txt"
 #define V6FILE "/home/www/fulltable/m6.txt"
-
 
 #define BUFMSG 10000
 #define NTHREAD 256
@@ -74,7 +72,6 @@ void *manage(void *arg_void){
   recv=(char *)malloc(BUFMSG*sizeof(char));
   auxbuf=(char *)malloc(BUFMSG*sizeof(char));
   dominio=(char *)malloc(BUFMSG*sizeof(char));
-  
   mystop=0;
   if(!mystop && ((*(myarg->mesg+2))&0b10000000)!=0)mystop=1;
   if(!mystop && ((*(myarg->mesg+2))&0b00000100)!=0)mystop=1;
@@ -105,6 +102,8 @@ void *manage(void *arg_void){
     query=*(aux2+2);
     lenanswer+=5;    
     if(query==16){
+printf("--> %s\n",dominio);
+      
       aux1=dominio;
       len=strlen(dominio);
       for(i=-1,j=0;j<4;j++)for(a[j]=0,i++;i<len;i++)if(aux1[i]!='.')a[j]=a[j]*10+dd[aux1[i]]; else break;
@@ -138,10 +137,9 @@ int main(){
   struct arg_pass *myargs;
   socklen_t lennn;
   struct sockaddr_in servaddr;
-
   uint32_t i,j,e,ip4,asn;
-  uint8_t a[4],cidr,len;
-  char buf[100],*buf1,*buf2;
+  uint8_t a[4],cidr;
+  char buf[100],*buf1;
   FILE *fp;
   
   fp=fopen(V4FILE,"rt");
@@ -157,14 +155,13 @@ int main(){
     for(i=-1,j=0;j<4;j++)for(a[j]=0,i++;i<100;i++)if((buf[i]!='.'&&j<3) || (buf[i]!='/'&&j==3))a[j]=a[j]*10+dd[buf[i]]; else break;
     for(ip4=0,j=0;j<4;j++){ip4<<=8; ip4|=a[j];}
     for(cidr=0,i++;i<100;i++)if(buf[i]!=',')cidr=cidr*10+dd[buf[i]]; else break;
-    for(asn=0,i++;i<len;i++)if(buf[i]!='\n')asn=asn*10+dd[buf[i]]; else break;
+    for(asn=0,i++;i<100;i++)if(buf[i]!='\n')asn=asn*10+dd[buf[i]]; else break;
     v4[e].ip=ip4;
     v4[e].cidr=cidr;
     v4[e].asn=asn;
     e++;
   }
   fclose(fp);
-  
   tid=(pthread_t *)malloc(NTHREAD*sizeof(pthread_t));
   myargs=(struct arg_pass *)malloc(NTHREAD*sizeof(struct arg_pass));
   for(i=0;i<NTHREAD;i++)myargs[i].mesg=(char *)malloc(BUFMSG*sizeof(char));
@@ -177,7 +174,7 @@ int main(){
   len=sizeof(struct sockaddr_in);
   
   for(j=0;;){
-    myargs[j].lenmesg=recvfrom(sockfd,myargs[j].mesg,BUFMSG,0,(struct sockaddr *)&myargs[j].cliaddr,&lennn);
+    myargs[j].lenmesg=recvfrom(sockfd,myargs[j].mesg,BUFMSG,0,(struct sockaddr *)&myargs[j].cliaddr,&len);
     pthread_create(&(tid[j]),NULL,&manage,&myargs[j]);
     pthread_detach(tid[j]);
     if(++j==NTHREAD)j=0;
