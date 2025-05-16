@@ -250,10 +250,39 @@ void sigint_handler(int sig){
   }
 }
 
+void *whois_server_thread(void *arg){
+  int server_fd,client_fd,opt;
+  struct sockaddr_in addr;
+  char buffer[100];
+  ssize_t n;
+
+  server_fd=socket(AF_INET,SOCK_STREAM,0);
+  opt=1;
+  setsockopt(server_fd,SOL_SOCKET,SO_REUSEADDR,&opt,sizeof(opt));
+  addr.sin_family=AF_INET;
+  addr.sin_addr.s_addr=INADDR_ANY;
+  addr.sin_port=htons(43);
+  bind(server_fd,(struct sockaddr *)&addr,sizeof(addr));
+  listen(server_fd,5);
+  while(!interrupted){
+    client_fd=accept(server_fd,NULL,NULL);
+    if(client_fd<0)continue;
+    n=read(client_fd,buffer,99);
+    if(n>0){
+      buffer[n]='\0';
+      write(client_fd,buffer,n);
+    }
+    close(client_fd);
+  }
+  close(server_fd);
+  return NULL;
+}
+
 int main(void) {
   struct lws_context_creation_info info;
   struct lws_client_connect_info ccinfo={0};
   struct lws_context *context;
+  pthread_t whois_thread;
   FILE *fp;
 
   v4=(struct v4 *)malloc(LENELM*sizeof(struct v4));
@@ -291,9 +320,12 @@ int main(void) {
   ccinfo.protocol=protocols[0].name;
   ccinfo.ssl_connection=LCCSCF_USE_SSL;
   web_socket=lws_client_connect_via_info(&ccinfo);
+  
+  pthread_create(&whois_thread,NULL,whois_server_thread,NULL);
   while(!interrupted){
     lws_service(context,100);
   }
   lws_context_destroy(context);
+  pthread_join(whois_thread,NULL);
   return 0;
 }
