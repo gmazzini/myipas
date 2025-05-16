@@ -64,12 +64,10 @@ long mys4(uint32_t ip4,uint8_t cidr){
 
 void *manage(void *arg_void){
   struct arg_pass *myarg=(struct arg_pass *)arg_void;
-  int lenrecv,i,j,ml,lenaux,lenanswer,mystop;
+  int lenrecv,i,j,ml,lenaux,lenanswer,mystop,len;
   long myclass;
   unsigned int query;
   unsigned long asret;
-  unsigned long ipsrcaddr;
-  struct sockaddr_in netip;
   char *recv,*auxbuf,*dominio,*aux1,*aux2;
   uint32_t ip4;
   uint8_t a[4];
@@ -110,7 +108,7 @@ void *manage(void *arg_void){
     if(query==16){
       aux1=dominio;
       len=strlen(dominio);
-      for(i=-1,j=0;j<4;j++)for(a[j]=0,i++;i<len;i++)if(buf[i]!='.')a[j]=a[j]*10+dd[buf[i]]; else break;
+      for(i=-1,j=0;j<4;j++)for(a[j]=0,i++;i<len;i++)if(aux1[i]!='.')a[j]=a[j]*10+dd[aux1[i]]; else break;
       for(ip4=0,j=0;j<4;j++){ip4<<=8; ip4|=a[j];}
       for(i=32;i>=8;i--){
         myclass=mys4(ip4,i);
@@ -175,7 +173,6 @@ int main(){
   tid=(pthread_t *)malloc(NTHREAD*sizeof(pthread_t));
   myargs=(struct arg_pass *)malloc(NTHREAD*sizeof(struct arg_pass));
   for(i=0;i<NTHREAD;i++)myargs[i].mesg=(char *)malloc(BUFMSG*sizeof(char));
-  totallquery=0;
   
   sockfd=socket(AF_INET,SOCK_DGRAM,IPPROTO_UDP);
   memset((char *)&servaddr,0,sizeof(servaddr));
