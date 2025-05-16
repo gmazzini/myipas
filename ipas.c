@@ -106,7 +106,8 @@ printf("--> %s\n",dominio);
       
       aux1=dominio;
       len=strlen(dominio);
-      for(i=-1,j=0;j<4;j++)for(a[j]=0,i++;i<len;i++)if(aux1[i]!='.')a[j]=a[j]*10+dd[aux1[i]]; else break;
+      
+      for(i=-1,j=0;j<4;j++)for(a[j]=0,i++;i<len;i++)if(aux1[i]!='.' && aux1[i]!='\n')a[j]=a[j]*10+dd[aux1[i]]; else break;
       for(ip4=0,j=0;j<4;j++){ip4<<=8; ip4|=a[j];}
       for(i=32;i>=8;i--){
         myclass=mys4(ip4,i);
