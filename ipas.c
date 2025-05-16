@@ -45,7 +45,6 @@ long elmv4=0,elmv6=0;
 pthread_t *tid;
 int sockfd;
 uint32_t mymask[33];
-uint32_t totipasclass,totallquery,totmalformed;
 
 long mys4(uint32_t ip4,uint8_t cidr){
   long start,end,pos;
@@ -73,6 +72,7 @@ void *manage(void *arg_void){
   struct sockaddr_in netip;
   char *recv,*auxbuf,*dominio,*aux1,*aux2;
   uint32_t ip4;
+  uint8_t a[4];
   
   recv=(char *)malloc(BUFMSG*sizeof(char));
   auxbuf=(char *)malloc(BUFMSG*sizeof(char));
@@ -110,47 +110,20 @@ void *manage(void *arg_void){
   }
   
   if(!mystop){
-    totallquery++;
     query=*(aux2+2);
     lenanswer+=5;    
-    if(query==16 && strncmp(dominio,"cmd",3)==0){
-      for(aux1=dominio;*aux1!='\0';aux1++)if(*aux1=='/')break;
-      if(*aux1=='\0')sprintf(auxbuf,"request malfomed");
-      else {
-        for(aux2=++aux1;*aux1!='\0';aux1++)if(*aux1=='/')break;
-        if(*aux1=='\0')sprintf(auxbuf,"missed command");
-        else {
-          *aux1='\0';
-          if(strcmp(aux2,"reload")==0){
-            myconfig();
-            sprintf(auxbuf,"configuration reloaded");
-          }
-          else if(strcmp(aux2,"ipas")==0){
-            for(aux2=++aux1;*aux1!='\0';aux1++)if(*aux1=='/')break;
-            if(*aux1=='\0')sprintf(auxbuf,"missed source IP");
-            else {
-              *aux1='\0';
-              inet_pton(AF_INET,aux2,&(netip.sin_addr));
-              ipsrcaddr=ntohl(netip.sin_addr.s_addr);
-              for(i=32;i>=8;i--){
-                myclass=mys4(ipsrcaddr&mymask[i]);
-                if(myclass!=-1)break;
-              }
-              if(myclass>=0)asret=v4[myclass].asn;
-              else asret=0;
-              sprintf(auxbuf,"%ld %s",asret,aux2);
-            }
-          }
-          else if(strcmp(aux2,"status")==0){
-            sprintf(auxbuf,"totallquery=%'lu totmalformed=%'lu",totallquery,totmalformed);
-          }
-          else if(strcmp(aux2,"reset")==0){
-            totallquery=totmalformed=0;
-            sprintf(auxbuf,"counters reset");
-          }
-          else sprintf(auxbuf,"command unknown %s",aux2);
-        }
+    if(query==16){
+      aux1=dominio;
+      len=strlen(dominio);
+      for(i=-1,j=0;j<4;j++)for(a[j]=0,i++;i<len;i++)if(buf[i]!='.')a[j]=a[j]*10+dd[buf[i]]; else break;
+      for(ip4=0,j=0;j<4;j++){ip4<<=8; ip4|=a[j];}
+      for(i=32;i>=8;i--){
+        myclass=mys4(ip4,i);
+        if(myclass!=-1)break;
       }
+      if(myclass>=0)asret=v4[myclass].asn;
+      else asret=0;
+      sprintf(auxbuf,"%ld %s",asret,aux2);
       lenaux=strlen(auxbuf);
       lenrecv=12+lenanswer+13+lenaux;
       if(lenrecv<BUFMSG){
