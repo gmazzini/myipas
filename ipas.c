@@ -194,7 +194,7 @@ int main(){
     for(i=-1,j=0;j<4;j++)for(a[j]=0,i++;i<len;i++)if((buf[i]!='.'&&j<3) || (buf[i]!='/'&&j==3))a[j]=a[j]*10+dd[buf[i]]; else break;
     for(ip4=0,j=0;j<4;j++){ip4<<=8; ip4|=a[j];}
     for(cidr=0,i++;i<len;i++)if(buf[i]!=',')cidr=cidr*10+dd[buf[i]]; else break;
-    for(asn=0,i++;i<len;i++)if(buf[i]!='\n')asn=asn*10+dd[ptr[i]]; else break;
+    for(asn=0,i++;i<len;i++)if(buf[i]!='\n')asn=asn*10+dd[buf[i]]; else break;
     v4[e].ip=ip4;
     v4[e].cidr=cidr;
     v4[e].asn=asn;
