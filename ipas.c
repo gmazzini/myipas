@@ -8,6 +8,10 @@
 #include <ctype.h>
 #include <pthread.h>
 
+#define V4FILE "/home/www/fulltable/m4.txt"
+#define V6FILE "/home/www/fulltable/m6.txt"
+
+
 #define BUFMSG 10000
 #define NTHREAD 256
 #define LISTENPORT 5555
@@ -15,20 +19,31 @@
 #define MAXSTEPS 40
 #define FILENETS "/home/www/fulltable/m4.txt"
 
+static const signed char dd[256]={
+  ['0']=0,['1']=1,['2']=2,['3']=3,['4']=4,['5']=5,['6']=6,['7']=7,
+  ['8']=8,['9']=9,['A']=10,['B']=11,['C']=12,['D']=13,['E']=14,['F']=15,
+  ['a']=10,['b']=11,['c']=12,['d']=13,['e']=14,['f']=15
+};
+
 struct v4 {
   uint32_t ipv4;
   uint8_t cidr;
-  uint32_t as;
+  uint32_t asn;
 };
+struct v6 {
+  uint64_t ip;
+  uint8_t cidr;
+  uint32_t asn;
+} *v4;
 struct arg_pass {
   char *mesg;
   int lenmesg;
   struct sockaddr_in cliaddr;
-};
+} *v6;
+long elmv4=0,elmv6=0;
 
 pthread_t *tid;
 int sockfd;
-struct v4 *v4=NULL;
 uint32_t mymask[33];
 uint32_t totipasclass,totallquery,totmalformed;
 
@@ -55,33 +70,6 @@ long myipsearch(unsigned long ip_tocheck){
     if(zinit>zend||zinit>=totipasclass||zend<0)return -1;
   }
   return myclass;
-}
-
-void myconfig(){
-  FILE *fp;
-  int i,ii,j;
-  char buf[BUFMSG];
-  struct sockaddr_in netip;
-  
-  fp=fopen(FILENETS,"rt");
-  for(totipasclass=0;;){
-    if(fgets(buf,BUFMSG,fp)==NULL)break;
-    if(buf[0]=='#')continue;
-    j=strlen(buf);
-    for(i=0;i<j;i++)if(buf[i]=='/')break;
-    if(i==j)continue;
-    buf[i]='\0';
-    for(ii=i+1;ii<j;ii++)if(buf[ii]==',')break;
-    if(i==j)continue;
-    buf[ii]='\0';
-    inet_pton(AF_INET,buf,&(netip.sin_addr));
-    v4[totipasclass].cidr=atoi(buf+i+1);
-    v4[totipasclass].as=atoi(buf+ii+1);
-    v4[totipasclass].ipv4=ntohl(netip.sin_addr.s_addr)&mymask[v4[totipasclass].cidr];
-    totipasclass++;
-  }
-  fclose(fp);
-  qsort(v4,totipasclass,sizeof(struct v4),myipcmp);
 }
 
 void *manage(void *arg_void){
@@ -156,7 +144,7 @@ void *manage(void *arg_void){
                 myclass=myipsearch(ipsrcaddr&mymask[i]);
                 if(myclass!=-1)break;
               }
-              if(myclass>=0)asret=v4[myclass].as;
+              if(myclass>=0)asret=v4[myclass].asn;
               else asret=0;
               sprintf(auxbuf,"%ld %s",asret,aux2);
             }
@@ -191,18 +179,42 @@ void *manage(void *arg_void){
 
 int main(int argc, char**argv){
   struct arg_pass *myargs;
-  int i,j;
-  socklen_t len;
+  socklen_t lennn;
   struct sockaddr_in servaddr;
+
+  uint32_t i,j,e,ip4,asn;
+  uint8_t a[4],cidr,len;
+  char buf[100],*buf1,*buf2;
+  
+  fp=fopen(V4FILE,"rt");
+  if(fp==NULL)return;
+  fgets(buf,100,fp);
+  buf1=strstr(buf," "); if(buf1==NULL)return; else buf1++;
+  buf1=strstr(buf1," "); if(buf1==NULL)return; else buf1++;
+  buf2=strstr(buf1,"\n"); if(buf2==NULL)return; *buf2='\0';
+  for(i++;i<len;i++)elmv4=elmv4*10+dd[buf1[i]];
+  v4=(struct v4 *)malloc(elmv4*sizeof(struct v4));
+  if(v4==NULL)return;
+  for(e=0;;){
+    if(len=fgets(buf,100,fp)==NULL)break;
+    if(buf[0]=='#')continue;
+    for(i=-1,j=0;j<4;j++)for(a[j]=0,i++;i<len;i++)if((buf[i]!='.'&&j<3) || (buf[i]!='/'&&j==3))a[j]=a[j]*10+dd[buf[i]]; else break;
+    for(ip4=0,j=0;j<4;j++){ip4<<=8; ip4|=a[j];}
+    for(cidr=0,i++;i<len;i++)if(buf[i]!=',')cidr=cidr*10+dd[ptr[i]]; else break;
+    for(asn=0,i++;i<len;i++)if(buf[i]!='\n')asn=asn*10+dd[ptr[i]]; else break;
+    v4[e].ip=ip4;
+    v4[e].cidr=cidr;
+    v4[e].asn=asn;
+    e++;
+  }
+  fclose(fp);
+  
   
   for(i=0;i<=32;i++)mymask[i]=~((1<<(32-i))-1);
-  v4=(struct v4 *)malloc(TOTNETS*sizeof(struct v4));
   tid=(pthread_t *)malloc(NTHREAD*sizeof(pthread_t));
   myargs=(struct arg_pass *)malloc(NTHREAD*sizeof(struct arg_pass));
   for(i=0;i<NTHREAD;i++)myargs[i].mesg=(char *)malloc(BUFMSG*sizeof(char));
   totallquery=totmalformed=0;
-  
-  myconfig();
   
   sockfd=socket(AF_INET,SOCK_DGRAM,IPPROTO_UDP);
   memset((char *)&servaddr,0,sizeof(servaddr));
@@ -213,7 +225,7 @@ int main(int argc, char**argv){
   len=sizeof(struct sockaddr_in);
   
   for(j=0;;){
-    myargs[j].lenmesg=recvfrom(sockfd,myargs[j].mesg,BUFMSG,0,(struct sockaddr *)&myargs[j].cliaddr,&len);
+    myargs[j].lenmesg=recvfrom(sockfd,myargs[j].mesg,BUFMSG,0,(struct sockaddr *)&myargs[j].cliaddr,&lennn);
     pthread_create(&(tid[j]),NULL,&manage,&myargs[j]);
     pthread_detach(tid[j]);
     if(++j==NTHREAD)j=0;
