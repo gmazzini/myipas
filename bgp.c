@@ -122,8 +122,8 @@ int callback_ris(struct lws *wsi,enum lws_callback_reasons reason,void *user,voi
   char *ptr,*buf1,*buf2,*buf3;
   switch (reason){
     case LWS_CALLBACK_CLIENT_ESTABLISHED:
-      lws_set_timer_usecs(wsi,10*LWS_USEC_PER_SEC);
       lws_callback_on_writable(wsi);
+      lws_set_timer_usecs(wsi,10*LWS_USEC_PER_SEC);
       break;
     case LWS_CALLBACK_CLIENT_WRITEABLE:
       msg_len=strlen(subscribe_message);
@@ -167,9 +167,12 @@ int callback_ris(struct lws *wsi,enum lws_callback_reasons reason,void *user,voi
     case LWS_CALLBACK_CLIENT_RECEIVE_PONG:
       break;
     case LWS_CALLBACK_TIMER:
-      lws_ping(wsi,NULL,0);
+      const char *ping_msg = "{\"type\": \"ping\"}";
+      msg_len=strlen(ping_msg);
+      memcpy(&buf[LWS_PRE] ping_msg,msg_len);
+      lws_write(wsi,&buf[LWS_PRE],msg_len,LWS_WRITE_TEXT);
       lws_set_timer_usecs(wsi,10*LWS_USEC_PER_SEC);
-    break;
+      break;
     default:
       break;
   }
