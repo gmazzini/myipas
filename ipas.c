@@ -167,6 +167,7 @@ int main(){
     v4[e].cidr=cidr;
     v4[e].asn=asn;
     e++;
+    if(e>=elmv4)break;
   }
   fclose(fp);
   
