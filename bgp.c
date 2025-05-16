@@ -169,7 +169,7 @@ int callback_ris(struct lws *wsi,enum lws_callback_reasons reason,void *user,voi
     case LWS_CALLBACK_TIMER:
       const char *ping_msg = "{\"type\": \"ping\"}";
       msg_len=strlen(ping_msg);
-      memcpy(&aux[LWS_PRE] ping_msg,msg_len);
+      memcpy(&aux[LWS_PRE],ping_msg,msg_len);
       lws_write(wsi,&aux[LWS_PRE],msg_len,LWS_WRITE_TEXT);
       lws_set_timer_usecs(wsi,10*LWS_USEC_PER_SEC);
       break;
