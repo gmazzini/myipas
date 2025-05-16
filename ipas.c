@@ -135,7 +135,7 @@ printf("--> %s\n",dominio);
 
 int main(){
   struct arg_pass *myargs;
-  socklen_t lennn;
+  socklen_t len;
   struct sockaddr_in servaddr;
   uint32_t i,j,e,ip4,asn;
   uint8_t a[4],cidr;
