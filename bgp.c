@@ -140,7 +140,6 @@ int callback_ris(struct lws *wsi,enum lws_callback_reasons reason,void *user,voi
       buf1+=12;
       buf2=strstr(buf1,"\""); if(buf2==NULL)break;
       for(j=0;j<buf2-buf1;j++)asn=asn*10+dd[buf1[j]];
-      printf(">> %.*s\n** %lu\n\n",len,ptr,asn);
       buf1=strstr(buf1,"\"prefixes\":["); if(buf1==NULL)break;
       buf1+=12;
       buf2=strstr(buf1,"]"); if(buf2==NULL)break;
