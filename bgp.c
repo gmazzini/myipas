@@ -138,6 +138,13 @@ int callback_ris(struct lws *wsi,enum lws_callback_reasons reason,void *user,voi
       ptr=(char *)in;
       if(ptr[len-1]!='}'){memcpy(lbuf+follow,ptr,len); follow+=len;  break;}
       if(follow>0){memcpy(lbuf+follow,ptr,len); len+=follow; follow=0; ptr=lbuf;}
+
+      
+  FILE *fp;
+  fp=fopen("/home/tools/log.txt","at");
+  fprintf(fp,"%lu > %.*s\n",follow,strlen(buf1),buf1);
+  fclose(fp);
+
       ptr[len]='\0';
       asn=0;
       buf1=strstr(ptr,"\"peer_asn\":\""); if(buf1==NULL)break;
@@ -148,13 +155,6 @@ int callback_ris(struct lws *wsi,enum lws_callback_reasons reason,void *user,voi
       buf1+=12;
       buf2=strstr(buf1,"]"); if(buf2==NULL)break;
       *buf2='\0';
-    
-  FILE *fp;
-  fp=fopen("/home/tools/log.txt","at");
-  fprintf(fp,"%lu %.*s\n",asn,strlen(buf1),buf1);
-  fclose(fp);
-
-
       for(;;){
         buf3=strstr(buf1,",");
         if(buf3!=NULL){
@@ -263,7 +263,6 @@ void sigint_handler(int sig){
       break;
   }
   pthread_mutex_unlock(&lock_v4);
-
 }
 
 void *whois_server_thread(void *arg){
