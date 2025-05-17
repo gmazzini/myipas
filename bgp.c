@@ -274,24 +274,27 @@ void *whois_server_thread(void *arg){
     if(n>0){
       buf[n]='\0';
       n=sscanf(buf,"%u.%u.%u.%u",&a[0],&a[1],&a[2],&a[3]);
-      if(n==4){
-        for(ip4=0,j=0;j<4;j++){ip4<<=8; ip4|=a[j];}
-        start=0;
-        end=elmv4-1;
-        found=0;
-        cidr=24;
-        while(start<=end){
-          pos=start+(end-start)/2;
+      if(n<4){
+        sprintf(buf,"Wrong request\n");
+        write(client_fd,buf,strlen(buf));
+        continue;
+      }
+      for(ip4=0,j=0;j<4;j++){ip4<<=8; ip4|=a[j];}
+      start=0;
+      end=elmv4-1;
+      found=0;
+      cidr=24;
+      while(start<=end){
+        pos=start+(end-start)/2;
           if(ip4==v4[pos].ip && cidr==v4[pos].cidr){found=1; break;}
           else if(ip4>v4[pos].ip || (ip4==v4[pos].ip && cidr>v4[pos].cidr))start=pos+1;
           else end=pos-1;
         }
         if(found){
-          sprintf(buf,"/%u %lu\n",cidr,v4[pos].asn);
+          sprintf(buf,"%u %lu\n",cidr,v4[pos].asn);
           write(client_fd,buf,strlen(buf));
         }
       }
-      else write(client_fd,"Wrong IP\n",9);
     }
     close(client_fd);
   }
