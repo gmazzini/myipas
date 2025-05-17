@@ -306,7 +306,7 @@ void *whois_server_thread(void *arg){
           tt=(time_t)v4[pos].ts;
           tm_info=localtime(&tt);
           strftime(buft,15,"%Y%m%d%H%M%S",tm_info);
-          sprintf(buf,"%u %lu\n",cidr,v4[pos].asn);
+          sprintf(buf,"%u %lu %s\n",cidr,v4[pos].asn,buft);
           write(client_fd,buf,strlen(buf));
           nfound++;
         }
