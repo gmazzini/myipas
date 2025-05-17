@@ -253,8 +253,11 @@ void sigint_handler(int sig){
 void *whois_server_thread(void *arg){
   int server_fd,client_fd,opt;
   struct sockaddr_in addr;
-  char buffer[100];
+  char buf[100];
   ssize_t n;
+  uint8_t a[4],j,found,cidr;
+  uint32_t ip4;
+  long start,end,pos;
 
   server_fd=socket(AF_INET,SOCK_STREAM,0);
   opt=1;
@@ -267,10 +270,28 @@ void *whois_server_thread(void *arg){
   while(!interrupted){
     client_fd=accept(server_fd,NULL,NULL);
     if(client_fd<0)continue;
-    n=read(client_fd,buffer,99);
+    n=read(client_fd,buf,99);
     if(n>0){
-      buffer[n]='\0';
-      write(client_fd,buffer,n);
+      buf[n]='\0';
+      n=scanfs(buf,"%u.%u.%u.%u",&a[0],&a[1],&a[2],&a[3]);
+      if(n==4){
+        for(ip4=0,j=0;j<4;j++){ip4<<=8; ip4|=a[j];}
+        start=0;
+        end=elmv4-1;
+        found=0;
+        cidr=24;
+        while(start<=end){
+          pos=start+(end-start)/2;
+          if(ip4==v4[pos].ip && cidr==v4[pos].cidr){found=1; break;}
+          else if(ip4>v4[pos].ip || (ip4==v4[pos].ip && cidr>v4[pos].cidr))start=pos+1;
+          else end=pos-1;
+        }
+        if(found){
+          sprintf(buf,"/%u %lu\n",cidr,v4[pos].asn);
+          write(client_fd,buf,strlen(buf));
+        }
+      }
+      else write(client_fd,"Wrong IP\n",9);
     }
     close(client_fd);
   }
