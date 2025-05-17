@@ -28,7 +28,7 @@ struct v6 {
 long elmv4=0,elmv6=0;
 
 int interrupted=0;
-uint32_t follow=0;
+uint32_t follow=0,mask[33];
 struct lws *web_socket=NULL;
 char *subscribe_message="{\"type\": \"ris_subscribe\", \"data\": {\"type\": \"UPDATE\", \"host\": \"rrc11\"}}";
 char *lbuf;
@@ -255,8 +255,8 @@ void *whois_server_thread(void *arg){
   struct sockaddr_in addr;
   char buf[100];
   ssize_t n;
-  uint8_t a[4],j,found,cidr;
-  uint32_t ip4;
+  uint8_t a[4],j,found,cidr,nfound;
+  uint32_t ip4,ip4org;
   long start,end,pos;
 
   server_fd=socket(AF_INET,SOCK_STREAM,0);
@@ -279,21 +279,27 @@ void *whois_server_thread(void *arg){
         write(client_fd,buf,strlen(buf));
         continue;
       }
-      for(ip4=0,j=0;j<4;j++){ip4<<=8; ip4|=a[j];}
-      start=0;
-      end=elmv4-1;
-      found=0;
-      cidr=24;
-      while(start<=end){
-        pos=start+(end-start)/2;
-        if(ip4==v4[pos].ip && cidr==v4[pos].cidr){found=1; break;}
-        else if(ip4>v4[pos].ip || (ip4==v4[pos].ip && cidr>v4[pos].cidr))start=pos+1;
-        else end=pos-1;
+      for(ip4org=0,j=0;j<4;j++){ip4org<<=8; ip4org|=a[j];}
+      nfound=0;
+      for(cidr=24;cidr>=8;cidr--){
+        ip4=ip4org&mask[cidr];
+        start=0;
+        end=elmv4-1;
+        found=0;
+        while(start<=end){
+          pos=start+(end-start)/2;
+          if(ip4==v4[pos].ip && cidr==v4[pos].cidr){found=1; break;}
+          else if(ip4>v4[pos].ip || (ip4==v4[pos].ip && cidr>v4[pos].cidr))start=pos+1;
+          else end=pos-1;
+        }
+        if(found){
+          sprintf(buf,"%u %lu\n",cidr,v4[pos].asn);
+          write(client_fd,buf,strlen(buf));
+          nfound++;
+        }
       }
-      if(found){
-        sprintf(buf,"%u %lu\n",cidr,v4[pos].asn);
-        write(client_fd,buf,strlen(buf));
-      }
+      sprintf(buf,"%u match found\n",nfound);
+      write(client_fd,buf,strlen(buf));
     }
     close(client_fd);
   }
@@ -326,6 +332,8 @@ int main(void) {
     fread(v6,sizeof(struct v6),elmv6,fp);
     fclose(fp);
   }
+  mask[0]=0;
+  for(i=1;i<33;i++)mask[i]=~((1U<<(32-i))-1);
   signal(SIGINT,sigint_handler);
   signal(SIGUSR1,sigint_handler);
   signal(SIGUSR2,sigint_handler);
