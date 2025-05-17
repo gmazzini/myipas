@@ -265,7 +265,7 @@ void *whois_server_thread(void *arg){
   uint8_t a[4],j,found,cidr,nfound;
   uint32_t ip4,ip4org;
   long start,end,pos;
-  struct tm *tm_info
+  struct tm *tm_info;
 
   server_fd=socket(AF_INET,SOCK_STREAM,0);
   opt=1;
