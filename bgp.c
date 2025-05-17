@@ -260,11 +260,12 @@ void sigint_handler(int sig){
 void *whois_server_thread(void *arg){
   int server_fd,client_fd,opt;
   struct sockaddr_in addr;
-  char buf[100];
+  char buf[100],buft[15];
   ssize_t n;
   uint8_t a[4],j,found,cidr,nfound;
   uint32_t ip4,ip4org;
   long start,end,pos;
+  struct tm *tm_info
 
   server_fd=socket(AF_INET,SOCK_STREAM,0);
   opt=1;
@@ -301,7 +302,9 @@ void *whois_server_thread(void *arg){
           else end=pos-1;
         }
         if(found){
-          sprintf(buf,"%u %lu\n",cidr,v4[pos].asn);
+          tm_info=localtime(&v4[pos].ts);
+          strftime(buft,15,"%Y%m%d%H%M%S",tm_info);
+          sprintf(buf,"%u %lu %s\n",cidr,v4[pos].asn,buft);
           write(client_fd,buf,strlen(buf));
           nfound++;
         }
