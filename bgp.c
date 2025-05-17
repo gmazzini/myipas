@@ -139,12 +139,13 @@ int callback_ris(struct lws *wsi,enum lws_callback_reasons reason,void *user,voi
       if(ptr[len-1]!='}'){memcpy(lbuf+follow,ptr,len); follow+=len;  break;}
       if(follow>0){memcpy(lbuf+follow,ptr,len); len+=follow; follow=0; ptr=lbuf;}
 
-      
+      /*
   FILE *fp;
   fp=fopen("/home/tools/log.txt","at");
   fprintf(fp,"%lu > %.*s\n",follow,strlen(buf1),buf1);
   fclose(fp);
-
+*/
+      
       ptr[len]='\0';
       asn=0;
       buf1=strstr(ptr,"\"peer_asn\":\""); if(buf1==NULL)break;
