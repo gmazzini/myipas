@@ -47,6 +47,11 @@ void myins(char *ptr,int len,uint32_t asn){
   uint64_t ip6,b[4];
   long start,end,pos,i,j;
 
+  FILE *fp;
+  fp=fopen("/home/tools/log.txt","at");
+  fprintf(fp,"%lu %.*s\n",asn,len,ptr);
+  fclose(fp);
+
   ts=time(NULL);
   for(i=0;i<len;i++)if(ptr[i]==':'){
     for(j=0;j<4;j++)b[j]=0;
