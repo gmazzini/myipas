@@ -286,14 +286,13 @@ void *whois_server_thread(void *arg){
       cidr=24;
       while(start<=end){
         pos=start+(end-start)/2;
-          if(ip4==v4[pos].ip && cidr==v4[pos].cidr){found=1; break;}
-          else if(ip4>v4[pos].ip || (ip4==v4[pos].ip && cidr>v4[pos].cidr))start=pos+1;
-          else end=pos-1;
-        }
-        if(found){
-          sprintf(buf,"%u %lu\n",cidr,v4[pos].asn);
-          write(client_fd,buf,strlen(buf));
-        }
+        if(ip4==v4[pos].ip && cidr==v4[pos].cidr){found=1; break;}
+        else if(ip4>v4[pos].ip || (ip4==v4[pos].ip && cidr>v4[pos].cidr))start=pos+1;
+        else end=pos-1;
+      }
+      if(found){
+        sprintf(buf,"%u %lu\n",cidr,v4[pos].asn);
+        write(client_fd,buf,strlen(buf));
       }
     }
     close(client_fd);
