@@ -26,7 +26,7 @@ struct v6 {
   uint32_t ts;
 } *v6;
 long elmv4=0,elmv6=0;
-pthread_mutex_t lock_v4 = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t lock_v4=PTHREAD_MUTEX_INITIALIZER;
 
 int interrupted=0;
 uint32_t follow=0,mask[33];
@@ -265,6 +265,7 @@ void *whois_server_thread(void *arg){
   uint8_t a[4],j,found,cidr,nfound;
   uint32_t ip4,ip4org;
   long start,end,pos;
+  time_t tt;
   struct tm *tm_info;
 
   server_fd=socket(AF_INET,SOCK_STREAM,0);
@@ -302,8 +303,9 @@ void *whois_server_thread(void *arg){
           else end=pos-1;
         }
         if(found){
-//          tm_info=localtime((time_t *)&v4[pos].ts);
-  //        strftime(buft,15,"%Y%m%d%H%M%S",tm_info);
+          tt=(time_t)v4[pos].ts;
+          tm_info=localtime(&tt);
+          strftime(buft,15,"%Y%m%d%H%M%S",tm_info);
           sprintf(buf,"%u %lu\n",cidr,v4[pos].asn);
           write(client_fd,buf,strlen(buf));
           nfound++;
