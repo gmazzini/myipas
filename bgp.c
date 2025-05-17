@@ -313,6 +313,7 @@ int main(void) {
   struct lws_context *context;
   pthread_t whois_thread;
   FILE *fp;
+  uint8_t i;
 
   v4=(struct v4 *)malloc(LENELM*sizeof(struct v4));
   if(v4==NULL)exit(0);
