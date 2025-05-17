@@ -217,12 +217,12 @@ void sigint_handler(int sig){
       elmv4=j;
       if(elmv4==0)break;
       fp=fopen(V4FILE,"wt");
-      fprintf(fp,"# v4_tot: %ld\n",elmv4);
-      for(i=0;i<33;i++)if(c4[i]>0)fprintf(fp,"# v4_cidr%d: %ld\n",i,c4[i]);
+      fprintf(fp,"# v4_tot: %lu\n",elmv4);
+      for(i=0;i<33;i++)if(c4[i]>0)fprintf(fp,"# v4_cidr%d: %lu\n",i,c4[i]);
       for(i=0;i<elmv4;i++){
         for(ip4=v4[i].ip,j=0;j<4;j++){a[j]=ip4&0xff; ip4>>=8;}
         fprintf(fp,"%d.%d.%d.%d",a[3],a[2],a[1],a[0]);
-        fprintf(fp,"/%d,%ld\n",v4[i].cidr,v4[i].asn);
+        fprintf(fp,"/%d,%lu\n",v4[i].cidr,v4[i].asn);
       }
       fclose(fp);
       break;
@@ -233,8 +233,8 @@ void sigint_handler(int sig){
       elmv6=j;
       if(elmv6==0)break;
       fp=fopen(V6FILE,"wt");
-      fprintf(fp,"# v6_tot: %ld\n",elmv6);
-      for(i=0;i<129;i++)if(c6[i]>0)fprintf(fp,"# v6_cidr%d: %ld\n",i,c6[i]);
+      fprintf(fp,"# v6_tot: %lu\n",elmv6);
+      for(i=0;i<129;i++)if(c6[i]>0)fprintf(fp,"# v6_cidr%d: %lu\n",i,c6[i]);
       for(i=0;i<elmv6;i++){
         for(ip6=v6[i].ip,q=0;q<64;q++)if(ip6&1)break; else ip6>>=1;
         for(ip6=v6[i].ip,j=0;j<4;j++){b[j]=ip6&0xffff; ip6>>=16;}
@@ -242,7 +242,7 @@ void sigint_handler(int sig){
         else if(q>=32)fprintf(fp,"%x:%x::",b[3],b[2]);
         else if(q>=16)fprintf(fp,"%x:%x:%x::",b[3],b[2],b[1]);
         else fprintf(fp,"%x:%x:%x:%x::",b[3],b[2],b[1],b[0]);
-        fprintf(fp,"/%d,%ld\n",v6[i].cidr,v6[i].asn);
+        fprintf(fp,"/%d,%lu\n",v6[i].cidr,v6[i].asn);
       }
       fclose(fp);
       break;
