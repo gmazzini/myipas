@@ -27,6 +27,7 @@ struct v6 {
 } *v6;
 long elmv4=0,elmv6=0;
 pthread_mutex_t lock_v4=PTHREAD_MUTEX_INITIALIZER;
+int server_fd=-1;
 
 int interrupted=0;
 uint32_t follow=0,mask[33];
@@ -250,6 +251,7 @@ void sigint_handler(int sig){
       fwrite(&elmv6,4,1,fp);
       fwrite(v6,sizeof(struct v6),elmv6,fp);
       fclose(fp);
+      if(server_fd>=0)close(server_fd);
       interrupted=1;
       break;
   }
@@ -258,7 +260,7 @@ void sigint_handler(int sig){
 }
 
 void *whois_server_thread(void *arg){
-  int server_fd,client_fd,opt;
+  int client_fd,opt;
   struct sockaddr_in addr;
   char buf[100],buft[15];
   ssize_t n;
