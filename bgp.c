@@ -26,6 +26,7 @@ struct v6 {
   uint32_t ts;
 } *v6;
 long elmv4=0,elmv6=0;
+pthread_mutex_t lock_v4 = PTHREAD_MUTEX_INITIALIZER;
 
 int interrupted=0;
 uint32_t follow=0,mask[33];
@@ -120,6 +121,8 @@ int callback_ris(struct lws *wsi,enum lws_callback_reasons reason,void *user,voi
   uint32_t j,asn;
   size_t msg_len;
   char *ptr,*buf1,*buf2,*buf3;
+
+  pthread_mutex_lock(&lock_v4);
   switch (reason){
     case LWS_CALLBACK_CLIENT_ESTABLISHED:
       lws_callback_on_writable(wsi);
@@ -176,6 +179,7 @@ int callback_ris(struct lws *wsi,enum lws_callback_reasons reason,void *user,voi
     default:
       break;
   }
+  pthread_mutex_unlock(&lock_v4);
   return 0;
 }
 
@@ -191,6 +195,7 @@ void sigint_handler(int sig){
   uint64_t b[4],ip6;
   char buf[100];
 
+  pthread_mutex_lock(&lock_v4);
   ts=time(NULL);
   dts=1000000000;
   fp=fopen(PARFILE,"rt");
@@ -204,7 +209,7 @@ void sigint_handler(int sig){
       for(i=0;i<33;i++)c4[i]=0;
       for(j=0,i=0;i<elmv4;i++)if(ts-v4[i].ts<dts){v4[j]=v4[i]; c4[v4[j].cidr]++; j++;}
       elmv4=j;
-      if(elmv4==0)return;
+      if(elmv4==0)break;
       fp=fopen(V4FILE,"wt");
       fprintf(fp,"# v4_tot: %ld\n",elmv4);
       for(i=0;i<33;i++)if(c4[i]>0)fprintf(fp,"# v4_cidr%d: %ld\n",i,c4[i]);
@@ -214,13 +219,13 @@ void sigint_handler(int sig){
         fprintf(fp,"/%d,%ld\n",v4[i].cidr,v4[i].asn);
       }
       fclose(fp);
-      return;
+      break;
     
     case SIGUSR2:
       for(i=0;i<129;i++)c6[i]=0;
       for(j=0,i=0;i<elmv6;i++)if(ts-v6[i].ts<dts){v6[j]=v6[i]; c6[v6[j].cidr]++; j++;}
       elmv6=j;
-      if(elmv6==0)return;
+      if(elmv6==0)break;
       fp=fopen(V6FILE,"wt");
       fprintf(fp,"# v6_tot: %ld\n",elmv6);
       for(i=0;i<129;i++)if(c6[i]>0)fprintf(fp,"# v6_cidr%d: %ld\n",i,c6[i]);
@@ -234,7 +239,7 @@ void sigint_handler(int sig){
         fprintf(fp,"/%d,%ld\n",v6[i].cidr,v6[i].asn);
       }
       fclose(fp);
-      return;
+      break;
     
     case SIGINT:
       fp=fopen(BKP4FILE,"wb");
@@ -246,8 +251,10 @@ void sigint_handler(int sig){
       fwrite(v6,sizeof(struct v6),elmv6,fp);
       fclose(fp);
       interrupted=1;
-      return;
+      break;
   }
+  pthread_mutex_unlock(&lock_v4);
+
 }
 
 void *whois_server_thread(void *arg){
@@ -279,6 +286,7 @@ void *whois_server_thread(void *arg){
         write(client_fd,buf,strlen(buf));
         continue;
       }
+      pthread_mutex_lock(&lock_v4);
       for(ip4org=0,j=0;j<4;j++){ip4org<<=8; ip4org|=a[j];}
       nfound=0;
       for(cidr=24;cidr>=8;cidr--){
@@ -298,6 +306,7 @@ void *whois_server_thread(void *arg){
           nfound++;
         }
       }
+      pthread_mutex_unlock(&lock_v4);
       sprintf(buf,"%u match found\n",nfound);
       write(client_fd,buf,strlen(buf));
     }
