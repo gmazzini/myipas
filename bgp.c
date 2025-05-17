@@ -273,7 +273,7 @@ void *whois_server_thread(void *arg){
     n=read(client_fd,buf,99);
     if(n>0){
       buf[n]='\0';
-      n=scanfs(buf,"%u.%u.%u.%u",&a[0],&a[1],&a[2],&a[3]);
+      n=sscanf(buf,"%u.%u.%u.%u",&a[0],&a[1],&a[2],&a[3]);
       if(n==4){
         for(ip4=0,j=0;j<4;j++){ip4<<=8; ip4|=a[j];}
         start=0;
