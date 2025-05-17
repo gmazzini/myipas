@@ -251,7 +251,7 @@ void sigint_handler(int sig){
       fwrite(&elmv6,4,1,fp);
       fwrite(v6,sizeof(struct v6),elmv6,fp);
       fclose(fp);
-      if(server_fd>=0)close(server_fd);
+      if(server_fd>=0)shutdown(server_fd,SHUT_RDWR);;
       interrupted=1;
       break;
   }
