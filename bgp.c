@@ -46,13 +46,6 @@ void myins(char *ptr,int len,uint32_t asn){
   uint8_t found,a[4],cidr;
   uint64_t ip6,b[4];
   long start,end,pos,i,j;
-
-  /*
-  FILE *fp;
-  fp=fopen("/home/tools/log.txt","at");
-  fprintf(fp,"%lu %.*s\n",asn,len,ptr);
-  fclose(fp);
-*/
   
   ts=time(NULL);
   for(i=0;i<len;i++)if(ptr[i]==':'){
@@ -155,6 +148,13 @@ int callback_ris(struct lws *wsi,enum lws_callback_reasons reason,void *user,voi
       buf1+=12;
       buf2=strstr(buf1,"]"); if(buf2==NULL)break;
       *buf2='\0';
+    
+  FILE *fp;
+  fp=fopen("/home/tools/log.txt","at");
+  fprintf(fp,"%lu %.*s\n",asn,strlen(buf1),buf1);
+  fclose(fp);
+
+
       for(;;){
         buf3=strstr(buf1,",");
         if(buf3!=NULL){
