@@ -271,7 +271,9 @@ void *whois_server_thread(void *arg){
   char buf[100],buft[15];
   ssize_t n;
   uint8_t a[4],j,found,cidr,nfound;
+  uint16_t b[8];
   uint32_t ip4,ip4org;
+  uint64_t ip6,ip6org;
   long start,end,pos;
   time_t tt;
   struct tm *tm_info;
@@ -311,6 +313,38 @@ void *whois_server_thread(void *arg){
             tm_info=localtime(&tt);
             strftime(buft,15,"%Y%m%d%H%M%S",tm_info);
             sprintf(buf,"%u %lu %s\n",cidr,v4[pos].asn,buft);
+            write(client_fd,buf,strlen(buf));
+            nfound++;
+          }
+        }
+      }
+      else {
+        for(j=0;j<8;j++)b[j]=0;
+        n=sscanf(buf,"%x::%x",&b[0],&b[7]); if(n==2)goto p6;
+        n=sscanf(buf,"%x:%x::%x",&b[0],&b[1],&b[7]); if(n==3)goto p6;
+        n=sscanf(buf,"%x:%x:%x::%x",&b[0],&b[1],&b[2],&b[7]); if(n==4)goto p6;
+        n=sscanf(buf,"%x:%x:%x:%x::%x",&b[0],&b[1],&b[2],&b[4],&b[7]); if(n==5)goto p6;
+        n=sscanf(buf,"%x:%x:%x:%x:%x::%x",&b[0],&b[1],&b[2],&b[3],&b[4],&b[7]); if(n==6)goto p6;
+        n=sscanf(buf,"%x:%x:%x:%x:%x:%x::%x",&b[0],&b[1],&b[2],&b[3],&b[4],&b[5],&b[7]); if(n==7)goto p6;
+        n=sscanf(buf,"%x:%x:%x:%x:%x:%x:%x:%x",&b[0],&b[1],&b[2],&b[3],&b[4],&b[5],&b[6],&b[7]);
+        p6:
+        for(ip6org=0,j=0;j<4;j++){ip6org<<=16; ip6|=b[j];}
+        for(cidr=64;cidr>=16;cidr--){
+          ip6=ip6org&mask[cidr];
+          start=0;
+          end=elmv6-1;
+          found=0;
+          while(start<=end){
+            pos=start+(end-start)/2;
+            if(ip6==v6[pos].ip && cidr==v6[pos].cidr){found=1; break;}
+            else if(ip6>v6[pos].ip || (ip6==v6[pos].ip && cidr>v6[pos].cidr))start=pos+1;
+            else end=pos-1;
+          }
+          if(found){
+            tt=(time_t)v6[pos].ts;
+            tm_info=localtime(&tt);
+            strftime(buft,15,"%Y%m%d%H%M%S",tm_info);
+            sprintf(buf,"%u %lu %s\n",cidr,v6[pos].asn,buft);
             write(client_fd,buf,strlen(buf));
             nfound++;
           }
