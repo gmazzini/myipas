@@ -289,6 +289,7 @@ void *whois_server_thread(void *arg){
     if(client_fd<0)continue;
     n=read(client_fd,buf,99);
     if(n>0){
+      pthread_mutex_lock(&lock);
       buf[n]='\0';
       nfound=0;
       n=sscanf(buf,"%u.%u.%u.%u",&a[0],&a[1],&a[2],&a[3]);
@@ -315,10 +316,10 @@ void *whois_server_thread(void *arg){
             nfound++;
           }
         }
-        pthread_mutex_unlock(&lock);
       }
       sprintf(buf,"--\n%u match found\n%lu v4 elm\n%lu v6 elm\n",nfound,elmv4,elmv6);
       write(client_fd,buf,strlen(buf));
+      pthread_mutex_unlock(&lock);
     }
     close(client_fd);
   }
