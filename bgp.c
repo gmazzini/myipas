@@ -323,7 +323,7 @@ void *whois_server_thread(void *arg){
       else {
         for(j=0;j<4;j++)b[j]=0;
         for(i=-1,j=0;j<4;j++){
-          for(i++;i<len;i++)if((buf[i]!=':'&&j<4) || (buf[i]!='\0'&&j==4))b[j]=b[j]*16+dd[ptr[i]]; else break;
+          for(i++;i<len;i++)if((buf[i]!=':'&&j<4) || (buf[i]!='\0'&&j==4))b[j]=b[j]*16+dd[buf[i]]; else break;
           if(buf[i+1]==':')for(i++;i<len;i++)if(buf[i]=='\0')break;
           if(buf[i]=='\0')break;
         }
