@@ -270,8 +270,9 @@ void *whois_server_thread(void *arg){
   struct sockaddr_in addr;
   char buf[100],buft[15];
   ssize_t n;
-  uint8_t a[4],j,found,cidr,nfound;
-  uint16_t b[8];
+  uint8_t a[4],found,cidr,nfound;
+  int i,j,len;
+  uint16_t b[4];
   uint32_t ip4,ip4org;
   uint64_t ip6,ip6org;
   long start,end,pos;
@@ -293,6 +294,7 @@ void *whois_server_thread(void *arg){
     if(n>0){
       pthread_mutex_lock(&lock);
       buf[n]='\0';
+      len=n;
       nfound=0;
       n=sscanf(buf,"%u.%u.%u.%u",&a[0],&a[1],&a[2],&a[3]);
       if(n==4){
@@ -319,15 +321,12 @@ void *whois_server_thread(void *arg){
         }
       }
       else {
-        for(j=0;j<8;j++)b[j]=0;
-        n=sscanf(buf,"%x::%x",&b[0],&b[7]); if(n==2)goto p6;
-        n=sscanf(buf,"%x:%x::%x",&b[0],&b[1],&b[7]); if(n==3)goto p6;
-        n=sscanf(buf,"%x:%x:%x::%x",&b[0],&b[1],&b[2],&b[7]); if(n==4)goto p6;
-        n=sscanf(buf,"%x:%x:%x:%x::%x",&b[0],&b[1],&b[2],&b[4],&b[7]); if(n==5)goto p6;
-        n=sscanf(buf,"%x:%x:%x:%x:%x::%x",&b[0],&b[1],&b[2],&b[3],&b[4],&b[7]); if(n==6)goto p6;
-        n=sscanf(buf,"%x:%x:%x:%x:%x:%x::%x",&b[0],&b[1],&b[2],&b[3],&b[4],&b[5],&b[7]); if(n==7)goto p6;
-        n=sscanf(buf,"%x:%x:%x:%x:%x:%x:%x:%x",&b[0],&b[1],&b[2],&b[3],&b[4],&b[5],&b[6],&b[7]);
-        p6:
+        for(j=0;j<4;j++)b[j]=0;
+        for(i=-1,j=0;j<4;j++){
+          for(i++;i<len;i++)if((ptr[i]!=':'&&j<4) || (ptr[i]!='\0'&&j==4))b[j]=b[j]*16+dd[ptr[i]]; else break;
+          if(ptr[i+1]==':')for(i++;i<len;i++)if(ptr[i]=='\0')break;
+          if(ptr[i]=='\0')break;
+        }
         for(ip6org=0,j=0;j<4;j++){ip6org<<=16; ip6org|=b[j];}
         for(cidr=64;cidr>=16;cidr--){
           ip6=ip6org&mask6[cidr];
