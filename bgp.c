@@ -154,12 +154,19 @@ int callback_ris(struct lws *wsi,enum lws_callback_reasons reason,void *user,voi
         fclose(fp);
       }
         
-      ptr[len]='\0';
-      asn=0;
-      buf1=strstr(ptr,"\"peer_asn\":\""); if(buf1==NULL)break;
-      buf1+=12;
-      buf2=strstr(buf1,"\""); if(buf2==NULL)break;
-      for(j=0;j<buf2-buf1;j++)asn=asn*10+dd[buf1[j]];
+      ptr[len]='\0';  
+      buf1=strstr(ptr,"\"path\":["); if(buf1==NULL)break;
+      buf1+=8;
+      buf2=strstr(buf1,"]"); if(buf2==NULL)break;
+      *buf2='\0';
+      for(;;){
+        buf3=strstr(buf1,",");
+        if(buf3!=NULL)buf1=buf3+1;
+        else {
+          for(asn=0,j=0;j<buf2-buf1;j++)asn=asn*10+dd[buf1[j]];
+          break;
+        }
+      }
       buf1=strstr(buf1,"\"prefixes\":["); if(buf1==NULL)break;
       buf1+=12;
       buf2=strstr(buf1,"]"); if(buf2==NULL)break;
