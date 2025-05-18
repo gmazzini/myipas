@@ -167,7 +167,7 @@ int callback_ris(struct lws *wsi,enum lws_callback_reasons reason,void *user,voi
           break;
         }
       }
-      buf1=strstr(buf1,"\"prefixes\":["); if(buf1==NULL)break;
+      buf1=strstr(buf2+1,"\"prefixes\":["); if(buf1==NULL)break;
       buf1+=12;
       buf2=strstr(buf1,"]"); if(buf2==NULL)break;
       *buf2='\0';
