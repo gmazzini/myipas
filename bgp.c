@@ -222,6 +222,10 @@ void sigint_handler(int sig){
     fclose(fp);
   }
   switch(sig){
+    case 34:
+      debug=1-debug;
+      break;
+    
     case SIGUSR1:
       for(i=0;i<33;i++)c4[i]=0;
       for(j=0,i=0;i<elmv4;i++)if(ts-v4[i].ts<dts){v4[j]=v4[i]; c4[v4[j].cidr]++; j++;}
@@ -299,8 +303,6 @@ void *whois_server_thread(void *arg){
     n=read(client_fd,buf,99);
     if(n>0){
       buf[n]='\0';
-      if(strcmp(buf,"debug")){debug=1; continue;}
-      if(strcmp(buf,"nodebug")){debug=0; continue;}
       n=sscanf(buf,"%u.%u.%u.%u",&a[0],&a[1],&a[2],&a[3]);
       if(n<4){
         sprintf(buf,"Wrong request\n");
