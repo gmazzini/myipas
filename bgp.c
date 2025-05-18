@@ -373,6 +373,8 @@ int main(void) {
   signal(SIGINT,sigint_handler);
   signal(SIGUSR1,sigint_handler);
   signal(SIGUSR2,sigint_handler);
+  signal(34,sigint_handler);
+  
   memset(&info,0,sizeof(info));
   info.port=CONTEXT_PORT_NO_LISTEN;
   info.protocols=protocols;
