@@ -29,7 +29,7 @@ long elmv4=0,elmv6=0;
 pthread_mutex_t lock_v4=PTHREAD_MUTEX_INITIALIZER;
 int server_fd=-1;
 
-int interrupted=0;
+uint8_t interrupted=0,debug=0;
 uint32_t follow=0,mask[33];
 struct lws *web_socket=NULL;
 char *subscribe_message="{\"type\": \"ris_subscribe\", \"data\": {\"type\": \"UPDATE\", \"host\": \"rrc11\"}}";
@@ -48,6 +48,14 @@ void myins(char *ptr,int len,uint32_t asn){
   long start,end,pos,i,j;
   
   ts=time(NULL);
+  
+  if(debug){
+    FILE *fp;
+    fp=fopen("/home/tools/log.txt","at");
+    fprintf(fp,"** %lu %.*s\n",asn,len,ptr);
+    fclose(fp);
+  }
+  
   for(i=0;i<len;i++)if(ptr[i]==':'){
     for(j=0;j<4;j++)b[j]=0;
     for(i=-1,j=0;j<4;j++){
@@ -139,13 +147,13 @@ int callback_ris(struct lws *wsi,enum lws_callback_reasons reason,void *user,voi
       if(ptr[len-1]!='}'){memcpy(lbuf+follow,ptr,len); follow+=len;  break;}
       if(follow>0){memcpy(lbuf+follow,ptr,len); len+=follow; follow=0; ptr=lbuf;}
 
- /*     
-  FILE *fp;
-  fp=fopen("/home/tools/log.txt","at");
-  fprintf(fp,"%lu > %.*s\n",follow,len,ptr);
-  fclose(fp);
-*/
-      
+      if(debug){
+        FILE *fp;
+        fp=fopen("/home/tools/log.txt","at");
+        fprintf(fp,"$$ %.*s\n",follow,len,ptr);
+        fclose(fp);
+      }
+        
       ptr[len]='\0';
       asn=0;
       buf1=strstr(ptr,"\"peer_asn\":\""); if(buf1==NULL)break;
@@ -291,6 +299,8 @@ void *whois_server_thread(void *arg){
     n=read(client_fd,buf,99);
     if(n>0){
       buf[n]='\0';
+      if(strcmp(buf,"debug")){debug=1; continue;}
+      if(strcmp(buf,"nodebug")){debug=0; continue;}
       n=sscanf(buf,"%u.%u.%u.%u",&a[0],&a[1],&a[2],&a[3]);
       if(n<4){
         sprintf(buf,"Wrong request\n");
