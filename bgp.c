@@ -150,7 +150,7 @@ int callback_ris(struct lws *wsi,enum lws_callback_reasons reason,void *user,voi
       if(debug){
         FILE *fp;
         fp=fopen("/home/tools/log.txt","at");
-        fprintf(fp,"$$ %.*s\n",follow,len,ptr);
+        fprintf(fp,"$$ %.*s\n",len,ptr);
         fclose(fp);
       }
         
