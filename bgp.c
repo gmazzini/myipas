@@ -30,7 +30,7 @@ pthread_mutex_t lock=PTHREAD_MUTEX_INITIALIZER;
 int server_fd=-1;
 
 uint8_t interrupted=0;
-uint32_t follow=0,mask[33];
+uint32_t follow=0,mask4[33],mask6[65];
 struct lws *web_socket=NULL;
 char *subscribe_message="{\"type\": \"ris_subscribe\", \"data\": {\"type\": \"UPDATE\", \"host\": \"rrc11\"}}";
 char *lbuf;
@@ -298,7 +298,7 @@ void *whois_server_thread(void *arg){
       if(n==4){
         for(ip4org=0,j=0;j<4;j++){ip4org<<=8; ip4org|=a[j];}
         for(cidr=24;cidr>=8;cidr--){
-          ip4=ip4org&mask[cidr];
+          ip4=ip4org&mask4[cidr];
           start=0;
           end=elmv4-1;
           found=0;
@@ -328,9 +328,9 @@ void *whois_server_thread(void *arg){
         n=sscanf(buf,"%x:%x:%x:%x:%x:%x::%x",&b[0],&b[1],&b[2],&b[3],&b[4],&b[5],&b[7]); if(n==7)goto p6;
         n=sscanf(buf,"%x:%x:%x:%x:%x:%x:%x:%x",&b[0],&b[1],&b[2],&b[3],&b[4],&b[5],&b[6],&b[7]);
         p6:
-        for(ip6org=0,j=0;j<4;j++){ip6org<<=16; ip6|=b[j];}
+        for(ip6org=0,j=0;j<4;j++){ip6org<<=16; ip6org|=b[j];}
         for(cidr=64;cidr>=16;cidr--){
-          ip6=ip6org&mask[cidr];
+          ip6=ip6org&mask6[cidr];
           start=0;
           end=elmv6-1;
           found=0;
@@ -386,8 +386,8 @@ int main(void) {
     fread(v6,sizeof(struct v6),elmv6,fp);
     fclose(fp);
   }
-  mask[0]=0;
-  for(i=1;i<33;i++)mask[i]=~((1U<<(32-i))-1);
+  mask4[0]=0; for(i=1;i<33;i++)mask4[i]=~((1U<<(32-i))-1);
+  mask6[0]=0; for(i=1;i<65;i++)mask6[i]=~((1UL<<(64-i))-1);
   signal(SIGINT,sigint_handler);
   signal(SIGUSR1,sigint_handler);
   signal(SIGUSR2,sigint_handler);
