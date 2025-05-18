@@ -294,7 +294,6 @@ void *whois_server_thread(void *arg){
       nfound=0;
       n=sscanf(buf,"%u.%u.%u.%u",&a[0],&a[1],&a[2],&a[3]);
       if(n==4){
-        pthread_mutex_lock(&lock);
         for(ip4org=0,j=0;j<4;j++){ip4org<<=8; ip4org|=a[j];}
         for(cidr=24;cidr>=8;cidr--){
           ip4=ip4org&mask[cidr];
