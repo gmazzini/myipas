@@ -328,6 +328,8 @@ void *whois_server_thread(void *arg){
           if(buf[i]=='\0')break;
         }
         for(ip6org=0,j=0;j<4;j++){ip6org<<=16; ip6org|=b[j];}
+    sprintf(buf,"%llx\n",ip6org);
+    write(client_fd,buf,strlen(buf));
         for(cidr=64;cidr>=16;cidr--){
           ip6=ip6org&mask6[cidr];
           start=0;
