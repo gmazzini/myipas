@@ -26,10 +26,10 @@ struct v6 {
   uint32_t ts;
 } *v6;
 long elmv4=0,elmv6=0;
-pthread_mutex_t lock_v4=PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t lock=PTHREAD_MUTEX_INITIALIZER;
 int server_fd=-1;
 
-uint8_t interrupted=0,debug=0;
+uint8_t interrupted=0;
 uint32_t follow=0,mask[33];
 struct lws *web_socket=NULL;
 char *subscribe_message="{\"type\": \"ris_subscribe\", \"data\": {\"type\": \"UPDATE\", \"host\": \"rrc11\"}}";
@@ -48,14 +48,6 @@ void myins(char *ptr,int len,uint32_t asn){
   long start,end,pos,i,j;
   
   ts=time(NULL);
-  
-  if(debug){
-    FILE *fp;
-    fp=fopen("/home/tools/log.txt","at");
-    fprintf(fp,"** %lu %.*s\n",asn,len,ptr);
-    fclose(fp);
-  }
-  
   for(i=0;i<len;i++)if(ptr[i]==':'){
     for(j=0;j<4;j++)b[j]=0;
     for(i=-1,j=0;j<4;j++){
@@ -131,7 +123,7 @@ int callback_ris(struct lws *wsi,enum lws_callback_reasons reason,void *user,voi
   size_t msg_len;
   char *ptr,*buf1,*buf2,*buf3;
 
-  pthread_mutex_lock(&lock_v4);
+  pthread_mutex_lock(&lock);
   switch (reason){
     case LWS_CALLBACK_CLIENT_ESTABLISHED:
       lws_callback_on_writable(wsi);
@@ -145,15 +137,7 @@ int callback_ris(struct lws *wsi,enum lws_callback_reasons reason,void *user,voi
     case LWS_CALLBACK_CLIENT_RECEIVE:
       ptr=(char *)in;
       if(ptr[len-1]!='}'){memcpy(lbuf+follow,ptr,len); follow+=len;  break;}
-      if(follow>0){memcpy(lbuf+follow,ptr,len); len+=follow; follow=0; ptr=lbuf;}
-
-      if(debug){
-        FILE *fp;
-        fp=fopen("/home/tools/log.txt","at");
-        fprintf(fp,"$$ %.*s\n",len,ptr);
-        fclose(fp);
-      }
-        
+      if(follow>0){memcpy(lbuf+follow,ptr,len); len+=follow; follow=0; ptr=lbuf;}        
       ptr[len]='\0';  
       buf1=strstr(ptr,"\"path\":["); if(buf1==NULL)break;
       buf1+=8;
@@ -203,7 +187,7 @@ int callback_ris(struct lws *wsi,enum lws_callback_reasons reason,void *user,voi
     default:
       break;
   }
-  pthread_mutex_unlock(&lock_v4);
+  pthread_mutex_unlock(&lock);
   return 0;
 }
 
@@ -219,7 +203,7 @@ void sigint_handler(int sig){
   uint64_t b[4],ip6;
   char buf[100];
 
-  pthread_mutex_lock(&lock_v4);
+  pthread_mutex_lock(&lock);
   ts=time(NULL);
   dts=1000000000;
   fp=fopen(PARFILE,"rt");
@@ -229,10 +213,6 @@ void sigint_handler(int sig){
     fclose(fp);
   }
   switch(sig){
-    case 34:
-      debug=1-debug;
-      break;
-    
     case SIGUSR1:
       for(i=0;i<33;i++)c4[i]=0;
       for(j=0,i=0;i<elmv4;i++)if(ts-v4[i].ts<dts){v4[j]=v4[i]; c4[v4[j].cidr]++; j++;}
@@ -282,7 +262,7 @@ void sigint_handler(int sig){
       interrupted=1;
       break;
   }
-  pthread_mutex_unlock(&lock_v4);
+  pthread_mutex_unlock(&lock);
 }
 
 void *whois_server_thread(void *arg){
@@ -316,7 +296,7 @@ void *whois_server_thread(void *arg){
         write(client_fd,buf,strlen(buf));
         continue;
       }
-      pthread_mutex_lock(&lock_v4);
+      pthread_mutex_lock(&lock);
       for(ip4org=0,j=0;j<4;j++){ip4org<<=8; ip4org|=a[j];}
       nfound=0;
       for(cidr=24;cidr>=8;cidr--){
@@ -339,7 +319,7 @@ void *whois_server_thread(void *arg){
           nfound++;
         }
       }
-      pthread_mutex_unlock(&lock_v4);
+      pthread_mutex_unlock(&lock);
       sprintf(buf,"%u match found\n%lu v4 elm\n%lu v6 elm\n",nfound,elmv4,elmv6);
       write(client_fd,buf,strlen(buf));
     }
@@ -380,7 +360,6 @@ int main(void) {
   signal(SIGINT,sigint_handler);
   signal(SIGUSR1,sigint_handler);
   signal(SIGUSR2,sigint_handler);
-  signal(34,sigint_handler);
   
   memset(&info,0,sizeof(info));
   info.port=CONTEXT_PORT_NO_LISTEN;
