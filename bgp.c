@@ -340,7 +340,7 @@ void *whois_server_thread(void *arg){
         }
       }
       pthread_mutex_unlock(&lock_v4);
-      sprintf(buf,"%u match found\n%lu v4 elm\n%lu v6 elm\n",nfound,rlmv4,elmv6);
+      sprintf(buf,"%u match found\n%lu v4 elm\n%lu v6 elm\n",nfound,elmv4,elmv6);
       write(client_fd,buf,strlen(buf));
     }
     close(client_fd);
