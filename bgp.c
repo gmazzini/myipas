@@ -290,37 +290,34 @@ void *whois_server_thread(void *arg){
     n=read(client_fd,buf,99);
     if(n>0){
       buf[n]='\0';
-      n=sscanf(buf,"%u.%u.%u.%u",&a[0],&a[1],&a[2],&a[3]);
-      if(n<4){
-        sprintf(buf,"Wrong request\n");
-        write(client_fd,buf,strlen(buf));
-        continue;
-      }
-      pthread_mutex_lock(&lock);
-      for(ip4org=0,j=0;j<4;j++){ip4org<<=8; ip4org|=a[j];}
       nfound=0;
-      for(cidr=24;cidr>=8;cidr--){
-        ip4=ip4org&mask[cidr];
-        start=0;
-        end=elmv4-1;
-        found=0;
-        while(start<=end){
-          pos=start+(end-start)/2;
-          if(ip4==v4[pos].ip && cidr==v4[pos].cidr){found=1; break;}
-          else if(ip4>v4[pos].ip || (ip4==v4[pos].ip && cidr>v4[pos].cidr))start=pos+1;
-          else end=pos-1;
+      n=sscanf(buf,"%u.%u.%u.%u",&a[0],&a[1],&a[2],&a[3]);
+      if(n==4){
+        pthread_mutex_lock(&lock);
+        for(ip4org=0,j=0;j<4;j++){ip4org<<=8; ip4org|=a[j];}
+        for(cidr=24;cidr>=8;cidr--){
+          ip4=ip4org&mask[cidr];
+          start=0;
+          end=elmv4-1;
+          found=0;
+          while(start<=end){
+            pos=start+(end-start)/2;
+            if(ip4==v4[pos].ip && cidr==v4[pos].cidr){found=1; break;}
+            else if(ip4>v4[pos].ip || (ip4==v4[pos].ip && cidr>v4[pos].cidr))start=pos+1;
+            else end=pos-1;
+          }
+          if(found){
+            tt=(time_t)v4[pos].ts;
+            tm_info=localtime(&tt);
+            strftime(buft,15,"%Y%m%d%H%M%S",tm_info);
+            sprintf(buf,"%u %lu %s\n",cidr,v4[pos].asn,buft);
+            write(client_fd,buf,strlen(buf));
+            nfound++;
+          }
         }
-        if(found){
-          tt=(time_t)v4[pos].ts;
-          tm_info=localtime(&tt);
-          strftime(buft,15,"%Y%m%d%H%M%S",tm_info);
-          sprintf(buf,"%u %lu %s\n",cidr,v4[pos].asn,buft);
-          write(client_fd,buf,strlen(buf));
-          nfound++;
-        }
+        pthread_mutex_unlock(&lock);
       }
-      pthread_mutex_unlock(&lock);
-      sprintf(buf,"%u match found\n%lu v4 elm\n%lu v6 elm\n",nfound,elmv4,elmv6);
+      sprintf(buf,"--\n%u match found\n%lu v4 elm\n%lu v6 elm\n",nfound,elmv4,elmv6);
       write(client_fd,buf,strlen(buf));
     }
     close(client_fd);
