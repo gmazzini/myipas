@@ -199,8 +199,8 @@ struct lws_protocols protocols[]={
 
 void sigint_handler(int sig){
   FILE *fp;
-  uint32_t i,j,q,ip4,ts,dts;
-  uint8_t a[4],c4[33],c6[129];
+  uint32_t i,j,q,ip4,ts,dts,c4[33],c6[129];
+  uint8_t a[4];
   uint64_t b[4],ip6;
   char buf[100];
 
