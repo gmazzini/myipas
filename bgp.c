@@ -30,7 +30,8 @@ pthread_mutex_t lock=PTHREAD_MUTEX_INITIALIZER;
 int server_fd=-1;
 
 uint8_t interrupted=0;
-uint32_t follow=0,mask4[33],mask6[65];
+uint32_t follow=0,mask4[33];
+uint64_t mask6[65];
 struct lws *web_socket=NULL;
 char *subscribe_message="{\"type\": \"ris_subscribe\", \"data\": {\"type\": \"UPDATE\", \"host\": \"rrc11\"}}";
 char *lbuf;
