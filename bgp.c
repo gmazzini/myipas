@@ -332,6 +332,8 @@ void *whois_server_thread(void *arg){
     write(client_fd,buf,strlen(buf));
         for(cidr=64;cidr>=16;cidr--){
           ip6=ip6org&mask6[cidr];
+    sprintf(buf,"%llx %d\n",ip6,cidr);
+    write(client_fd,buf,strlen(buf));
           start=0;
           end=elmv6-1;
           found=0;
