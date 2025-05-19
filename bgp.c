@@ -297,8 +297,6 @@ void *whois_server_thread(void *arg){
       buf[n]='\0';
       len=n;
       nfound=0;
-     // n=sscanf(buf,"%u.%u.%u.%u",&a[0],&a[1],&a[2],&a[3]);
-     // if(n==4){
       for(i=0;i<len;i++)if(buf[i]=='.')break;
       if(i<len){
         for(j=0;j<4;j++)a[j]=0;
