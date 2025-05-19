@@ -297,8 +297,12 @@ void *whois_server_thread(void *arg){
       buf[n]='\0';
       len=n;
       nfound=0;
-      n=sscanf(buf,"%u.%u.%u.%u",&a[0],&a[1],&a[2],&a[3]);
-      if(n==4){
+     // n=sscanf(buf,"%u.%u.%u.%u",&a[0],&a[1],&a[2],&a[3]);
+     // if(n==4){
+      for(i=0;i<len;i++)if(buf[i]=='.')break;
+      if(i<len){
+        for(j=0;j<4;j++)a[j]=0;
+        for(i=-1,j=0;j<4;j++)for(a[j]=0,i++;i<len;i++)if((buf[i]!='.'&&j<3) || (buf[i]!='\0'&&j==3))a[j]=a[j]*10+dd[ptr[i]]; else break;
         for(ip4org=0,j=0;j<4;j++){ip4org<<=8; ip4org|=a[j];}
         for(cidr=24;cidr>=8;cidr--){
           ip4=ip4org&mask4[cidr];
