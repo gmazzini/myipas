@@ -302,7 +302,7 @@ void *whois_server_thread(void *arg){
       for(i=0;i<len;i++)if(buf[i]=='.')break;
       if(i<len){
         for(j=0;j<4;j++)a[j]=0;
-        for(i=-1,j=0;j<4;j++)for(a[j]=0,i++;i<len;i++)if((buf[i]!='.'&&j<3) || (buf[i]!='\0'&&j==3))a[j]=a[j]*10+dd[ptr[i]]; else break;
+        for(i=-1,j=0;j<4;j++)for(a[j]=0,i++;i<len;i++)if((buf[i]!='.'&&j<3) || (buf[i]!='\0'&&j==3))a[j]=a[j]*10+dd[buf[i]]; else break;
         for(ip4org=0,j=0;j<4;j++){ip4org<<=8; ip4org|=a[j];}
         for(cidr=24;cidr>=8;cidr--){
           ip4=ip4org&mask4[cidr];
