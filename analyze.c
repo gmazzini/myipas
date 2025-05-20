@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdint.h>
 #define BKP4FILE "/home/www/fulltable/bkp4.raw"
 #define BKP6FILE "/home/www/fulltable/bkp6.raw"
 #define ASNELM 1000000
