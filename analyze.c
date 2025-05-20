@@ -58,8 +58,9 @@ int main(){
   struct v4 v4;
   struct v6 v6;
   long i;
+  FILE *fp;
 
-  stat=(struct stat *)calloc(ASNELM*sizeof(struct stat));
+  stat=(struct stat *)calloc(ASNELM,sizeof(struct stat));
   if(stat==NULL)exit(0);
   fp=fopen(BKP4FILE,"rb");
   if(fp==NULL)exit(0);
