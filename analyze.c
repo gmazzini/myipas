@@ -70,7 +70,7 @@ int main(){
   fread(v4,sizeof(struct v4),elmv4,fp);
   fclose(fp);
   for(i=0;i<elmv4;i++){
-    printf("%lu\n",i);
+    if(i%1000==1)printf("%lu\n",i);
     myadd(0,v4[i].asn,v4[i].cidr);
   }
   free(v4);
@@ -83,7 +83,7 @@ int main(){
   fread(v6,sizeof(struct v6),elmv6,fp);
   fclose(fp);
   for(i=0;i<elmv6;i++){
-    printf("%lu\n",i);
+    if(i%1000==1)printf("%lu\n",i);
     myadd(1,v6[i].asn,v6[i].cidr);
   }
   free(v6);
