@@ -70,7 +70,6 @@ int main(){
   fread(v4,sizeof(struct v4),elmv4,fp);
   fclose(fp);
   for(i=0;i<elmv4;i++){
-    fread(&v4,sizeof(struct v4),1,fp);
     printf("%lu\n",i);
     myadd(0,v4[i].asn,v4[i].cidr);
   }
@@ -79,11 +78,15 @@ int main(){
   fp=fopen(BKP6FILE,"rb");
   if(fp==NULL)exit(0);
   fread(&elmv6,4,1,fp);
-  for(i=0;i<elmv6;i++){
-    fread(&v6,sizeof(struct v6),1,fp);
-    myadd(1,v6.asn,v6.cidr);
-  }
+  v6=(struct v6 *)malloc(elmv6*sizeof(struct v6));
+  if(v6==NULL)exit(0);
+  fread(v6,sizeof(struct v6),elmv6,fp);
   fclose(fp);
+  for(i=0;i<elmv6;i++){
+    printf("%lu\n",i);
+    myadd(1,v6[i].asn,v6[i].cidr);
+  }
+  free(v6);
 
   printf("%lu\n",elm);
   
