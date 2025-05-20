@@ -58,6 +58,7 @@ int main(){
   struct v4 *v4;
   struct v6 *v6;
   long i;
+  uint8_t j;
   FILE *fp;
 
   stat=(struct stat *)calloc(ASNELM,sizeof(struct stat));
