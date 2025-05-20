@@ -67,6 +67,7 @@ int main(){
   fread(&elmv4,4,1,fp);
   for(i=0;i<elmv4;i++){
     fread(&v4,sizeof(struct v4),1,fp);
+    printf("%lu\n",i);
     myadd(0,v4.asn,v4.cidr);
   }
   fclose(fp);
