@@ -65,6 +65,7 @@ int main(){
   fp=fopen(BKP4FILE,"rb");
   if(fp==NULL)exit(0);
   fread(&elmv4,4,1,fp);
+  elmv4=100000;
   v4=(struct v4 *)malloc(elmv4*sizeof(struct v4));
   if(v4==NULL)exit(0);
   fread(v4,sizeof(struct v4),elmv4,fp);
@@ -78,6 +79,7 @@ int main(){
   fp=fopen(BKP6FILE,"rb");
   if(fp==NULL)exit(0);
   fread(&elmv6,4,1,fp);
+  elmv6=100000;
   v6=(struct v6 *)malloc(elmv6*sizeof(struct v6));
   if(v6==NULL)exit(0);
   fread(v6,sizeof(struct v6),elmv6,fp);
