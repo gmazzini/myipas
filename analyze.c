@@ -1,3 +1,4 @@
+#include <stdio.h>
 #define BKP4FILE "/home/www/fulltable/bkp4.raw"
 #define BKP6FILE "/home/www/fulltable/bkp6.raw"
 #define ASNELM 1000000
@@ -45,8 +46,10 @@ void myadd(uint8_t v6,uint32_t asn,uint8_t cidr){
       for(i=elm;i>pos;i--)stat[i]=stat[i-1];
       elm++;
     }
-    stat[pos].asn=asn;
-    if(v6)if(stat[pos].cidr=cidr;
+  }
+  stat[pos].asn=asn;
+  if(v6)stat[pos].v6[cidr]++;
+  else stat[pos].v4[cidr]++;
 }
 
 int main(){
@@ -72,7 +75,7 @@ int main(){
     myadd(1,v6.asn,v6.cidr);
   }
   fclose(fp);
-  
-  
 
+  printf("%lu\n",elm);
+  
 }
