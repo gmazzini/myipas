@@ -78,7 +78,7 @@ void myins(char *ptr,int len,uint32_t asn){
         pos=start;
         for(i=elmv6;i>pos;i--)v6[i]=v6[i-1];
         elmv6++;
-        newinfo++,
+        newinfo++;
       }
     }
     v6[pos].ip=ip6;
