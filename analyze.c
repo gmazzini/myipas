@@ -21,6 +21,9 @@ struct stat {
 } *stat;
 long elmv4,elmv6,elm;
 
+void myadd(uint8_t v6,uint32_t asn,uint8_t cidr){
+}
+
 int main(){
   struct v4 v4;
   struct v6 v6;
