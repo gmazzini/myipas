@@ -71,7 +71,7 @@ int main(){
   fread(v4,sizeof(struct v4),elmv4,fp);
   fclose(fp);
   for(i=0;i<elmv4;i++){
-    if(i%1000==1)printf("%lu\n",i);
+    if(i%5000==0)printf("%lu\n",i);
     myadd(0,v4[i].asn,v4[i].cidr);
   }
   free(v4);
@@ -85,11 +85,17 @@ int main(){
   fread(v6,sizeof(struct v6),elmv6,fp);
   fclose(fp);
   for(i=0;i<elmv6;i++){
-    if(i%1000==1)printf("%lu\n",i);
+    if(i%5000==0)printf("%lu\n",i);
     myadd(1,v6[i].asn,v6[i].cidr);
   }
   free(v6);
 
-  printf("%lu\n",elm);
+  for(i=0;i<elm;i++){
+    printf("%lu\n",stat[i].asn);
+    for(j=8;j<24;j++)printf("%lu,",stat[i].v4[j]);
+    printf("\n");
+    for(j=16;j<48;j++)printf("%lu,",stat[i].v4[j]);
+    printf("\n--\n");
+  }
   
 }
