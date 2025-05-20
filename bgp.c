@@ -193,7 +193,7 @@ int callback_ris(struct lws *wsi,enum lws_callback_reasons reason,void *user,voi
 }
 
 struct lws_protocols protocols[]={
-  {.name="ris-protocol",.callback=callback_ris,.per_session_data_size=0,.rx_buffer_size=0,},
+  {.name="ris-protocol",.callback=callback_ris,.per_session_data_size=0,.rx_buffer_size=65536,},
   {NULL,NULL,0,0}
 };
 
