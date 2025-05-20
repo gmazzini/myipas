@@ -25,7 +25,7 @@ struct stat {
 long elmv4,elmv6,elm;
 
 void myadd(uint8_t v6,uint32_t asn,uint8_t cidr){
-  long start,end,pos;
+  long start,end,pos,i;
   uint8_t found;
   
   if(elm==0){
