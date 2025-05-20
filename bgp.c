@@ -30,7 +30,7 @@ pthread_mutex_t lock=PTHREAD_MUTEX_INITIALIZER;
 int server_fd=-1;
 
 uint8_t interrupted=0;
-uint32_t follow=0,mask4[33];
+uint32_t follow=0,mask4[33],rxinfo=0,newinfo=0;
 uint64_t mask6[65];
 struct lws *web_socket=NULL;
 char *subscribe_message="{\"type\": \"ris_subscribe\", \"data\": {\"type\": \"UPDATE\", \"host\": \"rrc00\"}}";
@@ -78,6 +78,7 @@ void myins(char *ptr,int len,uint32_t asn){
         pos=start;
         for(i=elmv6;i>pos;i--)v6[i]=v6[i-1];
         elmv6++;
+        newinfo++,
       }
     }
     v6[pos].ip=ip6;
@@ -110,6 +111,7 @@ void myins(char *ptr,int len,uint32_t asn){
       pos=start;
       for(i=elmv4;i>pos;i--)v4[i]=v4[i-1];
       elmv4++;
+      newinfo++;
     }
   }
   v4[pos].ip=ip4;
@@ -136,6 +138,7 @@ int callback_ris(struct lws *wsi,enum lws_callback_reasons reason,void *user,voi
       lws_write(wsi,&aux[LWS_PRE],msg_len,LWS_WRITE_TEXT);
       break;
     case LWS_CALLBACK_CLIENT_RECEIVE:
+      rxinfo++;
       ptr=(char *)in;
       if(ptr[len-1]!='}'){memcpy(lbuf+follow,ptr,len); follow+=len;  break;}
       if(follow>0){memcpy(lbuf+follow,ptr,len); len+=follow; follow=0; ptr=lbuf;}        
@@ -351,7 +354,7 @@ void *whois_server_thread(void *arg){
           }
         }
       }
-      sprintf(buf,"--\n%u match found\n%lu v4 elm\n%lu v6 elm\n",nfound,elmv4,elmv6);
+      sprintf(buf,"--\n%u match found\n%lu v4 elm\n%lu v6 elm\n%lu rx info\n%lu new info\n",nfound,elmv4,elmv6,rxinfo,newinfo);
       write(client_fd,buf,strlen(buf));
       pthread_mutex_unlock(&lock);
     }
