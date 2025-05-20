@@ -55,8 +55,8 @@ void myadd(uint8_t v6,uint32_t asn,uint8_t cidr){
 }
 
 int main(){
-  struct v4 v4;
-  struct v6 v6;
+  struct v4 *v4;
+  struct v6 *v6;
   long i;
   FILE *fp;
 
@@ -65,12 +65,17 @@ int main(){
   fp=fopen(BKP4FILE,"rb");
   if(fp==NULL)exit(0);
   fread(&elmv4,4,1,fp);
+  v4=(struct v4 *)malloc(elmv4*sizeof(struct v4));
+  if(v4==NULL)exit(0);
+  fread(v4,sizeof(struct v4),elmv4,fp);
+  fclose(fp);
   for(i=0;i<elmv4;i++){
     fread(&v4,sizeof(struct v4),1,fp);
     printf("%lu\n",i);
-    myadd(0,v4.asn,v4.cidr);
+    myadd(0,v4[i].asn,v4[i].cidr);
   }
-  fclose(fp);
+  free(v4);
+  
   fp=fopen(BKP6FILE,"rb");
   if(fp==NULL)exit(0);
   fread(&elmv6,4,1,fp);
