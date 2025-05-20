@@ -22,6 +22,31 @@ struct stat {
 long elmv4,elmv6,elm;
 
 void myadd(uint8_t v6,uint32_t asn,uint8_t cidr){
+  long start,end,pos;
+  uint8_t found;
+  
+  if(elm==0){
+    pos=0;
+    elm=1;
+  }
+  else {
+    start=0;
+    end=elm-1;
+    found=0;
+    while(start<=end){
+      pos=start+(end-start)/2;
+      if(asn==stat[pos].asn){found=1; break;}
+      else if(asn>stat[pos].asn)start=pos+1;
+      else end=pos-1;
+    }
+    if(!found){
+      if(elm>=ASNELM)exit(0);
+      pos=start;
+      for(i=elm;i>pos;i--)stat[i]=stat[i-1];
+      elm++;
+    }
+    stat[pos].asn=asn;
+    if(v6)if(stat[pos].cidr=cidr;
 }
 
 int main(){
