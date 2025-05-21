@@ -50,8 +50,8 @@ void myadd(uint8_t v6,uint32_t asn,uint8_t cidr){
     }
   }
   if(!found){
-    for(j=0;j<33;j++)stat[pos].v4[cidr]=0;
-    for(j=0;j<129;j++)stat[pos].v6[cidr]=0;
+    for(j=0;j<33;j++)stat[pos].v4[j]=0;
+    for(j=0;j<129;j++)stat[pos].v6[j]=0;
     stat[pos].asn=asn;
   }
   if(v6)stat[pos].v6[cidr]++;
