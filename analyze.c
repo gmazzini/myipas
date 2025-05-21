@@ -86,10 +86,10 @@ int main(){
 
   for(i=0;i<elm;i++){
     printf("asn:%lu\n",stat[i].asn);
-    for(tot=0,j=8;j<=24;j++)tot+=(1UL<<(32-j));
+    for(tot=0,j=8;j<=24;j++)tot+=stat[i].v4[j]*(1UL<<(32-j));
     printf("v4:%llu:",tot);
     for(j=8;j<=24;j++)printf("%lu ",stat[i].v4[j]);
-    for(tot=0,j=16;j<=48;j++)tot+=(1UL<<(128-j));
+    for(tot=0,j=16;j<=48;j++)tot+=stat[i].v6[j]*(1UL<<(128-j));
     printf("\nv6:%llu:",tot);
     for(j=16;j<=48;j++)printf("%lu ",stat[i].v6[j]);
     printf("\n--\n");
