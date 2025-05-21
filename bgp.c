@@ -30,7 +30,7 @@ pthread_mutex_t lock=PTHREAD_MUTEX_INITIALIZER;
 int server_fd=-1;
 
 uint8_t interrupted=0;
-uint32_t follow=0,mask4[33],rxinfo=0,newinfo=0,tstart,tlast;
+uint32_t follow=0,mask4[33],rxinfo=0,newinfo=0,tstart,trx,tnew;
 uint64_t mask6[65];
 struct lws *web_socket=NULL;
 char *subscribe_message="{\"type\": \"ris_subscribe\", \"data\": {\"type\": \"UPDATE\", \"host\": \"rrc00\"}}";
@@ -79,6 +79,7 @@ void myins(char *ptr,int len,uint32_t asn){
         for(i=elmv6;i>pos;i--)v6[i]=v6[i-1];
         elmv6++;
         newinfo++;
+        tnew=time(NULL);
       }
     }
     v6[pos].ip=ip6;
@@ -112,6 +113,7 @@ void myins(char *ptr,int len,uint32_t asn){
       for(i=elmv4;i>pos;i--)v4[i]=v4[i-1];
       elmv4++;
       newinfo++;
+      tnew=time(NULL);
     }
   }
   v4[pos].ip=ip4;
@@ -139,7 +141,7 @@ int callback_ris(struct lws *wsi,enum lws_callback_reasons reason,void *user,voi
       break;
     case LWS_CALLBACK_CLIENT_RECEIVE:
       rxinfo++;
-      tlast=time(NULL);
+      trx=time(NULL);
       ptr=(char *)in;
       if(ptr[len-1]!='}'){memcpy(lbuf+follow,ptr,len); follow+=len;  break;}
       if(follow>0){memcpy(lbuf+follow,ptr,len); len+=follow; follow=0; ptr=lbuf;}        
@@ -358,14 +360,17 @@ void *whois_server_thread(void *arg){
           }
         }
       }
-      sprintf(buf,"--\n%u match found\n%lu v4 elm\n%lu v6 elm\n",nfound,elmv4,elmv6);
-      write(client_fd,buf,strlen(buf));
       tt=(time_t)tstart;
+      tm_info=localtime(&tt);
+      strftime(buft,15,"%Y%m%d%H%M%S",tm_info);
+      sprintf(buf,"--\n%u match found\n%lu v4 elm\n%lu v6 elm\n%s start",nfound,elmv4,elmv6,buft);
+      write(client_fd,buf,strlen(buf));
+      tt=(time_t)trx;
       tm_info=localtime(&tt);
       strftime(buft,15,"%Y%m%d%H%M%S",tm_info);
       sprintf(buf,"%lu %s rx info\n",rxinfo,buft);
       write(client_fd,buf,strlen(buf));
-      tt=(time_t)tlast;
+      tt=(time_t)tnew;
       tm_info=localtime(&tt);
       strftime(buft,15,"%Y%m%d%H%M%S",tm_info);
       sprintf(buf,"%lu %s new info\n",newinfo,buft);
@@ -386,7 +391,7 @@ int main(void) {
   FILE *fp;
   uint8_t i;
 
-  tlast=tstart=time(NULL);
+  trx=tnew==tstart=time(NULL);
   v4=(struct v4 *)malloc(LENELM*sizeof(struct v4));
   if(v4==NULL)exit(0);
   v6=(struct v6 *)malloc(LENELM*sizeof(struct v6));
