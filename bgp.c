@@ -30,7 +30,7 @@ pthread_mutex_t lock=PTHREAD_MUTEX_INITIALIZER;
 int server_fd=-1;
 
 uint8_t interrupted=0;
-uint32_t follow=0,mask4[33],rxinfo=0,newinfo=0;
+uint32_t follow=0,mask4[33],rxinfo=0,newinfo=0,tstart,tlast;
 uint64_t mask6[65];
 struct lws *web_socket=NULL;
 char *subscribe_message="{\"type\": \"ris_subscribe\", \"data\": {\"type\": \"UPDATE\", \"host\": \"rrc00\"}}";
@@ -139,6 +139,7 @@ int callback_ris(struct lws *wsi,enum lws_callback_reasons reason,void *user,voi
       break;
     case LWS_CALLBACK_CLIENT_RECEIVE:
       rxinfo++;
+      tlast=time();
       ptr=(char *)in;
       if(ptr[len-1]!='}'){memcpy(lbuf+follow,ptr,len); follow+=len;  break;}
       if(follow>0){memcpy(lbuf+follow,ptr,len); len+=follow; follow=0; ptr=lbuf;}        
@@ -253,7 +254,7 @@ void sigint_handler(int sig){
       fclose(fp);
       break;
     
-    case SIGINT:
+    case 34:
       fp=fopen(BKP4FILE,"wb");
       fwrite(&elmv4,4,1,fp);
       fwrite(v4,sizeof(struct v4),elmv4,fp);
@@ -262,6 +263,9 @@ void sigint_handler(int sig){
       fwrite(&elmv6,4,1,fp);
       fwrite(v6,sizeof(struct v6),elmv6,fp);
       fclose(fp);
+      break;
+
+    case 35:
       if(server_fd>=0)shutdown(server_fd,SHUT_RDWR);;
       interrupted=1;
       break;
@@ -272,7 +276,7 @@ void sigint_handler(int sig){
 void *whois_server_thread(void *arg){
   int client_fd,opt;
   struct sockaddr_in addr;
-  char buf[100],buft[15];
+  char buf[200],buft[15];
   ssize_t n;
   uint8_t a[4],found,cidr,nfound;
   int i,j,len;
@@ -294,7 +298,7 @@ void *whois_server_thread(void *arg){
   while(!interrupted){
     client_fd=accept(server_fd,NULL,NULL);
     if(client_fd<0)continue;
-    n=read(client_fd,buf,99);
+    n=read(client_fd,buf,199);
     if(n>0){
       pthread_mutex_lock(&lock);
       buf[n]='\0';
@@ -354,7 +358,17 @@ void *whois_server_thread(void *arg){
           }
         }
       }
-      sprintf(buf,"--\n%u match found\n%lu v4 elm\n%lu v6 elm\n%lu rx info\n%lu new info\n",nfound,elmv4,elmv6,rxinfo,newinfo);
+      sprintf(buf,"--\n%u match found\n%lu v4 elm\n%lu v6 elm\n",nfound,elmv4,elmv6);
+      write(client_fd,buf,strlen(buf));
+      tt=(time_t)tstart;
+      tm_info=localtime(&tt);
+      strftime(buft,15,"%Y%m%d%H%M%S",tm_info);
+      sprintf(buf,"%lu %s rx info\n",rxinfo,buft);
+      write(client_fd,buf,strlen(buf));
+      tt=(time_t)tlast;
+      tm_info=localtime(&tt);
+      strftime(buft,15,"%Y%m%d%H%M%S",tm_info);
+      sprintf(buf,"%lu %s new info\n",newinfo,buft);
       write(client_fd,buf,strlen(buf));
       pthread_mutex_unlock(&lock);
     }
@@ -372,6 +386,7 @@ int main(void) {
   FILE *fp;
   uint8_t i;
 
+  tlast=tstart=time();
   v4=(struct v4 *)malloc(LENELM*sizeof(struct v4));
   if(v4==NULL)exit(0);
   v6=(struct v6 *)malloc(LENELM*sizeof(struct v6));
@@ -392,7 +407,8 @@ int main(void) {
   }
   mask4[0]=0; for(i=1;i<33;i++)mask4[i]=~((1U<<(32-i))-1);
   mask6[0]=0; for(i=1;i<65;i++)mask6[i]=~((1UL<<(64-i))-1);
-  signal(SIGINT,sigint_handler);
+  signal(34,sigint_handler);
+  signal(35,sigint_handler);
   signal(SIGUSR1,sigint_handler);
   signal(SIGUSR2,sigint_handler);
   
