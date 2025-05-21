@@ -391,7 +391,7 @@ int main(void) {
   FILE *fp;
   uint8_t i;
 
-  trx=tnew==tstart=time(NULL);
+  trx=tnew=tstart=time(NULL);
   v4=(struct v4 *)malloc(LENELM*sizeof(struct v4));
   if(v4==NULL)exit(0);
   v6=(struct v6 *)malloc(LENELM*sizeof(struct v6));
