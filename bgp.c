@@ -363,7 +363,7 @@ void *whois_server_thread(void *arg){
       tt=(time_t)tstart;
       tm_info=localtime(&tt);
       strftime(buft,15,"%Y%m%d%H%M%S",tm_info);
-      sprintf(buf,"--\n%u match found\n%lu v4 elm\n%lu v6 elm\n%s start",nfound,elmv4,elmv6,buft);
+      sprintf(buf,"--\n%u match found\n%lu v4 elm\n%lu v6 elm\n%s start\n",nfound,elmv4,elmv6,buft);
       write(client_fd,buf,strlen(buf));
       tt=(time_t)trx;
       tm_info=localtime(&tt);
