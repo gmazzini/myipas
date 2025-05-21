@@ -218,7 +218,7 @@ void sigint_handler(int sig){
     fclose(fp);
   }
   switch(sig){
-    case SIGUSR1:
+    case 34:
       for(i=0;i<33;i++)c4[i]=0;
       for(j=0,i=0;i<elmv4;i++)if(ts-v4[i].ts<dts){v4[j]=v4[i]; c4[v4[j].cidr]++; j++;}
       elmv4=j;
@@ -234,7 +234,7 @@ void sigint_handler(int sig){
       fclose(fp);
       break;
     
-    case SIGUSR2:
+    case 35:
       for(i=0;i<129;i++)c6[i]=0;
       for(j=0,i=0;i<elmv6;i++)if(ts-v6[i].ts<dts){v6[j]=v6[i]; c6[v6[j].cidr]++; j++;}
       elmv6=j;
@@ -254,7 +254,7 @@ void sigint_handler(int sig){
       fclose(fp);
       break;
     
-    case 34:
+    case 36:
       fp=fopen(BKP4FILE,"wb");
       fwrite(&elmv4,4,1,fp);
       fwrite(v4,sizeof(struct v4),elmv4,fp);
@@ -265,7 +265,7 @@ void sigint_handler(int sig){
       fclose(fp);
       break;
 
-    case 35:
+    case 37:
       if(server_fd>=0)shutdown(server_fd,SHUT_RDWR);;
       interrupted=1;
       break;
@@ -409,8 +409,8 @@ int main(void) {
   mask6[0]=0; for(i=1;i<65;i++)mask6[i]=~((1UL<<(64-i))-1);
   signal(34,sigint_handler);
   signal(35,sigint_handler);
-  signal(SIGUSR1,sigint_handler);
-  signal(SIGUSR2,sigint_handler);
+  signal(36,sigint_handler);
+  signal(37,sigint_handler);
   
   memset(&info,0,sizeof(info));
   info.port=CONTEXT_PORT_NO_LISTEN;
