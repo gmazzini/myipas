@@ -57,6 +57,7 @@ void myadd(uint8_t v6,uint32_t asn,uint8_t cidr){
 int main(){
   struct v4 *v4;
   struct v6 *v6;
+  uint64_t tot;
   long i;
   uint8_t j;
   FILE *fp;
@@ -84,10 +85,13 @@ int main(){
   free(v6);
 
   for(i=0;i<elm;i++){
-    printf("asn:%lu\nv4:",stat[i].asn);
-    for(j=8;j<24;j++)printf("%lu,",stat[i].v4[j]);
-    printf("\nv6:");
-    for(j=16;j<48;j++)printf("%lu,",stat[i].v6[j]);
+    printf("asn:%lu\n",stat[i].asn);
+    for(tot=0,j=8;j<=24;j++)tot+=(1UL<<(32-j));
+    printf("v4:%llu:",tot);
+    for(j=8;j<=24;j++)printf("%lu ",stat[i].v4[j]);
+    for(tot=0,j=16;j<=48;j++)tot+=(1UL<<(128-j));
+    printf("\nv6:%llu:",tot);
+    for(j=16;j<=48;j++)printf("%lu ",stat[i].v6[j]);
     printf("\n--\n");
   }
   
