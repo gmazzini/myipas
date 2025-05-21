@@ -49,6 +49,14 @@ void myadd(uint8_t v6,uint32_t asn,uint8_t cidr){
       elm++;
     }
   }
+  if(asn==31638){
+    printf("%d %lu %d\n",v6,asn,cidr);
+    int j;
+    for(j=8;j<=24;j++)printf("%lu ",stat[pos].v4[j]);
+    printf("\n");
+    for(j=16;j<=48;j++)printf("%lu ",stat[pos].v6[j]);
+    printf("\n\n");
+  }
   stat[pos].asn=asn;
   if(v6)stat[pos].v6[cidr]++;
   else stat[pos].v4[cidr]++;
