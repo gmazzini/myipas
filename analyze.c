@@ -31,6 +31,7 @@ void myadd(uint8_t v6,uint32_t asn,uint8_t cidr){
   if(elm==0){
     pos=0;
     elm=1;
+found=2;
   }
   else {
     start=0;
@@ -50,7 +51,7 @@ void myadd(uint8_t v6,uint32_t asn,uint8_t cidr){
     }
   }
   if(asn==31638){
-    printf("%d %lu %d\n",v6,asn,cidr);
+    printf("%d %d %lu %d\n",v6,found,asn,cidr);
     int j;
     for(j=8;j<=24;j++)printf("%lu ",stat[pos].v4[j]);
     printf("\n");
