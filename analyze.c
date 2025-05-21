@@ -26,8 +26,9 @@ long elmv4,elmv6,elm;
 
 void myadd(uint8_t v6,uint32_t asn,uint8_t cidr){
   long start,end,pos,i;
-  uint8_t found;
-  
+  uint8_t found,j;
+
+  found=0;
   if(elm==0){
     pos=0;
     elm=1;
@@ -35,7 +36,6 @@ void myadd(uint8_t v6,uint32_t asn,uint8_t cidr){
   else {
     start=0;
     end=elm-1;
-    found=0;
     while(start<=end){
       pos=start+(end-start)/2;
       if(asn==stat[pos].asn){found=1; break;}
@@ -49,15 +49,11 @@ void myadd(uint8_t v6,uint32_t asn,uint8_t cidr){
       elm++;
     }
   }
-  if(asn==31638){
-    printf("%d %d %lu %d\n",v6,found,asn,cidr);
-    int j;
-    for(j=8;j<=24;j++)printf("%lu ",stat[pos].v4[j]);
-    printf("\n");
-    for(j=16;j<=48;j++)printf("%lu ",stat[pos].v6[j]);
-    printf("\n\n");
+  if(!found){
+    for(j=0;j<33;j++)stat[pos].v4[cidr]=0;
+    for(j=0;j<129;j++)stat[pos].v6[cidr]=0;
+    stat[pos].asn=asn;
   }
-  stat[pos].asn=asn;
   if(v6)stat[pos].v6[cidr]++;
   else stat[pos].v4[cidr]++;
 }
@@ -70,7 +66,7 @@ int main(){
   uint8_t j;
   FILE *fp;
 
-  stat=(struct stat *)calloc(ASNELM,sizeof(struct stat));
+  stat=(struct stat *)malloc(ASNELM*sizeof(struct stat));
   if(stat==NULL)exit(0);
   fp=fopen(BKP4FILE,"rb");
   if(fp==NULL)exit(0);
