@@ -31,7 +31,6 @@ void myadd(uint8_t v6,uint32_t asn,uint8_t cidr){
   if(elm==0){
     pos=0;
     elm=1;
-found=2;
   }
   else {
     start=0;
