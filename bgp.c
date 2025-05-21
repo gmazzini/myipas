@@ -139,7 +139,7 @@ int callback_ris(struct lws *wsi,enum lws_callback_reasons reason,void *user,voi
       break;
     case LWS_CALLBACK_CLIENT_RECEIVE:
       rxinfo++;
-      tlast=time();
+      tlast=time(NULL);
       ptr=(char *)in;
       if(ptr[len-1]!='}'){memcpy(lbuf+follow,ptr,len); follow+=len;  break;}
       if(follow>0){memcpy(lbuf+follow,ptr,len); len+=follow; follow=0; ptr=lbuf;}        
@@ -386,7 +386,7 @@ int main(void) {
   FILE *fp;
   uint8_t i;
 
-  tlast=tstart=time();
+  tlast=tstart=time(NULL);
   v4=(struct v4 *)malloc(LENELM*sizeof(struct v4));
   if(v4==NULL)exit(0);
   v6=(struct v6 *)malloc(LENELM*sizeof(struct v6));
