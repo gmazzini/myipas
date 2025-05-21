@@ -84,10 +84,10 @@ int main(){
   free(v6);
 
   for(i=0;i<elm;i++){
-    printf("%lu\n",stat[i].asn);
+    printf("asn:%lu\nv4:",stat[i].asn);
     for(j=8;j<24;j++)printf("%lu,",stat[i].v4[j]);
-    printf("\n");
-    for(j=16;j<48;j++)printf("%lu,",stat[i].v4[j]);
+    printf("\nv6:");
+    for(j=16;j<48;j++)printf("%lu,",stat[i].v6[j]);
     printf("\n--\n");
   }
   
