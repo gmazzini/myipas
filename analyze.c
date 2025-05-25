@@ -66,7 +66,7 @@ int main(){
   long i;
   uint8_t j;
   FILE *fp;
-  uint32_t vv[1000],ct;
+  uint32_t vv[1000];
   time_t tr;
 
   stat=(struct stat *)malloc(ASNELM*sizeof(struct stat));
