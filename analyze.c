@@ -65,9 +65,15 @@ int main(){
   long i;
   uint8_t j;
   FILE *fp;
+  uint32_t vv[1000],ct;
+  time_t tr;
 
   stat=(struct stat *)malloc(ASNELM*sizeof(struct stat));
   if(stat==NULL)exit(0);
+
+  for(i=0;i<1000;i++)vv[i]=0;
+  tr=time(NULL);
+  
   fp=fopen(BKP4FILE,"rb");
   if(fp==NULL)exit(0);
   fread(&elmv4,4,1,fp);
@@ -75,7 +81,10 @@ int main(){
   if(v4==NULL)exit(0);
   fread(v4,sizeof(struct v4),elmv4,fp);
   fclose(fp);
-  for(i=0;i<elmv4;i++)myadd(0,v4[i].asn,v4[i].cidr);
+  for(i=0;i<elmv4;i++){
+    vv[(tr-v4[i].ts])/3600]++;
+    myadd(0,v4[i].asn,v4[i].cidr);
+  }
   free(v4);
   
   fp=fopen(BKP6FILE,"rb");
@@ -85,7 +94,10 @@ int main(){
   if(v6==NULL)exit(0);
   fread(v6,sizeof(struct v6),elmv6,fp);
   fclose(fp);
-  for(i=0;i<elmv6;i++)myadd(1,v6[i].asn,v6[i].cidr);
+  for(i=0;i<elmv6;i++){
+    vv[(tr-v6[i].ts])/3600]++;
+    myadd(1,v6[i].asn,v6[i].cidr);
+  }
   free(v6);
 
   for(i=0;i<elm;i++){
@@ -98,5 +110,6 @@ int main(){
     for(j=16;j<=48;j++)printf("%lu ",stat[i].v6[j]);
     printf("\n--\n");
   }
+  for(i=0;i<1000;i++)printf("%lu %llu\n",i,vv[i]);
   
 }
