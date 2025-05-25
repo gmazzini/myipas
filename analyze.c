@@ -66,7 +66,7 @@ int main(){
   long i;
   uint8_t j;
   FILE *fp;
-  uint32_t vv[1000];
+  uint32_t vv[100];
   time_t tr;
 
   stat=(struct stat *)malloc(ASNELM*sizeof(struct stat));
@@ -83,7 +83,7 @@ int main(){
   fread(v4,sizeof(struct v4),elmv4,fp);
   fclose(fp);
   for(i=0;i<elmv4;i++){
-    vv[(tr-v4[i].ts)/3600]++;
+    vv[(tr-v4[i].ts)/86400]++;
     myadd(0,v4[i].asn,v4[i].cidr);
   }
   free(v4);
@@ -96,7 +96,7 @@ int main(){
   fread(v6,sizeof(struct v6),elmv6,fp);
   fclose(fp);
   for(i=0;i<elmv6;i++){
-    vv[(tr-v6[i].ts)/3600]++;
+    vv[(tr-v6[i].ts)/86400]++;
     myadd(1,v6[i].asn,v6[i].cidr);
   }
   free(v6);
@@ -111,6 +111,6 @@ int main(){
     for(j=16;j<=48;j++)printf("%lu ",stat[i].v6[j]);
     printf("\n--\n");
   }
-  for(i=0;i<1000;i++)printf("%lu %llu\n",i,vv[i]);
+  for(i=0;i<100;i++)printf("%lu %llu\n",i,vv[i]);
   
 }
