@@ -72,7 +72,7 @@ int main(){
   stat=(struct stat *)malloc(ASNELM*sizeof(struct stat));
   if(stat==NULL)exit(0);
 
-  for(i=0;i<1000;i++)vv[i]=0;
+  for(i=0;i<100;i++)vv[i]=0;
   tr=time(NULL);
   
   fp=fopen(BKP4FILE,"rb");
