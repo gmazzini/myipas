@@ -102,15 +102,15 @@ int main(){
   free(v6);
 
   for(i=0;i<elm;i++){
-    printf("asn:%lu\n",stat[i].asn);
+    printf("asn:%lu",stat[i].asn);
     for(tot=0,j=8;j<=24;j++)tot+=stat[i].v4[j]*(1UL<<(32-j));
-    printf("v4:%llu:",tot);
-    for(j=8;j<=24;j++)printf("%lu ",stat[i].v4[j]);
+    printf(" v4:%llu",tot);
+    for(j=8;j<=24;j++)printf(",%lu",stat[i].v4[j]);
     for(tot=0,j=16;j<=48;j++)tot+=stat[i].v6[j]*(1UL<<(128-j));
-    printf("\nv6:%llu:",tot);
-    for(j=16;j<=48;j++)printf("%lu ",stat[i].v6[j]);
-    printf("\n--\n");
+    printf(" v6:%llu",tot);
+    for(j=16;j<=48;j++)printf(",%lu",stat[i].v6[j]);
+    printf("\n");
   }
-  for(i=0;i<100;i++)printf("%lu %llu\n",i,vv[i]);
+  for(i=0;i<100;i++)printf("dd:%lu %llu\n",i,vv[i]);
   
 }
