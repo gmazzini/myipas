@@ -98,13 +98,9 @@ int main(){
       if(ptr[q]==NULL)exit(0);
       for(j=0;j<33;j++)ptr[q]->v4[j]=0;
       for(j=0;j<129;j++)ptr[q]->v6[j]=0;
+      ptr[q]->asn=v4.asn;
     }
-  
-
-
-
-    
-   // myadd(0,v4.asn,v4.cidr);
+    ptr[q]->v4[v4.cidr]++;
   }
   fclose(fp);
   for(i=0;i<100;i++)printf("dd:%lu %llu\n",i,vv[i]);
