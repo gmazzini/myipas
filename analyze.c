@@ -67,7 +67,7 @@ int main(){
   uint32_t i,vv[100];
   time_t tr;
 
-  stat=(struct stat *)malloc((1UL<<24)*sizeof(struct stat));
+  stat=(struct stat *)malloc(10000000*sizeof(struct stat));
   if(stat==NULL)exit(0);
 
   for(i=0;i<100;i++)vv[i]=0;
