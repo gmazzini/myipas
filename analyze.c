@@ -4,6 +4,7 @@
 #include <time.h>
 #define BKP4FILE "/home/www/fulltable/bkp4.raw"
 #define BKP6FILE "/home/www/fulltable/bkp6.raw"
+#define HASHELM 16777216
 
 struct v4 {
   uint32_t ip;
@@ -67,7 +68,7 @@ int main(){
   uint32_t i,vv[100];
   time_t tr;
 
-  stat=(struct stat *)malloc(10000000*sizeof(struct stat));
+  stat=(struct stat *)malloc(HASHELM*sizeof(struct stat));
   if(stat==NULL)exit(0);
 
   for(i=0;i<100;i++)vv[i]=0;
