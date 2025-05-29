@@ -63,14 +63,14 @@ int main(){
   struct v4 v4;
   struct v6 v6;
   uint64_t tot;
-  uint8_t j;
+  uint8_t j,*ptr;
   FILE *fp;
-  uint32_t i,vv[100],*ptr;
+  uint32_t i,vv[100];
   time_t tr;
 
-  ptr=(uint32_t *)malloc(HASHELM*sizeof(uint32_t));
-  for(i=0;i<HASHELM;i++)ptr[i]=NULL;
+  ptr=(uint8_t *)malloc(HASHELM*3);
   if(stat==NULL)exit(0);
+  for(i=0;i<HASHELM*3;i++)ptr[i]=0;
 
   for(i=0;i<100;i++)vv[i]=0;
   tr=time(NULL);
