@@ -106,9 +106,9 @@ int main(){
   for(i=0;i<10;i++)printf("dd:%lu %llu\n",i,vv[i]);
   for(i=0;i<HASHELM;i++)if(ptr[i]!=NULL){
     printf("asn:%lu\n",ptr[i]->asn);
-    for(tot=0,j=8;j<=24;j++)tot+=stat[i].v4[j]*(1UL<<(32-j));
+    for(tot=0,j=8;j<=24;j++)tot+=ptr[i]->v4[j]*(1UL<<(32-j));
     printf(" v4:%llu",tot);
-    for(j=8;j<=24;j++)printf(",%lu",stat[i].v4[j]);
+    for(j=8;j<=24;j++)printf(",%lu",ptr[i]->v4[j]);
     printf("\n");
 
   }
