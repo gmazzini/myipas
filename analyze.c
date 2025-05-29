@@ -71,6 +71,7 @@ int main(){
   ptr=(uint8_t *)malloc(HASHELM*3);
   if(stat==NULL)exit(0);
   for(i=0;i<HASHELM*3;i++)ptr[i]=0;
+  printf("ciao\n");
 
   for(i=0;i<100;i++)vv[i]=0;
   tr=time(NULL);
