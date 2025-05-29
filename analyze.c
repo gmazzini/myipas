@@ -91,7 +91,7 @@ exit(0);
   if(fp==NULL)exit(0);
   fread(&elmv6,4,1,fp);
   for(i=0;i<elmv6;i++){
-    fread(&v6,sizeof(struct v6),1,fp)
+    fread(&v6,sizeof(struct v6),1,fp);
     vv[(tr-v6.ts)/86400]++;
     myadd(1,v6.asn,v6.cidr);
   }
