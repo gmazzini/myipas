@@ -63,10 +63,9 @@ int main(){
   struct v4 v4;
   struct v6 v6;
   uint64_t tot;
-  long i;
   uint8_t j;
   FILE *fp;
-  uint32_t vv[100];
+  uint32_t i,vv[100];
   time_t tr;
 
   stat=(struct stat *)malloc(ASNELM*sizeof(struct stat));
@@ -85,6 +84,7 @@ int main(){
   }
   fclose(fp);
   for(i=0;i<100;i++)printf("dd:%lu %llu\n",i,vv[i]);
+  for(i=0;i<(1<<24);i++)j=1;
 exit(0);
    
   fp=fopen(BKP6FILE,"rb");
