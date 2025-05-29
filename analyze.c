@@ -64,28 +64,33 @@ int main(){
   }
   fclose(fp);
 
+  fp=fopen(BKP6FILE,"rb");
+  if(fp==NULL)exit(0);
+  fread(&elmv6,4,1,fp);
+  for(i=0;i<elmv6;i++){
+    fread(&v6,sizeof(struct v6),1,fp);
+    vv[(tr-v6.ts)/86400]++;
+    q=myhash(v6.asn);
+    if(ptr[q]==NULL){
+      ptr[q]=(struct stat *)malloc(sizeof(struct stat));
+      if(ptr[q]==NULL)exit(0);
+      for(j=0;j<33;j++)ptr[q]->v4[j]=0;
+      for(j=0;j<129;j++)ptr[q]->v6[j]=0;
+      ptr[q]->asn=v6.asn;
+    }
+    ptr[q]->v6[v6.cidr]++;
+  }
+  fclose(fp);
+
   for(i=0;i<10;i++)printf("dd:%lu %llu\n",i,vv[i]);
   for(i=0;i<HASHELM;i++)if(ptr[i]!=NULL){
     printf("asn:%lu",ptr[i]->asn);
     for(tot=0,j=8;j<=24;j++)tot+=ptr[i]->v4[j]*(1UL<<(32-j));
     printf(" v4:%llu",tot);
     for(j=8;j<=24;j++)printf(",%lu",ptr[i]->v4[j]);
-    printf("\n");
-
-  }
-exit(0);
-   
- /*
-  for(i=0;i<elm;i++){
-    printf("asn:%lu",stat[i].asn);
-    for(tot=0,j=8;j<=24;j++)tot+=stat[i].v4[j]*(1UL<<(32-j));
-    printf(" v4:%llu",tot);
-    for(j=8;j<=24;j++)printf(",%lu",stat[i].v4[j]);
-    for(tot=0,j=16;j<=48;j++)tot+=stat[i].v6[j]*(1UL<<(128-j));
+    for(tot=0,j=16;j<=48;j++)tot+=ptr[i]->v6[j]*(1UL<<(128-j));
     printf(" v6:%llu",tot);
-    for(j=16;j<=48;j++)printf(",%lu",stat[i].v6[j]);
+    for(j=16;j<=48;j++)printf(",%lu",ptr[i]->v6[j]);
     printf("\n");
-  }
-*/
-  
+  }  
 }
