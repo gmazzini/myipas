@@ -104,7 +104,9 @@ int main(){
   }
   fclose(fp);
   for(i=0;i<10;i++)printf("dd:%lu %llu\n",i,vv[i]);
-  for(i=0;i<HASHELM;i++)
+  for(i=0;i<HASHELM;i++)if(ptr[i]!=NULL){
+    printf("asn:%lu\n",ptr[i]->asn);
+  }
 exit(0);
    
   fp=fopen(BKP6FILE,"rb");
