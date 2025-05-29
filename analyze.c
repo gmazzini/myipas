@@ -92,7 +92,7 @@ int main(){
   for(i=0;i<elmv4;i++){
     fread(&v4,sizeof(struct v4),1,fp);
     vv[(tr-v4.ts)/86400]++;
-    q=myhash(v4.asn,v4.cidr);
+  //  q=myhash(v4.asn,v4.cidr);
 
 
 
@@ -101,7 +101,6 @@ int main(){
   }
   fclose(fp);
   for(i=0;i<100;i++)printf("dd:%lu %llu\n",i,vv[i]);
-  for(i=0;i<(1UL<<24);i++)j=1;
 exit(0);
    
   fp=fopen(BKP6FILE,"rb");
