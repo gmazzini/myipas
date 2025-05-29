@@ -6,59 +6,6 @@
 #define BKP6FILE "/home/www/fulltable/bkp6.raw"
 #define HASHELM 16777216
 
-struct v4 {
-  uint32_t ip;
-  uint8_t cidr;
-  uint32_t asn;
-  uint32_t ts;
-};
-struct v6 {
-  uint64_t ip;
-  uint8_t cidr;
-  uint32_t asn;
-  uint32_t ts;
-};
-struct stat {
-  uint32_t asn;
-  uint32_t v4[33];
-  uint32_t v6[129];
-} *stat;
-long elmv4,elmv6,elm;
-
-void myadd(uint8_t v6,uint32_t asn,uint8_t cidr){
-  long start,end,pos,i;
-  uint8_t found,j;
-
-  found=0;
-  if(elm==0){
-    pos=0;
-    elm=1;
-  }
-  else {
-    start=0;
-    end=elm-1;
-    while(start<=end){
-      pos=start+(end-start)/2;
-      if(asn==stat[pos].asn){found=1; break;}
-      else if(asn>stat[pos].asn)start=pos+1;
-      else end=pos-1;
-    }
-    if(!found){
-      if(elm>=100000)exit(0);
-      pos=start;
-      for(i=elm;i>pos;i--)stat[i]=stat[i-1];
-      elm++;
-    }
-  }
-  if(!found){
-    for(j=0;j<33;j++)stat[pos].v4[j]=0;
-    for(j=0;j<129;j++)stat[pos].v6[j]=0;
-    stat[pos].asn=asn;
-  }
-  if(v6)stat[pos].v6[cidr]++;
-  else stat[pos].v4[cidr]++;
-}
-
 uint32_t myhash(uint32_t asn){
   uint32_t x=asn;
   x^=x>>16;
@@ -70,13 +17,27 @@ uint32_t myhash(uint32_t asn){
 }
 
 int main(){
-  struct v4 v4;
-  struct v6 v6;
-  struct stat **ptr;
+  struct v4 {
+    uint32_t ip;
+    uint8_t cidr;
+    uint32_t asn;
+    uint32_t ts;
+  } v4;
+  struct v6 {
+    uint64_t ip;
+    uint8_t cidr;
+    uint32_t asn;
+    uint32_t ts;
+  } v6;
+  struct stat {
+    uint32_t asn;
+    uint32_t v4[33];
+    uint32_t v6[129];
+  } **ptr;
   uint64_t tot;
   uint8_t j;
   FILE *fp;
-  uint32_t i,vv[100],q;
+  uint32_t i,vv[100],q,elmv4,elmv6,elm;
   time_t tr;
 
   ptr=(struct stat **)malloc(HASHELM*sizeof(struct stat *));
@@ -114,16 +75,7 @@ int main(){
   }
 exit(0);
    
-  fp=fopen(BKP6FILE,"rb");
-  if(fp==NULL)exit(0);
-  fread(&elmv6,4,1,fp);
-  for(i=0;i<elmv6;i++){
-    fread(&v6,sizeof(struct v6),1,fp);
-    vv[(tr-v6.ts)/86400]++;
-    myadd(1,v6.asn,v6.cidr);
-  }
-  fclose(fp);
-
+ /*
   for(i=0;i<elm;i++){
     printf("asn:%lu",stat[i].asn);
     for(tot=0,j=8;j<=24;j++)tot+=stat[i].v4[j]*(1UL<<(32-j));
@@ -134,6 +86,6 @@ exit(0);
     for(j=16;j<=48;j++)printf(",%lu",stat[i].v6[j]);
     printf("\n");
   }
-  for(i=0;i<100;i++)printf("dd:%lu %llu\n",i,vv[i]);
+*/
   
 }
