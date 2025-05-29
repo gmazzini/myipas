@@ -37,7 +37,7 @@ int main(){
   uint64_t tot;
   uint8_t j;
   FILE *fp;
-  uint32_t i,vv[100],q,elmv4,elmv6,elm;
+  uint32_t i,vv[100],q,elmv4,elmv6;
   time_t tr;
 
   ptr=(struct stat **)malloc(HASHELM*sizeof(struct stat *));
