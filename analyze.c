@@ -65,10 +65,11 @@ int main(){
   uint64_t tot;
   uint8_t j;
   FILE *fp;
-  uint32_t i,vv[100];
+  uint32_t i,vv[100],*ptr;
   time_t tr;
 
-  stat=(struct stat *)malloc(HASHELM*sizeof(struct stat));
+  ptr=(uint32_t *)malloc(HASHELM*sizeof(uint32_t));
+  for(i=0;i<HASHELM;i++)ptr[i]=NULL;
   if(stat==NULL)exit(0);
 
   for(i=0;i<100;i++)vv[i]=0;
