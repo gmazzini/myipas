@@ -60,8 +60,8 @@ void myadd(uint8_t v6,uint32_t asn,uint8_t cidr){
 }
 
 int main(){
-  struct v4 *v4;
-  struct v6 *v6;
+  struct v4 v4;
+  struct v6 v6;
   uint64_t tot;
   long i;
   uint8_t j;
@@ -78,28 +78,24 @@ int main(){
   fp=fopen(BKP4FILE,"rb");
   if(fp==NULL)exit(0);
   fread(&elmv4,4,1,fp);
-  v4=(struct v4 *)malloc(elmv4*sizeof(struct v4));
-  if(v4==NULL)exit(0);
-  fread(v4,sizeof(struct v4),elmv4,fp);
-  fclose(fp);
   for(i=0;i<elmv4;i++){
-    vv[(tr-v4[i].ts)/86400]++;
-    myadd(0,v4[i].asn,v4[i].cidr);
+    fread(&v4,sizeof(struct v4),1,fp);
+    vv[(tr-v4.ts)/86400]++;
+   // myadd(0,v4.asn,v4.cidr);
   }
-  free(v4);
-  
+  fclose(fp);
+  for(i=0;i<100;i++)printf("dd:%lu %llu\n",i,vv[i]);
+exit(0);
+   
   fp=fopen(BKP6FILE,"rb");
   if(fp==NULL)exit(0);
   fread(&elmv6,4,1,fp);
-  v6=(struct v6 *)malloc(elmv6*sizeof(struct v6));
-  if(v6==NULL)exit(0);
-  fread(v6,sizeof(struct v6),elmv6,fp);
-  fclose(fp);
   for(i=0;i<elmv6;i++){
-    vv[(tr-v6[i].ts)/86400]++;
-    myadd(1,v6[i].asn,v6[i].cidr);
+    fread(v6,sizeof(struct v6),1,fp)
+    vv[(tr-v6.ts)/86400]++;
+    myadd(1,v6.asn,v6.cidr);
   }
-  free(v6);
+  fclose(fp);
 
   for(i=0;i<elm;i++){
     printf("asn:%lu",stat[i].asn);
