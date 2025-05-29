@@ -43,7 +43,7 @@ void myadd(uint8_t v6,uint32_t asn,uint8_t cidr){
       else end=pos-1;
     }
     if(!found){
-      if(elm>=ASNELM)exit(0);
+      if(elm>=100000)exit(0);
       pos=start;
       for(i=elm;i>pos;i--)stat[i]=stat[i-1];
       elm++;
