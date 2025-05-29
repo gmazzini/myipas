@@ -103,7 +103,8 @@ int main(){
     ptr[q]->v4[v4.cidr]++;
   }
   fclose(fp);
-  for(i=0;i<100;i++)printf("dd:%lu %llu\n",i,vv[i]);
+  for(i=0;i<10;i++)printf("dd:%lu %llu\n",i,vv[i]);
+  for(i=0;i<HASHELM;i++)
 exit(0);
    
   fp=fopen(BKP6FILE,"rb");
