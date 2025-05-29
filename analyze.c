@@ -59,20 +59,30 @@ void myadd(uint8_t v6,uint32_t asn,uint8_t cidr){
   else stat[pos].v4[cidr]++;
 }
 
+
+uint32_t myhash(uint32_t asn,uint8_t cidr){
+    uint64_t mix=((uint64_t)asn<<8)|cidr;
+    mix^=mix>>33;
+    mix*=0xff51afd7ed558ccdULL;
+    mix^=mix>>33;
+    mix*=0xc4ceb9fe1a85ec53ULL;
+    mix^=mix>>33;
+    return (uint32_t)(mix&0x00FFFFFF);
+}
+
 int main(){
   struct v4 v4;
   struct v6 v6;
+  struct stat **ptr;
   uint64_t tot;
-  uint8_t j,*ptr;
+  uint8_t j;
   FILE *fp;
-  uint32_t i,vv[100];
+  uint32_t i,vv[100],q;
   time_t tr;
 
-  ptr=(uint8_t *)malloc(HASHELM*3);
+  ptr=(struct stat **)malloc(HASHELM*sizeof(struct stat *));
   if(ptr==NULL)exit(0);
-  for(i=0;i<HASHELM*3;i++)ptr[i]=0;
-  printf("ciao\n");
-
+  for(i=0;i<HASHELM*sizeof(struct stat *);i++)ptr[i]=NULL;
   for(i=0;i<100;i++)vv[i]=0;
   tr=time(NULL);
   
@@ -82,6 +92,11 @@ int main(){
   for(i=0;i<elmv4;i++){
     fread(&v4,sizeof(struct v4),1,fp);
     vv[(tr-v4.ts)/86400]++;
+    q=myhash(v4.asn,v4.cidr);
+
+
+
+    
    // myadd(0,v4.asn,v4.cidr);
   }
   fclose(fp);
