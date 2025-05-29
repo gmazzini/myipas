@@ -4,7 +4,6 @@
 #include <time.h>
 #define BKP4FILE "/home/www/fulltable/bkp4.raw"
 #define BKP6FILE "/home/www/fulltable/bkp6.raw"
-#define ASNELM 1000000
 
 struct v4 {
   uint32_t ip;
@@ -68,7 +67,7 @@ int main(){
   uint32_t i,vv[100];
   time_t tr;
 
-  stat=(struct stat *)malloc(ASNELM*sizeof(struct stat));
+  stat=(struct stat *)malloc((1UL<<24)*sizeof(struct stat));
   if(stat==NULL)exit(0);
 
   for(i=0;i<100;i++)vv[i]=0;
@@ -84,7 +83,7 @@ int main(){
   }
   fclose(fp);
   for(i=0;i<100;i++)printf("dd:%lu %llu\n",i,vv[i]);
-  for(i=0;i<(1<<24);i++)j=1;
+  for(i=0;i<(1UL<<24);i++)j=1;
 exit(0);
    
   fp=fopen(BKP6FILE,"rb");
