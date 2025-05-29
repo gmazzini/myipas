@@ -93,6 +93,7 @@ int main(){
     fread(&v4,sizeof(struct v4),1,fp);
     vv[(tr-v4.ts)/86400]++;
     q=myhash(v4.asn,v4.cidr);
+    if(ptr[q]==NULL)ptr[q]=(struct stat *)malloc(sizeof(struct stat));
 
 
 
