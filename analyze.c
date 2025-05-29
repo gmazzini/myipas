@@ -82,7 +82,7 @@ int main(){
 
   ptr=(struct stat **)malloc(HASHELM*sizeof(struct stat *));
   if(ptr==NULL)exit(0);
-  for(i=0;i<HASHELM*sizeof(struct stat *);i++)ptr[i]=NULL;
+  for(i=0;i<HASHELM;i++)ptr[i]=NULL;
   for(i=0;i<100;i++)vv[i]=0;
   tr=time(NULL);
   
