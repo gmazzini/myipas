@@ -96,8 +96,8 @@ int main(){
     if(ptr[q]==NULL){
       ptr[q]=(struct stat *)malloc(sizeof(struct stat));
       if(ptr[q]==NULL)exit(0);
-      for(j=0;j<33;j++)ptr[q].v4[j]=0;
-      for(j=0;j<129;j++)ptr[q].v6[j]=0;
+      for(j=0;j<33;j++)ptr[q]->v4[j]=0;
+      for(j=0;j<129;j++)ptr[q]->v6[j]=0;
     }
   
 
