@@ -43,7 +43,7 @@ static const signed char dd[256]={
   ['a']=10,['b']=11,['c']=12,['d']=13,['e']=14,['f']=15
 };
 
-uint32_t h24uint32_t key){
+uint32_t h32to24(uint32_t key){
     uint32_t h1=0x9747b28c;
     key*=0xcc9e2d51UL;
     key=(key<<15)|(key>>(32-15));
@@ -61,8 +61,8 @@ uint32_t h24uint32_t key){
 }
 
 void myins(char *ptr,int len,uint32_t asn){
-  uint32_t ts,ip4;
-  uint8_t a[4];
+  uint32_t ts,ip4,q;
+  uint8_t a[4],cidr;
   long i,j;
 
   ts=time(NULL);
@@ -73,6 +73,15 @@ void myins(char *ptr,int len,uint32_t asn){
   for(ip4=0,j=0;j<4;j++){ip4<<=8; ip4|=a[j];}
   for(cidr=0,i++;i<len;i++)cidr=cidr*10+dd[ptr[i]];
   if(cidr<8||cidr>32)return;
+  q=h32to24((ip4&0xFFFFFF00)|cidr);
+  if(v4[q]==NULL){
+    v4[q]=(struct v4 *)malloc(sizeof(struct v4));
+    if(v4[q]==NULL)exit(0);
+      
+    }
+   
+  
+  
 }
 
 /*
