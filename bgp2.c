@@ -12,13 +12,14 @@
 #define BKP6FILE "/home/www/fulltable/bkp6.raw"
 #define LENELM 10000000
 #define LBUF 100000
+#define HASHELM 16777216UL
 
 struct v4 {
   uint32_t ip;
   uint8_t cidr;
   uint32_t asn;
   uint32_t ts;
-} *v4;
+} **v4;
 struct v6 {
   uint64_t ip;
   uint8_t cidr;
@@ -42,7 +43,43 @@ static const signed char dd[256]={
   ['a']=10,['b']=11,['c']=12,['d']=13,['e']=14,['f']=15
 };
 
+uint32_t h24uint32_t key){
+    uint32_t h1=0x9747b28c;
+    key*=0xcc9e2d51UL;
+    key=(key<<15)|(key>>(32-15));
+    k1*=0x1b873593UL;
+    h1^=key;
+    h1=(h1<<13)|(h1>>(32-13));
+    h1=h1*5+0xe6546b64;
+    h1^=4;
+    h1^=h1>>16;
+    h1*=0x85ebca6b;
+    h1^=h1>>13;
+    h1*=0xc2b2ae35;
+    h1^=h1>>16;
+    return h1&0x00FFFFFF;
+}
+
 void myins(char *ptr,int len,uint32_t asn){
+  uint32_t ts,ip4;
+  uint8_t a[4];
+  long i,j;
+
+  ts=time(NULL);
+  for(i=0;i<len;i++)if(ptr[i]==':'){
+    return;
+  }
+  for(i=-1,j=0;j<4;j++)for(a[j]=0,i++;i<len;i++)if((ptr[i]!='.'&&j<3) || (ptr[i]!='/'&&j==3))a[j]=a[j]*10+dd[ptr[i]]; else break;
+  for(ip4=0,j=0;j<4;j++){ip4<<=8; ip4|=a[j];}
+  for(cidr=0,i++;i<len;i++)cidr=cidr*10+dd[ptr[i]];
+  if(cidr<8||cidr>32)return;
+}
+
+/*
+  
+
+
+  
   uint32_t ip4,ts;
   uint8_t found,a[4],cidr;
   uint64_t ip6,b[4];
@@ -120,7 +157,7 @@ void myins(char *ptr,int len,uint32_t asn){
   v4[pos].cidr=cidr;
   v4[pos].asn=asn;
   v4[pos].ts=ts;
-}
+/*
 
 int callback_ris(struct lws *wsi,enum lws_callback_reasons reason,void *user,void *in,size_t len){
   unsigned char aux[LWS_PRE+512];
@@ -390,10 +427,16 @@ int main(void) {
   pthread_t whois_thread;
   FILE *fp;
   uint8_t i;
+  uint32_t j;
 
   trx=tnew=tstart=time(NULL);
-  v4=(struct v4 *)malloc(LENELM*sizeof(struct v4));
+
+  v4=(struct v4 **)malloc(HASHELM*sizeof(struct v4 *));
   if(v4==NULL)exit(0);
+  for(i=0;i<HASHELM;i++)v4[i]=NULL;
+
+
+
   v6=(struct v6 *)malloc(LENELM*sizeof(struct v6));
   if(v6==NULL)exit(0);
   lbuf=(char *)malloc(LBUF);
