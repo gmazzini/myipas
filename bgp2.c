@@ -215,13 +215,13 @@ void sigint_handler(int sig){
   }
   switch(sig){
     case 36:
-      for(nv4=0,i=0;i<HASHLELM;i++)if(v4[i]!=NULL)nv4++;
-      for(nv6=0,i=0;i<HASHLELM;i++)if(v6[i]!=NULL)nv6++;
+      for(nv4=0,i=0;i<HASHELM;i++)if(v4[i]!=NULL)nv4++;
+      for(nv6=0,i=0;i<HASHELM;i++)if(v6[i]!=NULL)nv6++;
       fp=fopen(BGPFILE,"wb");
       fwrite(&nv4,4,1,fp);
       fwrite(&nv6,4,1,fp);
-      for(i=0;i<HASLELM;i++)if(v4[i]!=NULL)fwrite(v4[i],sizeof(struct v4),1,fp);
-      for(i=0;i<HASLELM;i++)if(v6[i]!=NULL)fwrite(v6[i],sizeof(struct v6),1,fp);
+      for(i=0;i<HASHELM;i++)if(v4[i]!=NULL)fwrite(v4[i],sizeof(struct v4),1,fp);
+      for(i=0;i<HASHELM;i++)if(v6[i]!=NULL)fwrite(v6[i],sizeof(struct v6),1,fp);
       fclose(fp);
       break;
 
@@ -238,7 +238,7 @@ void *whois_server_thread(void *arg){
   struct sockaddr_in addr;
   char buf[200],buft[15];
   ssize_t n;
-  uint8_t a[4],found,cidr,nfound;
+  uint8_t a[4],cidr,nfound;
   int i,j,len;
   uint16_t b[4];
   uint32_t ip4,ip4org,q;
@@ -355,7 +355,7 @@ int main(void) {
       q=h32to24((av4.ip&0xFFFFFF00)|av4.cidr);
       v4[q]=(struct v4 *)malloc(sizeof(struct v4));
       if(v4[q]==NULL)exit(0);
-      v4[q]->ip4=av4.ip;
+      v4[q]->ip=av4.ip;
       v4[q]->cidr=av4.cidr;
       v4[q]->asn=av4.asn;
       v4[q]->ts=av4.ts;
@@ -365,7 +365,7 @@ int main(void) {
       q=h64to24((av6.ip&0xFFFFFFFFFFFFFF00ULL)|av6.cidr);
       v6[q]=(struct v6 *)malloc(sizeof(struct v6));
       if(v6[q]==NULL)exit(0);
-      v6[q]->ip4=av6.ip;
+      v6[q]->ip=av6.ip;
       v6[q]->cidr=av6.cidr;
       v6[q]->asn=av6.asn;
       v6[q]->ts=av6.ts;
