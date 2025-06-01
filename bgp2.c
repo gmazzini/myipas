@@ -5,7 +5,6 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <time.h>
-#define PARFILE "/home/www/fulltable/par.txt"
 #define BGPFILE "/home/www/fulltable/bgp.raw"
 #define LBUF 100000
 #define HASHELM 16777216UL
@@ -201,18 +200,10 @@ struct lws_protocols protocols[]={
 
 void sigint_handler(int sig){
   FILE *fp;
-  uint32_t i,nv4,nv6,ts,dts;
+  uint32_t i,nv4,nv6;
   char buf[100];
 
   pthread_mutex_lock(&lock);
-  ts=time(NULL);
-  dts=1000000000;
-  fp=fopen(PARFILE,"rt");
-  if(fp!=NULL){
-    fgets(buf,100,fp);
-    dts=strtoul(buf,NULL,10);
-    fclose(fp);
-  }
   switch(sig){
     case 36:
       for(nv4=0,i=0;i<HASHELM;i++)if(v4[i]!=NULL)nv4++;
