@@ -201,7 +201,6 @@ struct lws_protocols protocols[]={
 void sigint_handler(int sig){
   FILE *fp;
   uint32_t i,nv4,nv6;
-  char buf[100];
 
   pthread_mutex_lock(&lock);
   switch(sig){
@@ -232,8 +231,8 @@ void *whois_server_thread(void *arg){
   uint8_t a[4],cidr,nfound;
   int i,j,len;
   uint16_t b[4];
-  uint32_t ip4,ip4org,q;
-  uint64_t ip6,ip6org;
+  uint32_t ip4org,q;
+  uint64_t ip6org;
   long pos;
   time_t tt;
   struct tm *tm_info;
