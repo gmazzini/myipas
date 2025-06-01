@@ -336,7 +336,8 @@ int main(void) {
   lbuf=(char *)malloc(LBUF);
   if(lbuf==NULL)exit(0);
 
-  
+  printf("run 0\n");
+
   fp=fopen(BGPFILE,"rb");
   if(fp!=NULL){
     fread(&nv4,4,1,fp);
@@ -370,7 +371,7 @@ int main(void) {
   signal(36,sigint_handler);
   signal(37,sigint_handler);
 
-  printf("run\n");
+  printf("run 1\n");
   
   memset(&info,0,sizeof(info));
   info.port=CONTEXT_PORT_NO_LISTEN;
