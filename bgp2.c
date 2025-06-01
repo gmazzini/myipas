@@ -369,6 +369,8 @@ int main(void) {
   signal(35,sigint_handler);
   signal(36,sigint_handler);
   signal(37,sigint_handler);
+
+  printf("run\n");
   
   memset(&info,0,sizeof(info));
   info.port=CONTEXT_PORT_NO_LISTEN;
