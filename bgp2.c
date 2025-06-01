@@ -36,8 +36,9 @@ static const signed char dd[256]={
   ['a']=10,['b']=11,['c']=12,['d']=13,['e']=14,['f']=15
 };
 
-uint32_t h32to24(uint32_t key){
-  uint32_t h1=0x9747b28c;
+uint32_t hv4(uint32_t ip4,uint8_t cidr){
+  uint32_t h1=0x9747b28c,key;
+  key=(ip4&0xFFFFFF00)|cidr;
   key*=0xcc9e2d51UL;
   key=(key<<15)|(key>>(32-15));
   key*=0x1b873593UL;
@@ -53,8 +54,9 @@ uint32_t h32to24(uint32_t key){
   return h1&0x00FFFFFF;
 }
 
-uint32_t h64to24(uint64_t key){
-  uint64_t h1=0x9747b28c;
+uint32_t hv6(uint64_t ip6,uint8_t cidr){
+  uint64_t h1=0x9747b28c,key;
+  key=(ip6&0xFFFFFFFFFFFFFF00ULL)|cidr;
   key*=0x87c37b91114253d5ULL;
   key=(key<<31)|(key>>(64-31));
   key*=0x4cf5ad432745937fULL;
@@ -88,7 +90,7 @@ void myins(char *ptr,int len,uint32_t asn){
     for(ip6=0,j=0;j<4;j++){ip6<<=16; ip6|=b[j];}
     for(cidr=0,i++;i<len;i++)cidr=cidr*10+dd[ptr[i]];
     if(cidr<16||cidr>48)return;
-    q=h64to24((ip6&0xFFFFFFFFFFFFFF00ULL)|cidr);
+    q=hv6(ip6,cidr);
     if(v6[q]==NULL){
       v6[q]=(struct v6 *)malloc(sizeof(struct v6));
       if(v6[q]==NULL)exit(0);
@@ -105,7 +107,7 @@ void myins(char *ptr,int len,uint32_t asn){
   for(ip4=0,j=0;j<4;j++){ip4<<=8; ip4|=a[j];}
   for(cidr=0,i++;i<len;i++)cidr=cidr*10+dd[ptr[i]];
   if(cidr<8||cidr>32)return;
-  q=h32to24((ip4&0xFFFFFF00)|cidr);
+  q=hv4(ip4,cidr);
   if(v4[q]==NULL){
     v4[q]=(struct v4 *)malloc(sizeof(struct v4));
     if(v4[q]==NULL)exit(0);
