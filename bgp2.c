@@ -327,6 +327,8 @@ int main(void) {
 
   trx=tnew=tstart=time(NULL);
 
+  printf("run 0\n");
+  
   v4=(struct v4 **)malloc(HASHELM*sizeof(struct v4 *));
   if(v4==NULL)exit(0);
   for(i=0;i<HASHELM;i++)v4[i]=NULL;
@@ -336,7 +338,7 @@ int main(void) {
   lbuf=(char *)malloc(LBUF);
   if(lbuf==NULL)exit(0);
 
-  printf("run 0\n");
+  printf("run 1\n");
 
   fp=fopen(BGPFILE,"rb");
   if(fp!=NULL){
@@ -371,7 +373,7 @@ int main(void) {
   signal(36,sigint_handler);
   signal(37,sigint_handler);
 
-  printf("run 1\n");
+  printf("run 2\n");
   
   memset(&info,0,sizeof(info));
   info.port=CONTEXT_PORT_NO_LISTEN;
