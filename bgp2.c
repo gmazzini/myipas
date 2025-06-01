@@ -5,14 +5,8 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <time.h>
-#define V4FILE "/home/www/fulltable/m4.txt"
-#define V6FILE "/home/www/fulltable/m6.txt"
 #define PARFILE "/home/www/fulltable/par.txt"
-#define BKP4FILE "/home/www/fulltable/bkp4.raw"
-#define BKP6FILE "/home/www/fulltable/bkp6.raw"
-
 #define BGPFILE "/home/www/fulltable/bgp.raw"
-
 #define LBUF 100000
 #define HASHELM 16777216UL
 
@@ -222,42 +216,6 @@ void sigint_handler(int sig){
     fclose(fp);
   }
   switch(sig){
-    case 34:
-      for(i=0;i<33;i++)c4[i]=0;
-      for(j=0,i=0;i<elmv4;i++)if(ts-v4[i].ts<dts){v4[j]=v4[i]; c4[v4[j].cidr]++; j++;}
-      elmv4=j;
-      if(elmv4==0)break;
-      fp=fopen(V4FILE,"wt");
-      fprintf(fp,"# v4_tot: %lu\n",elmv4);
-      for(i=0;i<33;i++)if(c4[i]>0)fprintf(fp,"# v4_cidr%d: %lu\n",i,c4[i]);
-      for(i=0;i<elmv4;i++){
-        for(ip4=v4[i].ip,j=0;j<4;j++){a[j]=ip4&0xff; ip4>>=8;}
-        fprintf(fp,"%d.%d.%d.%d",a[3],a[2],a[1],a[0]);
-        fprintf(fp,"/%d,%lu\n",v4[i].cidr,v4[i].asn);
-      }
-      fclose(fp);
-      break;
-    
-    case 35:
-      for(i=0;i<129;i++)c6[i]=0;
-      for(j=0,i=0;i<elmv6;i++)if(ts-v6[i].ts<dts){v6[j]=v6[i]; c6[v6[j].cidr]++; j++;}
-      elmv6=j;
-      if(elmv6==0)break;
-      fp=fopen(V6FILE,"wt");
-      fprintf(fp,"# v6_tot: %lu\n",elmv6);
-      for(i=0;i<129;i++)if(c6[i]>0)fprintf(fp,"# v6_cidr%d: %lu\n",i,c6[i]);
-      for(i=0;i<elmv6;i++){
-        for(ip6=v6[i].ip,q=0;q<64;q++)if(ip6&1)break; else ip6>>=1;
-        for(ip6=v6[i].ip,j=0;j<4;j++){b[j]=ip6&0xffff; ip6>>=16;}
-        if(q>=48)fprintf(fp,"%x::",b[3]);
-        else if(q>=32)fprintf(fp,"%x:%x::",b[3],b[2]);
-        else if(q>=16)fprintf(fp,"%x:%x:%x::",b[3],b[2],b[1]);
-        else fprintf(fp,"%x:%x:%x:%x::",b[3],b[2],b[1],b[0]);
-        fprintf(fp,"/%d,%lu\n",v6[i].cidr,v6[i].asn);
-      }
-      fclose(fp);
-      break;
-    
     case 36:
       for(nv4=0,i=0;i<HASLELM;i++)if(v4[i]!=NULL)nv4++;
       for(nv6=0,i=0;i<HASLELM;i++)if(v6[i]!=NULL)nv6++;
