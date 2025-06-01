@@ -10,7 +10,10 @@
 #define PARFILE "/home/www/fulltable/par.txt"
 #define BKP4FILE "/home/www/fulltable/bkp4.raw"
 #define BKP6FILE "/home/www/fulltable/bkp6.raw"
-ì#define LBUF 100000
+
+#define BGPFILE "/home/www/fulltable/bgp.raw"
+
+#define LBUF 100000
 #define HASHELM 16777216UL
 
 struct v4 {
@@ -204,7 +207,7 @@ struct lws_protocols protocols[]={
 
 void sigint_handler(int sig){
   FILE *fp;
-  uint32_t i,j,q,ip4,ts,dts,c4[33],c6[129];
+  uint32_t i,j,q,ip4,ts,dts,c4[33],c6[129],nv4,nv6;
   uint8_t a[4];
   uint64_t b[4],ip6;
   char buf[100];
@@ -256,13 +259,13 @@ void sigint_handler(int sig){
       break;
     
     case 36:
-      fp=fopen(BKP4FILE,"wb");
-      fwrite(&elmv4,4,1,fp);
-      fwrite(v4,sizeof(struct v4),elmv4,fp);
-      fclose(fp);
-      fp=fopen(BKP6FILE,"wb");
-      fwrite(&elmv6,4,1,fp);
-      fwrite(v6,sizeof(struct v6),elmv6,fp);
+      for(nv4=0,i=0;i<HASLELM;i++)if(v4[i]!=NULL)nv4++;
+      for(nv6=0,i=0;i<HASLELM;i++)if(v6[i]!=NULL)nv6++;
+      fp=fopen(BGPFILE,"wb");
+      fwrite(&nv4,4,1,fp);
+      fwrite(&nv6,4,1,fp);
+      for(i=0;i<HASLELM;i++)if(v4[i]!=NULL)fwrite(v4[i],sizeof(struct v4),1,fp);
+      for(i=0;i<HASLELM;i++)if(v6[i]!=NULL)fwrite(v6[i],sizeof(struct v6),1,fp);
       fclose(fp);
       break;
 
@@ -389,7 +392,9 @@ int main(void) {
   pthread_t whois_thread;
   FILE *fp;
   uint8_t i;
-  uint32_t j;
+  uint32_t j,nv4,nv6,q;
+  struct v4 av4;
+  struct v6 av6;
 
   trx=tnew=tstart=time(NULL);
 
@@ -399,19 +404,34 @@ int main(void) {
   v6=(struct v6 **)malloc(HASHELM*sizeof(struct v6 *));
   if(v6==NULL)exit(0);
   for(i=0;i<HASHELM;i++)v6[i]=NULL;
-
   lbuf=(char *)malloc(LBUF);
   if(lbuf==NULL)exit(0);
-  fp=fopen(BKP4FILE,"rb");
+
+  
+  fp=fopen(BGPFILE,"rb");
   if(fp!=NULL){
-    fread(&elmv4,4,1,fp);
-    fread(v4,sizeof(struct v4),elmv4,fp);
-    fclose(fp);
-  }
-  fp=fopen(BKP6FILE,"rb");
-  if(fp!=NULL){
-    fread(&elmv6,4,1,fp);
-    fread(v6,sizeof(struct v6),elmv6,fp);
+    fread(&nv4,4,1,fp);
+    fread(&nv6,4,1,fp);
+    for(j=0;j<nv4;j++){
+      fread(&av4,sizeof(struct v4),1,fp);
+      q=h32to24((av4.ip&0xFFFFFF00)|av4.cidr);
+      v4[q]=(struct v4 *)malloc(sizeof(struct v4));
+      if(v4[q]==NULL)exit(0);
+      v4[q]->ip4=av4.ip;
+      v4[q]->cidr=av4.cidr;
+      v4[q]->asn=av4.asn;
+      v4[q]->ts=av4.ts;
+    }
+    for(j=0;j<nv4;j++){
+      fread(&av6,sizeof(struct v6),1,fp);
+      q=h64to24((av6.ip&0xFFFFFFFFFFFFFF00ULL)|av6.cidr);
+      v6[q]=(struct v6 *)malloc(sizeof(struct v6));
+      if(v6[q]==NULL)exit(0);
+      v6[q]->ip4=av6.ip;
+      v6[q]->cidr=av6.cidr;
+      v6[q]->asn=av6.asn;
+      v6[q]->ts=av6.ts;
+    }
     fclose(fp);
   }
   mask4[0]=0; for(i=1;i<33;i++)mask4[i]=~((1U<<(32-i))-1);
