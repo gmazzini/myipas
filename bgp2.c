@@ -10,8 +10,7 @@
 #define PARFILE "/home/www/fulltable/par.txt"
 #define BKP4FILE "/home/www/fulltable/bkp4.raw"
 #define BKP6FILE "/home/www/fulltable/bkp6.raw"
-#define LENELM 10000000
-#define LBUF 100000
+ì#define LBUF 100000
 #define HASHELM 16777216UL
 
 struct v4 {
@@ -25,7 +24,7 @@ struct v6 {
   uint8_t cidr;
   uint32_t asn;
   uint32_t ts;
-} *v6;
+} **v6;
 pthread_mutex_t lock=PTHREAD_MUTEX_INITIALIZER;
 int server_fd=-1;
 uint8_t interrupted=0;
@@ -77,11 +76,32 @@ uint32_t h64to24(uint64_t key){
 
 void myins(char *ptr,int len,uint32_t asn){
   uint32_t ts,ip4,q;
+  uint64_t ip6;
   uint8_t a[4],cidr;
+  uint16_t b[4];
   long i,j;
 
   ts=time(NULL);
   for(i=0;i<len;i++)if(ptr[i]==':'){
+    for(j=0;j<4;j++)b[j]=0;
+    for(i=-1,j=0;j<4;j++){
+      for(i++;i<len;i++)if(ptr[i]!=':' && ptr[i]!='/')b[j]=b[j]*16+dd[ptr[i]]; else break;
+      if(ptr[i+1]==':')for(i++;i<len;i++)if(ptr[i]=='/')break;
+      if(ptr[i]=='/')break;
+    }
+    for(ip6=0,j=0;j<4;j++){ip6<<=16; ip6|=b[j];}
+    for(cidr=0,i++;i<len;i++)cidr=cidr*10+dd[ptr[i]];
+    if(cidr<16||cidr>48)return;
+    q=h64to24((ip6&0xFFFFFFFFFFFFFF00ULL)|cidr);
+    if(v6[q]==NULL){
+      v6[q]=(struct v6 *)malloc(sizeof(struct v6));
+      if(v6[q]==NULL)exit(0);
+    }
+    else if((v6[q]->ip6!=ip6)||(v6[q]->cidr!=cidr))coll6++;
+    v6[q]->ip4=ip6;
+    v6[q]->cidr=cidr;
+    v6[q]->asn=asn;
+    v6[q]->ts=ts;
     return;
   }
   for(i=-1,j=0;j<4;j++)for(a[j]=0,i++;i<len;i++)if((ptr[i]!='.'&&j<3) || (ptr[i]!='/'&&j==3))a[j]=a[j]*10+dd[ptr[i]]; else break;
@@ -93,96 +113,13 @@ void myins(char *ptr,int len,uint32_t asn){
     v4[q]=(struct v4 *)malloc(sizeof(struct v4));
     if(v4[q]==NULL)exit(0);
   }
-  else if((v4[q]->ip4!=ip4)||(4[q]->cidr!=cidr))coll4++;
+  else if((v4[q]->ip4!=ip4)||(v4[q]->cidr!=cidr))coll4++;
   v4[q]->ip4=ip4;
   v4[q]->cidr=cidr;
   v4[q]->asn=asn;
   v4[q]->ts=ts;
+  return;
 }
-
-/*
-  
-
-
-  
-  uint32_t ip4,ts;
-  uint8_t found,a[4],cidr;
-  uint64_t ip6,b[4];
-  long start,end,pos,i,j;
-  
-  ts=time(NULL);
-  for(i=0;i<len;i++)if(ptr[i]==':'){
-    for(j=0;j<4;j++)b[j]=0;
-    for(i=-1,j=0;j<4;j++){
-      for(i++;i<len;i++)if(ptr[i]!=':' && ptr[i]!='/')b[j]=b[j]*16+dd[ptr[i]]; else break;
-      if(ptr[i+1]==':')for(i++;i<len;i++)if(ptr[i]=='/')break;
-      if(ptr[i]=='/')break;
-    }
-    for(ip6=0,j=0;j<4;j++){ip6<<=16; ip6|=b[j];}
-    for(cidr=0,i++;i<len;i++)cidr=cidr*10+dd[ptr[i]];
-    if(cidr>128)return;
-    if(elmv6==0){
-      pos=0;
-      elmv6=1;
-    }
-    else {
-      start=0;
-      end=elmv6-1;
-      found=0;
-      while(start<=end){
-        pos=start+(end-start)/2;
-        if(ip6==v6[pos].ip && cidr==v6[pos].cidr){found=1; break;}
-        else if(ip6>v6[pos].ip || (ip6==v6[pos].ip && cidr>v6[pos].cidr))start=pos+1;
-        else end=pos-1;
-      }
-      if(!found){
-        if(elmv6>=LENELM){interrupted=1; return;}
-        pos=start;
-        for(i=elmv6;i>pos;i--)v6[i]=v6[i-1];
-        elmv6++;
-        newinfo++;
-        tnew=time(NULL);
-      }
-    }
-    v6[pos].ip=ip6;
-    v6[pos].cidr=cidr;
-    v6[pos].asn=asn;
-    v6[pos].ts=ts;
-    return;
-  }
-
-  for(i=-1,j=0;j<4;j++)for(a[j]=0,i++;i<len;i++)if((ptr[i]!='.'&&j<3) || (ptr[i]!='/'&&j==3))a[j]=a[j]*10+dd[ptr[i]]; else break;
-  for(ip4=0,j=0;j<4;j++){ip4<<=8; ip4|=a[j];}
-  for(cidr=0,i++;i<len;i++)cidr=cidr*10+dd[ptr[i]];
-  if(cidr>32)return;
-  if(elmv4==0){
-    pos=0;
-    elmv4=1;
-  }
-  else {
-    start=0;
-    end=elmv4-1;
-    found=0;
-    while(start<=end){
-      pos=start+(end-start)/2;
-      if(ip4==v4[pos].ip && cidr==v4[pos].cidr){found=1; break;}
-      else if(ip4>v4[pos].ip || (ip4==v4[pos].ip && cidr>v4[pos].cidr))start=pos+1;
-      else end=pos-1;
-    }
-    if(!found){
-      if(elmv4>=LENELM){interrupted=1; return;}
-      pos=start;
-      for(i=elmv4;i>pos;i--)v4[i]=v4[i-1];
-      elmv4++;
-      newinfo++;
-      tnew=time(NULL);
-    }
-  }
-  v4[pos].ip=ip4;
-  v4[pos].cidr=cidr;
-  v4[pos].asn=asn;
-  v4[pos].ts=ts;
-/*
 
 int callback_ris(struct lws *wsi,enum lws_callback_reasons reason,void *user,void *in,size_t len){
   unsigned char aux[LWS_PRE+512];
