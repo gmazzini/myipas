@@ -201,7 +201,7 @@ struct lws_protocols protocols[]={
 
 void sigint_handler(int sig){
   FILE *fp;
-  uint32_t i,nv4,nv6;
+  uint32_t i,nv4,nv6,ts,dts;
   char buf[100];
 
   pthread_mutex_lock(&lock);
