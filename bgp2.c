@@ -24,7 +24,7 @@ struct v6 {
 pthread_mutex_t lock=PTHREAD_MUTEX_INITIALIZER;
 int server_fd=-1;
 uint8_t interrupted=0;
-uint32_t follow=0,mask4[33],rxinfo=0,newinfo=0,tstart,trx,tnew,coll4=0,coll6=0;
+uint32_t follow=0,mask4[33],rxinfo=0,newinfo=0,tstart,trx,tnew,coll4=0,coll6=0,nv4,nv6;
 uint64_t mask6[65];
 struct lws *web_socket=NULL;
 char *subscribe_message="{\"type\": \"ris_subscribe\", \"data\": {\"type\": \"UPDATE\", \"host\": \"rrc00\"}}";
@@ -92,6 +92,7 @@ void myins(char *ptr,int len,uint32_t asn){
     if(v6[q]==NULL){
       v6[q]=(struct v6 *)malloc(sizeof(struct v6));
       if(v6[q]==NULL)exit(0);
+      nv6++;
     }
     else if((v6[q]->ip!=ip6)||(v6[q]->cidr!=cidr))coll6++;
     v6[q]->ip=ip6;
@@ -108,9 +109,9 @@ void myins(char *ptr,int len,uint32_t asn){
   if(v4[q]==NULL){
     v4[q]=(struct v4 *)malloc(sizeof(struct v4));
     if(v4[q]==NULL)exit(0);
+    nv4++;
   }
   else if((v4[q]->ip!=ip4)||(v4[q]->cidr!=cidr))coll4++;
-  printf("%lu\n",coll4);
   v4[q]->ip=ip4;
   v4[q]->cidr=cidr;
   v4[q]->asn=asn;
@@ -201,7 +202,7 @@ struct lws_protocols protocols[]={
 
 void sigint_handler(int sig){
   FILE *fp;
-  uint32_t i,nv4,nv6;
+  uint32_t i;
 
   pthread_mutex_lock(&lock);
   switch(sig){
@@ -294,7 +295,7 @@ void *whois_server_thread(void *arg){
       tt=(time_t)tstart;
       tm_info=localtime(&tt);
       strftime(buft,15,"%Y%m%d%H%M%S",tm_info);
-      sprintf(buf,"--\n%u match found\n%lu v4 elm\n%lu v6 elm\n%s start\n",nfound,0,0,buft);
+      sprintf(buf,"--\n%u match found\n%lu v4 elm\n%lu v4 collisions\n%lu v6 elm\n%lu v6 collisions\n%s start\n",nfound,nv4,coll4,nv6,coll6,buft);
       write(client_fd,buf,strlen(buf));
       tt=(time_t)trx;
       tm_info=localtime(&tt);
@@ -353,7 +354,7 @@ int main(void) {
       v4[q]->asn=av4.asn;
       v4[q]->ts=av4.ts;
     }
-    for(j=0;j<nv4;j++){
+    for(j=0;j<nv6;j++){
       fread(&av6,sizeof(struct v6),1,fp);
       q=h64to24((av6.ip&0xFFFFFFFFFFFFFF00ULL)|av6.cidr);
       v6[q]=(struct v6 *)malloc(sizeof(struct v6));
