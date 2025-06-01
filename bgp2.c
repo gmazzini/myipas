@@ -320,8 +320,7 @@ int main(void) {
   struct lws_context *context;
   pthread_t whois_thread;
   FILE *fp;
-  uint8_t i;
-  uint32_t j,nv4,nv6,q;
+  uint32_t i,j,nv4,nv6,q;
   struct v4 av4;
   struct v6 av6;
 
