@@ -41,7 +41,7 @@ uint32_t h32to24(uint32_t key){
     uint32_t h1=0x9747b28c;
     key*=0xcc9e2d51UL;
     key=(key<<15)|(key>>(32-15));
-    k1*=0x1b873593UL;
+    key*=0x1b873593UL;
     h1^=key;
     h1=(h1<<13)|(h1>>(32-13));
     h1=h1*5+0xe6546b64;
@@ -57,7 +57,7 @@ uint32_t h32to24(uint32_t key){
 uint32_t h64to24(uint64_t key){
   uint64_t h1=0x9747b28c;
   key*=0x87c37b91114253d5ULL;
-  key=(k1<<31)|(k1>>(64-31));
+  key=(key<<31)|(key>>(64-31));
   key*=0x4cf5ad432745937fULL;
   h1^=key;
   h1=(h1 << 27) | (h1 >> (64 - 27));
