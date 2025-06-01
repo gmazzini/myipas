@@ -94,8 +94,8 @@ void myins(char *ptr,int len,uint32_t asn){
       v6[q]=(struct v6 *)malloc(sizeof(struct v6));
       if(v6[q]==NULL)exit(0);
     }
-    else if((v6[q]->ip6!=ip6)||(v6[q]->cidr!=cidr))coll6++;
-    v6[q]->ip4=ip6;
+    else if((v6[q]->ip!=ip6)||(v6[q]->cidr!=cidr))coll6++;
+    v6[q]->ip=ip6;
     v6[q]->cidr=cidr;
     v6[q]->asn=asn;
     v6[q]->ts=ts;
@@ -110,8 +110,8 @@ void myins(char *ptr,int len,uint32_t asn){
     v4[q]=(struct v4 *)malloc(sizeof(struct v4));
     if(v4[q]==NULL)exit(0);
   }
-  else if((v4[q]->ip4!=ip4)||(v4[q]->cidr!=cidr))coll4++;
-  v4[q]->ip4=ip4;
+  else if((v4[q]->ip!=ip4)||(v4[q]->cidr!=cidr))coll4++;
+  v4[q]->ip=ip4;
   v4[q]->cidr=cidr;
   v4[q]->asn=asn;
   v4[q]->ts=ts;
@@ -201,9 +201,7 @@ struct lws_protocols protocols[]={
 
 void sigint_handler(int sig){
   FILE *fp;
-  uint32_t i,j,q,ip4,ts,dts,c4[33],c6[129],nv4,nv6;
-  uint8_t a[4];
-  uint64_t b[4],ip6;
+  uint32_t i,nv4,nv6;
   char buf[100];
 
   pthread_mutex_lock(&lock);
@@ -217,8 +215,8 @@ void sigint_handler(int sig){
   }
   switch(sig){
     case 36:
-      for(nv4=0,i=0;i<HASLELM;i++)if(v4[i]!=NULL)nv4++;
-      for(nv6=0,i=0;i<HASLELM;i++)if(v6[i]!=NULL)nv6++;
+      for(nv4=0,i=0;i<HASHLELM;i++)if(v4[i]!=NULL)nv4++;
+      for(nv6=0,i=0;i<HASHLELM;i++)if(v6[i]!=NULL)nv6++;
       fp=fopen(BGPFILE,"wb");
       fwrite(&nv4,4,1,fp);
       fwrite(&nv6,4,1,fp);
@@ -245,7 +243,7 @@ void *whois_server_thread(void *arg){
   uint16_t b[4];
   uint32_t ip4,ip4org,q;
   uint64_t ip6,ip6org;
-  long start,end,pos;
+  long pos;
   time_t tt;
   struct tm *tm_info;
 
