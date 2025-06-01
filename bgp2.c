@@ -243,7 +243,7 @@ void *whois_server_thread(void *arg){
   uint8_t a[4],found,cidr,nfound;
   int i,j,len;
   uint16_t b[4];
-  uint32_t ip4,ip4org;
+  uint32_t ip4,ip4org,q;
   uint64_t ip6,ip6org;
   long start,end,pos;
   time_t tt;
@@ -272,21 +272,12 @@ void *whois_server_thread(void *arg){
         for(i=-1,j=0;j<4;j++)for(a[j]=0,i++;i<len;i++)if((buf[i]!='.'&&j<3) || (buf[i]!='\0'&&j==3))a[j]=a[j]*10+dd[buf[i]]; else break;
         for(ip4org=0,j=0;j<4;j++){ip4org<<=8; ip4org|=a[j];}
         for(cidr=24;cidr>=8;cidr--){
-          ip4=ip4org&mask4[cidr];
-          start=0;
-          end=elmv4-1;
-          found=0;
-          while(start<=end){
-            pos=start+(end-start)/2;
-            if(ip4==v4[pos].ip && cidr==v4[pos].cidr){found=1; break;}
-            else if(ip4>v4[pos].ip || (ip4==v4[pos].ip && cidr>v4[pos].cidr))start=pos+1;
-            else end=pos-1;
-          }
-          if(found){
-            tt=(time_t)v4[pos].ts;
+          q=h32to24((ip4org&0xFFFFFF00)|cidr);
+          if(v4[q]!=NULL){
+            tt=(time_t)v4[pos]->ts;
             tm_info=localtime(&tt);
             strftime(buft,15,"%Y%m%d%H%M%S",tm_info);
-            sprintf(buf,"%u %lu %s\n",cidr,v4[pos].asn,buft);
+            sprintf(buf,"%u %lu %s\n",cidr,v4[pos]->asn,buft);
             write(client_fd,buf,strlen(buf));
             nfound++;
           }
@@ -299,22 +290,13 @@ void *whois_server_thread(void *arg){
           if(buf[i]=='\0' || buf[i+1]==':')break;
         }
         for(ip6org=0,j=0;j<4;j++){ip6org<<=16; ip6org|=b[j];}
-        for(cidr=64;cidr>=16;cidr--){
-          ip6=ip6org&mask6[cidr];
-          start=0;
-          end=elmv6-1;
-          found=0;
-          while(start<=end){
-            pos=start+(end-start)/2;
-            if(ip6==v6[pos].ip && cidr==v6[pos].cidr){found=1; break;}
-            else if(ip6>v6[pos].ip || (ip6==v6[pos].ip && cidr>v6[pos].cidr))start=pos+1;
-            else end=pos-1;
-          }
-          if(found){
-            tt=(time_t)v6[pos].ts;
+        for(cidr=48;cidr>=16;cidr--){
+          q=h64to24((ip6org&0xFFFFFFFFFFFFFF00ULL)|cidr);
+          if(v6[q]!=NULL){
+            tt=(time_t)v6[pos]->ts;
             tm_info=localtime(&tt);
             strftime(buft,15,"%Y%m%d%H%M%S",tm_info);
-            sprintf(buf,"%u %lu %s\n",cidr,v6[pos].asn,buft);
+            sprintf(buf,"%u %lu %s\n",cidr,v6[pos]->asn,buft);
             write(client_fd,buf,strlen(buf));
             nfound++;
           }
@@ -323,7 +305,7 @@ void *whois_server_thread(void *arg){
       tt=(time_t)tstart;
       tm_info=localtime(&tt);
       strftime(buft,15,"%Y%m%d%H%M%S",tm_info);
-      sprintf(buf,"--\n%u match found\n%lu v4 elm\n%lu v6 elm\n%s start\n",nfound,elmv4,elmv6,buft);
+      sprintf(buf,"--\n%u match found\n%lu v4 elm\n%lu v6 elm\n%s start\n",nfound,0,0,buft);
       write(client_fd,buf,strlen(buf));
       tt=(time_t)trx;
       tm_info=localtime(&tt);
