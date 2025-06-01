@@ -37,20 +37,20 @@ static const signed char dd[256]={
 };
 
 uint32_t h32to24(uint32_t key){
-    uint32_t h1=0x9747b28c;
-    key*=0xcc9e2d51UL;
-    key=(key<<15)|(key>>(32-15));
-    key*=0x1b873593UL;
-    h1^=key;
-    h1=(h1<<13)|(h1>>(32-13));
-    h1=h1*5+0xe6546b64;
-    h1^=4;
-    h1^=h1>>16;
-    h1*=0x85ebca6b;
-    h1^=h1>>13;
-    h1*=0xc2b2ae35;
-    h1^=h1>>16;
-    return h1&0x00FFFFFF;
+  uint32_t h1=0x9747b28c;
+  key*=0xcc9e2d51UL;
+  key=(key<<15)|(key>>(32-15));
+  key*=0x1b873593UL;
+  h1^=key;
+  h1=(h1<<13)|(h1>>(32-13));
+  h1=h1*5+0xe6546b64;
+  h1^=4;
+  h1^=h1>>16;
+  h1*=0x85ebca6b;
+  h1^=h1>>13;
+  h1*=0xc2b2ae35;
+  h1^=h1>>16;
+  return h1&0x00FFFFFF;
 }
 
 uint32_t h64to24(uint64_t key){
@@ -110,6 +110,7 @@ void myins(char *ptr,int len,uint32_t asn){
     if(v4[q]==NULL)exit(0);
   }
   else if((v4[q]->ip!=ip4)||(v4[q]->cidr!=cidr))coll4++;
+  printf("%lu\n",coll4);
   v4[q]->ip=ip4;
   v4[q]->cidr=cidr;
   v4[q]->asn=asn;
