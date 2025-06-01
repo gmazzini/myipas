@@ -26,12 +26,10 @@ struct v6 {
   uint32_t asn;
   uint32_t ts;
 } *v6;
-long elmv4=0,elmv6=0;
 pthread_mutex_t lock=PTHREAD_MUTEX_INITIALIZER;
 int server_fd=-1;
-
 uint8_t interrupted=0;
-uint32_t follow=0,mask4[33],rxinfo=0,newinfo=0,tstart,trx,tnew;
+uint32_t follow=0,mask4[33],rxinfo=0,newinfo=0,tstart,trx,tnew,coll4=0,coll6=0;
 uint64_t mask6[65];
 struct lws *web_socket=NULL;
 char *subscribe_message="{\"type\": \"ris_subscribe\", \"data\": {\"type\": \"UPDATE\", \"host\": \"rrc00\"}}";
@@ -60,6 +58,23 @@ uint32_t h32to24(uint32_t key){
     return h1&0x00FFFFFF;
 }
 
+uint32_t h64to24(uint64_t key){
+  uint64_t h1=0x9747b28c;
+  key*=0x87c37b91114253d5ULL;
+  key=(k1<<31)|(k1>>(64-31));
+  key*=0x4cf5ad432745937fULL;
+  h1^=key;
+  h1=(h1 << 27) | (h1 >> (64 - 27));
+  h1=h1*5+0x52dce729;
+  h1^=8;
+  h1^=h1>>33;
+  h1*=0xff51afd7ed558ccdULL;
+  h1^=h1>>33;
+  h1*=0xc4ceb9fe1a85ec53ULL;
+  h1^=h1>>33;
+  return (uint32_t)(h1&0xFFFFFF);
+}
+
 void myins(char *ptr,int len,uint32_t asn){
   uint32_t ts,ip4,q;
   uint8_t a[4],cidr;
@@ -77,11 +92,12 @@ void myins(char *ptr,int len,uint32_t asn){
   if(v4[q]==NULL){
     v4[q]=(struct v4 *)malloc(sizeof(struct v4));
     if(v4[q]==NULL)exit(0);
-      
-    }
-   
-  
-  
+  }
+  else if((v4[q]->ip4!=ip4)||(4[q]->cidr!=cidr))coll4++;
+  v4[q]->ip4=ip4;
+  v4[q]->cidr=cidr;
+  v4[q]->asn=asn;
+  v4[q]->ts=ts;
 }
 
 /*
@@ -443,11 +459,10 @@ int main(void) {
   v4=(struct v4 **)malloc(HASHELM*sizeof(struct v4 *));
   if(v4==NULL)exit(0);
   for(i=0;i<HASHELM;i++)v4[i]=NULL;
-
-
-
-  v6=(struct v6 *)malloc(LENELM*sizeof(struct v6));
+  v6=(struct v6 **)malloc(HASHELM*sizeof(struct v6 *));
   if(v6==NULL)exit(0);
+  for(i=0;i<HASHELM;i++)v6[i]=NULL;
+
   lbuf=(char *)malloc(LBUF);
   if(lbuf==NULL)exit(0);
   fp=fopen(BKP4FILE,"rb");
