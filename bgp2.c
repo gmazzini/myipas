@@ -235,8 +235,8 @@ void *whois_server_thread(void *arg){
   uint8_t a[4],cidr,nfound;
   int i,j,len;
   uint16_t b[4];
-  uint32_t ip4org,q;
-  uint64_t ip6org;
+  uint32_t ip4,q;
+  uint64_t ip6;
   long pos;
   time_t tt;
   struct tm *tm_info;
@@ -262,9 +262,9 @@ void *whois_server_thread(void *arg){
       if(i<len){
         for(j=0;j<4;j++)a[j]=0;
         for(i=-1,j=0;j<4;j++)for(a[j]=0,i++;i<len;i++)if((buf[i]!='.'&&j<3) || (buf[i]!='\0'&&j==3))a[j]=a[j]*10+dd[buf[i]]; else break;
-        for(ip4org=0,j=0;j<4;j++){ip4org<<=8; ip4org|=a[j];}
+        for(ip4=0,j=0;j<4;j++){ip4<<=8; ip4|=a[j];}
         for(cidr=24;cidr>=8;cidr--){
-          q=hv4(ip4org,cidr);
+          q=hv4(ip4,cidr);
           if(v4[q]!=NULL){
             tt=(time_t)v4[pos]->ts;
             tm_info=localtime(&tt);
@@ -281,9 +281,9 @@ void *whois_server_thread(void *arg){
           for(i++;i<len;i++)if(buf[i]!=':' && buf[i]!='\0')b[j]=b[j]*16+dd[buf[i]]; else break;
           if(buf[i]=='\0' || buf[i+1]==':')break;
         }
-        for(ip6org=0,j=0;j<4;j++){ip6org<<=16; ip6org|=b[j];}
+        for(ip6=0,j=0;j<4;j++){ip6<<=16; ip6|=b[j];}
         for(cidr=48;cidr>=16;cidr--){
-          q=hv6(ip6org,cidr);
+          q=hv6(ip6,cidr);
           if(v6[q]!=NULL){
             tt=(time_t)v6[pos]->ts;
             tm_info=localtime(&tt);
@@ -392,6 +392,10 @@ int main(void) {
   ccinfo.protocol=protocols[0].name;
   ccinfo.ssl_connection=LCCSCF_USE_SSL;
   web_socket=lws_client_connect_via_info(&ccinfo);
+
+
+  printf("run %lu %lu\n",nv4,nv6);
+
   
   pthread_create(&whois_thread,NULL,whois_server_thread,NULL);
   while(!interrupted){
