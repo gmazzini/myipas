@@ -208,6 +208,10 @@ void sigint_handler(int sig){
 
   pthread_mutex_lock(&lock);
   switch(sig){
+    case 34:
+        printf("run %lu %lu\n",nv4,nv6);
+break;
+    
     case 36:
       for(nv4=0,i=0;i<HASHELM;i++)if(v4[i]!=NULL)nv4++;
       for(nv6=0,i=0;i<HASHELM;i++)if(v6[i]!=NULL)nv6++;
