@@ -4,6 +4,9 @@
 #include <stdio.h>
 #include <time.h>
 
+#define V4FILE "/home/www/fulltable/m4.txt"
+#define V6FILE "/home/www/fulltable/m6.txt"
+
 struct v4 {
   uint32_t ip;
   uint8_t cidr;
@@ -55,7 +58,7 @@ uint32_t hv6(uint64_t ip6,uint8_t cidr){
 }
 
 int main(){
-  uint32_t i,j,q;
+  uint32_t i,j,q,c4[33],c6[129],ip4;
   struct v4 av4;
   struct v6 av6;
   
@@ -90,6 +93,18 @@ int main(){
     }
     fclose(fp);
   }
+  
+  for(i=0;i<33;i++)c4[i]=0;
+  for(i=0;i<nv4;i++)c4[v4[j]->cidr]++;
+  fp=fopen(V4FILE,"wt");
+  fprintf(fp,"# v4_tot: %lu\n",nv4);
+  for(i=0;i<33;i++)if(c4[i]>0)fprintf(fp,"# v4_cidr%d: %lu\n",i,c4[i]);
+  for(i=0;i<nv4;i++){
+    for(ip4=v4[i]->ip,j=0;j<4;j++){a[j]=ip4&0xff; ip4>>=8;}
+    fprintf(fp,"%d.%d.%d.%d",a[3],a[2],a[1],a[0]);
+    fprintf(fp,"/%d,%lu\n",v4[i]->cidr,v4[i]->asn);
+  }
+  fclose(fp);
 
   
 }
