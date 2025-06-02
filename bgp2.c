@@ -107,7 +107,7 @@ void myins(char *ptr,int len,uint32_t asn){
   for(i=-1,j=0;j<4;j++)for(a[j]=0,i++;i<len;i++)if((ptr[i]!='.'&&j<3) || (ptr[i]!='/'&&j==3))a[j]=a[j]*10+dd[ptr[i]]; else break;
   for(ip4=0,j=0;j<4;j++){ip4<<=8; ip4|=a[j];}
   for(cidr=0,i++;i<len;i++)cidr=cidr*10+dd[ptr[i]];
-  if(cidr<8||cidr>32)return;
+  if(cidr<8||cidr>24)return;
   q=hv4(ip4,cidr);
   if(v4[q]==NULL){
     v4[q]=(struct v4 *)malloc(sizeof(struct v4));
