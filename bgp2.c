@@ -204,12 +204,14 @@ struct lws_protocols protocols[]={
 
 void sigint_handler(int sig){
   FILE *fp;
-  uint32_t i;
+  uint32_t i,aaa;
 
   pthread_mutex_lock(&lock);
   switch(sig){
     case 34:
-        printf("run %lu %lu\n",nv4,nv6);
+            for(aaa=0,i=0;i<HASHELM;i++)if(v4[i]!=NULL)aaa++;
+
+        printf("run %lu %lu %lu\n",nv4,nv6,aaa);
 break;
     
     case 36:
