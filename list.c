@@ -59,6 +59,7 @@ uint32_t hv6(uint64_t ip6,uint8_t cidr){
 
 int main(){
   uint32_t i,j,q,c4[33],c6[129],ip4;
+  uint8_t a[4];
   struct v4 av4;
   struct v6 av6;
   FILE *fp;
