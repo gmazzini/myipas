@@ -35,6 +35,7 @@ int cmp_v4(const void *a, const void *b){
 int main(){
   uint32_t i,j,q,c4[33],c6[129],ip4;
   uint8_t a[4];
+  uint16_t b[4];
   FILE *fp;
   
   fp=fopen(BGPFILE,"rb");
@@ -48,6 +49,7 @@ int main(){
   fread(v4,sizeof(struct v4),nv4,fp);
   qsort(v4,nv4,sizeof(struct v4),cmp_v4);
   fread(v6,sizeof(struct v6),nv6,fp);
+  qsort(v6,nv6,sizeof(struct v6),cmp_v6);
   fclose(fp);
   
   printf("run %lu %lu\n",nv4,nv6);
@@ -63,6 +65,20 @@ int main(){
     fprintf(fp,"/%d,%lu\n",v4[i].cidr,v4[i].asn);
   }
   fclose(fp);
-
+  for(i=0;i<129;i++)c6[i]=0;
+  for(i=0;i<nv6;i++)c6[v6[j].cidr]++;
+  fp=fopen(V6FILE,"wt");
+  fprintf(fp,"# v6_tot: %lu\n",nv6);
+  for(i=0;i<129;i++)if(c6[i]>0)fprintf(fp,"# v6_cidr%d: %lu\n",i,c6[i]);
+  for(i=0;i<vv6;i++){
+    for(ip6=v6[i].ip,q=0;q<64;q++)if(ip6&1)break; else ip6>>=1;
+    for(ip6=v6[i].ip,j=0;j<4;j++){b[j]=ip6&0xffff; ip6>>=16;}
+    if(q>=48)fprintf(fp,"%x::",b[3]);
+    else if(q>=32)fprintf(fp,"%x:%x::",b[3],b[2]);
+    else if(q>=16)fprintf(fp,"%x:%x:%x::",b[3],b[2],b[1]);
+    else fprintf(fp,"%x:%x:%x:%x::",b[3],b[2],b[1],b[0]);
+    fprintf(fp,"/%d,%lu\n",v6[i].cidr,v6[i].asn);
+  }
+  fclose(fp);
   
 }
