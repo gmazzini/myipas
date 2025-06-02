@@ -46,6 +46,7 @@ int main(){
   uint32_t i,j,q,c4[33],c6[129],ip4;
   uint8_t a[4];
   uint16_t b[4];
+  uint64_t ip6;
   FILE *fp;
   
   fp=fopen(BGPFILE,"rb");
@@ -80,7 +81,7 @@ int main(){
   fp=fopen(V6FILE,"wt");
   fprintf(fp,"# v6_tot: %lu\n",nv6);
   for(i=0;i<129;i++)if(c6[i]>0)fprintf(fp,"# v6_cidr%d: %lu\n",i,c6[i]);
-  for(i=0;i<vv6;i++){
+  for(i=0;i<nv6;i++){
     for(ip6=v6[i].ip,q=0;q<64;q++)if(ip6&1)break; else ip6>>=1;
     for(ip6=v6[i].ip,j=0;j<4;j++){b[j]=ip6&0xffff; ip6>>=16;}
     if(q>=48)fprintf(fp,"%x::",b[3]);
