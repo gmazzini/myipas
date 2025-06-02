@@ -264,7 +264,7 @@ void *whois_server_thread(void *arg){
         for(i=-1,j=0;j<4;j++)for(a[j]=0,i++;i<len;i++)if((buf[i]!='.'&&j<3) || (buf[i]!='\0'&&j==3))a[j]=a[j]*10+dd[buf[i]]; else break;
         for(ip4org=0,j=0;j<4;j++){ip4org<<=8; ip4org|=a[j];}
         for(cidr=24;cidr>=8;cidr--){
-          q=h32to24((ip4org&0xFFFFFF00)|cidr);
+          q=hv4(ip4org,cidr);
           if(v4[q]!=NULL){
             tt=(time_t)v4[pos]->ts;
             tm_info=localtime(&tt);
@@ -283,7 +283,7 @@ void *whois_server_thread(void *arg){
         }
         for(ip6org=0,j=0;j<4;j++){ip6org<<=16; ip6org|=b[j];}
         for(cidr=48;cidr>=16;cidr--){
-          q=h64to24((ip6org&0xFFFFFFFFFFFFFF00ULL)|cidr);
+          q=hv6(ip6org,cidr);
           if(v6[q]!=NULL){
             tt=(time_t)v6[pos]->ts;
             tm_info=localtime(&tt);
@@ -348,7 +348,7 @@ int main(void) {
     fread(&nv6,4,1,fp);
     for(j=0;j<nv4;j++){
       fread(&av4,sizeof(struct v4),1,fp);
-      q=h32to24((av4.ip&0xFFFFFF00)|av4.cidr);
+      q=hv4(av4.ip,av4.cidr);
       v4[q]=(struct v4 *)malloc(sizeof(struct v4));
       if(v4[q]==NULL)exit(0);
       v4[q]->ip=av4.ip;
@@ -358,7 +358,7 @@ int main(void) {
     }
     for(j=0;j<nv6;j++){
       fread(&av6,sizeof(struct v6),1,fp);
-      q=h64to24((av6.ip&0xFFFFFFFFFFFFFF00ULL)|av6.cidr);
+      q=hv6(av6.ip,av6.cidr);
       v6[q]=(struct v6 *)malloc(sizeof(struct v6));
       if(v6[q]==NULL)exit(0);
       v6[q]->ip=av6.ip;
