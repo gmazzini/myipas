@@ -77,7 +77,7 @@ int main(){
   }
   fclose(fp);
   for(i=0;i<129;i++)c6[i]=0;
-  for(i=0;i<nv6;i++)c6[v6[j].cidr]++;
+  for(i=0;i<nv6;i++)c6[v6[i].cidr]++;
   fp=fopen(V6FILE,"wt");
   fprintf(fp,"# v6_tot: %lu\n",nv6);
   for(i=0;i<129;i++)if(c6[i]>0)fprintf(fp,"# v6_cidr%d: %lu\n",i,c6[i]);
