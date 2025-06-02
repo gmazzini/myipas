@@ -32,6 +32,16 @@ int cmp_v4(const void *a, const void *b){
   return 0;
 }
 
+int cmp_v6(const void *a, const void *b){
+  struct v6 *x = (struct v6 *)a;
+  struct v6 *y = (struct v6 *)b;
+  if (x->ip>y->ip)return 1;
+  if (x->ip<y->ip)return -1;
+  if (x->cidr>y->cidr)return 1;
+  if (x->cidr<y->cidr)return -1;
+  return 0;
+}
+
 int main(){
   uint32_t i,j,q,c4[33],c6[129],ip4;
   uint8_t a[4];
