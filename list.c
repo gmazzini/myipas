@@ -22,6 +22,14 @@ struct v6 {
 } *v6;
 uint32_t nv4,nv6;
 
+int cmp_v4(struct v4 *x,struct v4 *y){
+  if (x->ip>y->ip)return 1;
+  if (x->ip<y->ip)return -1;
+  if (x->cidr>y->cidr)return 1;
+  if (x->cidr<y->cidr)return -1;
+  return 0;
+}
+
 int main(){
   uint32_t i,j,q,c4[33],c6[129],ip4;
   uint8_t a[4];
@@ -36,6 +44,7 @@ int main(){
   v6=(struct v6 *)malloc(nv6*sizeof(struct v6));
   if(v6==NULL)exit(0);
   fread(v4,sizeof(struct v4),nv4,fp);
+  qsort(v4,nv4,sizeof(struct v4),cmp_v4);
   fread(v6,sizeof(struct v6),nv6,fp);
   fclose(fp);
   
