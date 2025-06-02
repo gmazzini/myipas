@@ -36,22 +36,16 @@ static const signed char dd[256]={
   ['a']=10,['b']=11,['c']=12,['d']=13,['e']=14,['f']=15
 };
 
-uint32_t hv4(uint32_t ip4,uint8_t cidr){
-  uint32_t h1=0x9747b28c,key;
-  key=(ip4&0xFFFFFF00)|cidr;
-  key*=0xcc9e2d51UL;
-  key=(key<<15)|(key>>(32-15));
-  key*=0x1b873593UL;
-  h1^=key;
-  h1=(h1<<13)|(h1>>(32-13));
-  h1=h1*5+0xe6546b64;
-  h1^=4;
-  h1^=h1>>16;
-  h1*=0x85ebca6b;
-  h1^=h1>>13;
-  h1*=0xc2b2ae35;
-  h1^=h1>>16;
-  return h1&0x00FFFFFF;
+uint32_t hv4(uint32_t ip,uint8_t cidr){
+  uint32_t h=0x811C9DC5;
+  h^=ip;
+  h*=0x01000193;
+  h^=cidr;
+  h*=0x85ebca6b;
+  h^=h>>16;
+  h*=0xc2b2ae35;
+  h^=h>>13;
+  return h&0x00FFFFFF;
 }
 
 uint32_t hv6(uint64_t ip6,uint8_t cidr){
