@@ -5,6 +5,7 @@
 #include <time.h>
 #define V4FILE "/home/www/fulltable/m4.txt"
 #define V6FILE "/home/www/fulltable/m6.txt"
+#define BGPFILE "/home/www/fulltable/bgp.raw"
 #define HASHELM 16777216UL
 
 struct v4 {
