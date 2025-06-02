@@ -95,6 +95,7 @@ void myins(char *ptr,int len,uint32_t asn){
       v6[q]=(struct v6 *)malloc(sizeof(struct v6));
       if(v6[q]==NULL)exit(0);
       nv6++;
+      newinfo++;
     }
     else if((v6[q]->ip!=ip6)||(v6[q]->cidr!=cidr))coll6++;
     v6[q]->ip=ip6;
@@ -112,6 +113,7 @@ void myins(char *ptr,int len,uint32_t asn){
     v4[q]=(struct v4 *)malloc(sizeof(struct v4));
     if(v4[q]==NULL)exit(0);
     nv4++;
+    newinfo++;
   }
   else if((v4[q]->ip!=ip4)||(v4[q]->cidr!=cidr))coll4++;
   v4[q]->ip=ip4;
