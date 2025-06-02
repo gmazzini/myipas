@@ -22,7 +22,9 @@ struct v6 {
 } *v6;
 uint32_t nv4,nv6;
 
-int cmp_v4(struct v4 *x,struct v4 *y){
+int cmp_v4(const void *a, const void *b){
+  struct v4 *x = (struct v4 *)a;
+  struct v4 *y = (struct v4 *)b;
   if (x->ip>y->ip)return 1;
   if (x->ip<y->ip)return -1;
   if (x->cidr>y->cidr)return 1;
