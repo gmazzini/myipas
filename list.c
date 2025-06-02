@@ -3,9 +3,9 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <time.h>
-
 #define V4FILE "/home/www/fulltable/m4.txt"
 #define V6FILE "/home/www/fulltable/m6.txt"
+#define HASHELM 16777216UL
 
 struct v4 {
   uint32_t ip;
@@ -61,12 +61,14 @@ int main(){
   uint32_t i,j,q,c4[33],c6[129],ip4;
   struct v4 av4;
   struct v6 av6;
+  FILE *fp;
   
-  v4=(struct v4 *)malloc(LENELM*sizeof(struct v4));
+  v4=(struct v4 **)malloc(HASHELM*sizeof(struct v4 *));
   if(v4==NULL)exit(0);
-  v6=(struct v6 *)malloc(LENELM*sizeof(struct v6));
+  for(i=0;i<HASHELM;i++)v4[i]=NULL;
+  v6=(struct v6 **)malloc(HASHELM*sizeof(struct v6 *));
   if(v6==NULL)exit(0);
-   fp=fopen(BGPFILE,"rb");
+  fp=fopen(BGPFILE,"rb");
   if(fp!=NULL){
     fread(&nv4,4,1,fp);
     fread(&nv6,4,1,fp);
