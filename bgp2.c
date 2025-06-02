@@ -346,6 +346,7 @@ int main(void) {
   if(fp!=NULL){
     fread(&nv4,4,1,fp);
     fread(&nv6,4,1,fp);
+    printf("run %l5 %lu\n",nv4,nv6);
     for(j=0;j<nv4;j++){
       fread(&av4,sizeof(struct v4),1,fp);
       q=hv4(av4.ip,av4.cidr);
