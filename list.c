@@ -97,7 +97,9 @@ int main(){
     }
     fclose(fp);
   }
-  
+
+      printf("run %lu %lu\n",nv4,nv6);
+
   for(i=0;i<33;i++)c4[i]=0;
   for(i=0;i<nv4;i++)c4[v4[j]->cidr]++;
   fp=fopen(V4FILE,"wt");
