@@ -245,7 +245,6 @@ void *whois_server_thread(void *arg){
   uint16_t b[4];
   uint32_t ip4,q;
   uint64_t ip6;
-  long pos;
   time_t tt;
   struct tm *tm_info;
 
@@ -274,10 +273,10 @@ void *whois_server_thread(void *arg){
         for(cidr=24;cidr>=8;cidr--){
           q=hv4(ip4,cidr);
           if(v4[q]!=NULL){
-            tt=(time_t)v4[pos]->ts;
+            tt=(time_t)v4[q]->ts;
             tm_info=localtime(&tt);
             strftime(buft,15,"%Y%m%d%H%M%S",tm_info);
-            sprintf(buf,"%u %lu %s\n",cidr,v4[pos]->asn,buft);
+            sprintf(buf,"%u %lu %s\n",cidr,v4[q]->asn,buft);
             write(client_fd,buf,strlen(buf));
             nfound++;
           }
@@ -293,10 +292,10 @@ void *whois_server_thread(void *arg){
         for(cidr=48;cidr>=16;cidr--){
           q=hv6(ip6,cidr);
           if(v6[q]!=NULL){
-            tt=(time_t)v6[pos]->ts;
+            tt=(time_t)v6[q]->ts;
             tm_info=localtime(&tt);
             strftime(buft,15,"%Y%m%d%H%M%S",tm_info);
-            sprintf(buf,"%u %lu %s\n",cidr,v6[pos]->asn,buft);
+            sprintf(buf,"%u %lu %s\n",cidr,v6[q]->asn,buft);
             write(client_fd,buf,strlen(buf));
             nfound++;
           }
@@ -336,9 +335,6 @@ int main(void) {
   struct v6 av6;
 
   trx=tnew=tstart=time(NULL);
-
-  printf("run 0\n");
-  
   v4=(struct v4 **)malloc(HASHELM*sizeof(struct v4 *));
   if(v4==NULL)exit(0);
   for(i=0;i<HASHELM;i++)v4[i]=NULL;
@@ -348,13 +344,10 @@ int main(void) {
   lbuf=(char *)malloc(LBUF);
   if(lbuf==NULL)exit(0);
 
-  printf("run 1\n");
-
   fp=fopen(BGPFILE,"rb");
   if(fp!=NULL){
     fread(&nv4,4,1,fp);
     fread(&nv6,4,1,fp);
-    printf("run %lu %lu\n",nv4,nv6);
     for(j=0;j<nv4;j++){
       fread(&av4,sizeof(struct v4),1,fp);
       q=hv4(av4.ip,av4.cidr);
@@ -383,9 +376,6 @@ int main(void) {
   signal(35,sigint_handler);
   signal(36,sigint_handler);
   signal(37,sigint_handler);
-
-  printf("run 2\n");
-  
   memset(&info,0,sizeof(info));
   info.port=CONTEXT_PORT_NO_LISTEN;
   info.protocols=protocols;
@@ -401,10 +391,8 @@ int main(void) {
   ccinfo.ssl_connection=LCCSCF_USE_SSL;
   web_socket=lws_client_connect_via_info(&ccinfo);
 
-
   printf("run %lu %lu\n",nv4,nv6);
 
-  
   pthread_create(&whois_thread,NULL,whois_server_thread,NULL);
   while(!interrupted){
     lws_service(context,100);
