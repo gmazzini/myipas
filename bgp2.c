@@ -215,13 +215,11 @@ void sigint_handler(int sig){
   pthread_mutex_lock(&lock);
   switch(sig){
     case 36:
-      for(nv4=0,i=0;i<HASHELM;i++)if(v4[i]!=NULL)nv4++;
-      for(nv6=0,i=0;i<HASHELM;i++)if(v6[i]!=NULL)nv6++;
       fp=fopen(BGPFILE,"wb");
       fwrite(&nv4,4,1,fp);
       fwrite(&nv6,4,1,fp);
-      for(i=0;i<HASHELM;i++)if(v4[i]!=NULL)fwrite(v4[i],sizeof(struct v4),1,fp);
-      for(i=0;i<HASHELM;i++)if(v6[i]!=NULL)fwrite(v6[i],sizeof(struct v6),1,fp);
+      fwrite(v4,sizeof(struct v4),nv4,fp);
+      fwrite(v6,sizeof(struct v6),nv6,fp);
       fclose(fp);
       break;
 
@@ -245,6 +243,8 @@ void *whois_server_thread(void *arg){
   uint64_t ip6;
   time_t tt;
   struct tm *tm_info;
+  struct v4 *aiv4;
+  struct v6 *aiv6;
 
   server_fd=socket(AF_INET,SOCK_STREAM,0);
   opt=1;
@@ -270,11 +270,12 @@ void *whois_server_thread(void *arg){
         for(ip4=0,j=0;j<4;j++){ip4<<=8; ip4|=a[j];}
         for(cidr=24;cidr>=8;cidr--){
           q=hv4(ip4,cidr);
-          if(v4[q]!=NULL){
-            tt=(time_t)v4[q]->ts;
+          if(v4i[q]!=0){
+            aiv4=v4+v4i[q];
+            tt=(time_t)aiv4->ts;
             tm_info=localtime(&tt);
             strftime(buft,15,"%Y%m%d%H%M%S",tm_info);
-            sprintf(buf,"%u %lu %s\n",cidr,v4[q]->asn,buft);
+            sprintf(buf,"%u %lu %s\n",cidr,aiv4->asn,buft);
             write(client_fd,buf,strlen(buf));
             nfound++;
           }
@@ -289,11 +290,12 @@ void *whois_server_thread(void *arg){
         for(ip6=0,j=0;j<4;j++){ip6<<=16; ip6|=b[j];}
         for(cidr=48;cidr>=16;cidr--){
           q=hv6(ip6,cidr);
-          if(v6[q]!=NULL){
-            tt=(time_t)v6[q]->ts;
+          if(v6i[q]!=0{
+            aiv6=v6+v6i[q];
+            tt=(time_t)aiv6->ts;
             tm_info=localtime(&tt);
             strftime(buft,15,"%Y%m%d%H%M%S",tm_info);
-            sprintf(buf,"%u %lu %s\n",cidr,v6[q]->asn,buft);
+            sprintf(buf,"%u %lu %s\n",cidr,aiv6->asn,buft);
             write(client_fd,buf,strlen(buf));
             nfound++;
           }
@@ -355,6 +357,7 @@ int main(void) {
     fread(&anv6,4,1,fp);
     for(j=0;j<anv4;j++){
       fread(&av4,sizeof(struct v4),1,fp);
+      if(j==0)continue;
       q=hv4(av4.ip,av4.cidr);
       if(v4i[q]==0){
         v4i[q]=nv4;
@@ -368,6 +371,7 @@ int main(void) {
     }
     for(j=0;j<anv6;j++){
       fread(&av6,sizeof(struct v6),1,fp);
+      if(j==0)continue;
       q=hv6(av6.ip,av6.cidr);
       if(v6i[q]==0){
         v6i[q]=nv6;
