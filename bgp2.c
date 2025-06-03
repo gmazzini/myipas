@@ -358,7 +358,7 @@ printf(">> %lu %lu\n",j,nv4);
         v4i[q]=nv4;
         nv4++;
       }
-else       printf("|| %lu %lu\n",q,nv4);      
+else       printf("|| %lu %u %lu %lu\n",av4.ip,av4.cidr,q,nv4);      
       aiv4=v4+v4i[q];
       aiv4->ip=av4.ip;
       aiv4->cidr=av4.cidr;
