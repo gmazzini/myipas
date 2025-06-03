@@ -32,8 +32,7 @@ uint8_t interrupted=0;
 uint32_t follow=0,mask4[33],rxinfo=0,newinfo=0,tstart,trx,tnew,coll4=0,coll6=0,nv4,nv6,*v4i,*v6i;
 uint64_t mask6[65];
 struct lws *web_socket=NULL;
-// char *subscribe_message="{\"type\": \"ris_subscribe\", \"data\": {\"type\": \"UPDATE\", \"host\": \"rrc00\"}}";
-char *subscribe_message="{\"type\": \"ris_subscribe\", \"data\": {\"type\": \"UPDATE\"}}";
+char *subscribe_message="{\"type\": \"ris_subscribe\", \"data\": {\"type\": \"UPDATE\", \"host\": \"rrc00\"}}";
 char *lbuf;
 
 static const signed char dd[256]={
