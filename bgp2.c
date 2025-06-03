@@ -189,7 +189,10 @@ int callback_ris(struct lws *wsi,enum lws_callback_reasons reason,void *user,voi
       break;
     case LWS_CALLBACK_TIMER:
       fprintf(stderr, "ping\n");
-      lws_ping(wsi,NULL,0);
+      unsigned char dummy_ping[LWS_PRE];
+
+      
+      lws_write(wsi,dummy_ping+LWS_PRE,0,LWS_WRITE_PING);
       lws_set_timer_usecs(wsi,10*LWS_USEC_PER_SEC);
       break;
     default:
