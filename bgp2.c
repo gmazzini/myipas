@@ -183,6 +183,15 @@ int callback_ris(struct lws *wsi,enum lws_callback_reasons reason,void *user,voi
       fprintf(stderr,"Closed Connection\n");
       interrupted=1;
       break;
+    case LWS_CALLBACK_CLIENT_RECEIVE_PONG:
+      fprintf(stderr,"pong\n");
+      trx=time(NULL); 
+      break;
+    case LWS_CALLBACK_TIMER:
+      fprintf(stderr, "ping\n");
+      lws_ping(wsi,NULL,0);
+      lws_set_timer_usecs(wsi,10*LWS_USEC_PER_SEC);
+      break;
     default:
       break;
   }
