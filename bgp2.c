@@ -7,7 +7,9 @@
 #include <time.h>
 #define BGPFILE "/home/www/fulltable/bgp.raw"
 #define LBUF 100000
-#define HASHELM (1UL<<24)
+#define HASHBIT 26
+#define HASHELM (1UL<<HASHBIT)
+#define HASHOUT ((~0UL)>>(32-HASHBIT))
 #define V4MAX 1800000
 #define V6MAX 400000
 
@@ -44,7 +46,7 @@ uint32_t hv4(uint32_t ip,uint8_t cidr){
   x=(x^(cidr*0x45D9F3B))*0x119DE1F3;
   x^=x>>16;
   x^=x>>8;
-  return x&0x00FFFFFF;
+  return x&HASHOUT;
 }
 
 uint32_t hv6(uint64_t ip,uint8_t cidr){
@@ -53,7 +55,7 @@ uint32_t hv6(uint64_t ip,uint8_t cidr){
   x=(x^(cidr*0x9E3779B97F4A7C15ULL))*0xC2B2AE3D27D4EB4FULL;
   x^=x>>33;
   x^=x>>17;
-  return (uint32_t)(x&0x00FFFFFF);
+  return (uint32_t)(x&HASHOUT);
 }
 
 void myins(char *ptr,int len,uint32_t asn){
