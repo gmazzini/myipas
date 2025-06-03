@@ -120,6 +120,7 @@ void myins(char *ptr,int len,uint32_t asn){
 
 int callback_ris(struct lws *wsi,enum lws_callback_reasons reason,void *user,void *in,size_t len){
   unsigned char aux[LWS_PRE+512];
+  unsigned char dummy_ping[LWS_PRE];
   uint32_t j,asn;
   size_t msg_len;
   char *ptr,*buf1,*buf2,*buf3;
@@ -183,14 +184,9 @@ int callback_ris(struct lws *wsi,enum lws_callback_reasons reason,void *user,voi
       interrupted=1;
       break;
     case LWS_CALLBACK_CLIENT_RECEIVE_PONG:
-      fprintf(stderr,"pong\n");
       trx=time(NULL); 
       break;
     case LWS_CALLBACK_TIMER:
-      fprintf(stderr, "ping\n");
-      unsigned char dummy_ping[LWS_PRE];
-
-      
       lws_write(wsi,dummy_ping+LWS_PRE,0,LWS_WRITE_PING);
       lws_set_timer_usecs(wsi,10*LWS_USEC_PER_SEC);
       break;
