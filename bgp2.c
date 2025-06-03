@@ -7,24 +7,26 @@
 #include <time.h>
 #define BGPFILE "/home/www/fulltable/bgp.raw"
 #define LBUF 100000
-#define HASHELM 16777216UL
+#define HASHELM (1UL<<24)
+#define V4MAX 1800000
+#define V6MAX 400000
 
 struct v4 {
   uint32_t ip;
   uint8_t cidr;
   uint32_t asn;
   uint32_t ts;
-} **v4;
+} *v4;
 struct v6 {
   uint64_t ip;
   uint8_t cidr;
   uint32_t asn;
   uint32_t ts;
-} **v6;
+} *v6;
 pthread_mutex_t lock=PTHREAD_MUTEX_INITIALIZER;
 int server_fd=-1;
 uint8_t interrupted=0;
-uint32_t follow=0,mask4[33],rxinfo=0,newinfo=0,tstart,trx,tnew,coll4=0,coll6=0,nv4,nv6;
+uint32_t follow=0,mask4[33],rxinfo=0,newinfo=0,tstart,trx,tnew,coll4=0,coll6=0,nv4,nv6,*v4i,*v6i;
 uint64_t mask6[65];
 struct lws *web_socket=NULL;
 char *subscribe_message="{\"type\": \"ris_subscribe\", \"data\": {\"type\": \"UPDATE\", \"host\": \"rrc00\"}}";
@@ -72,6 +74,8 @@ void myins(char *ptr,int len,uint32_t asn){
   uint8_t a[4],cidr;
   uint16_t b[4];
   long i,j;
+  struct v4 *aiv4;
+  struct v6 *aiv6;
 
   ts=time(NULL);
   for(i=0;i<len;i++)if(ptr[i]==':'){
@@ -85,17 +89,20 @@ void myins(char *ptr,int len,uint32_t asn){
     for(cidr=0,i++;i<len;i++)cidr=cidr*10+dd[ptr[i]];
     if(cidr<16||cidr>48)return;
     q=hv6(ip6,cidr);
-    if(v6[q]==NULL){
-      v6[q]=(struct v6 *)malloc(sizeof(struct v6));
-      if(v6[q]==NULL)exit(0);
+    if(v6i[q]==0){
+      v6i[q]=nv6;
       nv6++;
       newinfo++;
+      aiv6=v6+v6i[q];
     }
-    else if((v6[q]->ip!=ip6)||(v6[q]->cidr!=cidr))coll6++;
-    v6[q]->ip=ip6;
-    v6[q]->cidr=cidr;
-    v6[q]->asn=asn;
-    v6[q]->ts=ts;
+    else {
+      aiv6=v6+v6i[q];
+      if((aiv6->ip!=ip6)||(aiv6->cidr!=cidr))coll6++;
+    } 
+    aiv6->ip=ip6;
+    aiv6->cidr=cidr;
+    aiv6->asn=asn;
+    aiv6->ts=ts;
     return;
   }
   for(i=-1,j=0;j<4;j++)for(a[j]=0,i++;i<len;i++)if((ptr[i]!='.'&&j<3) || (ptr[i]!='/'&&j==3))a[j]=a[j]*10+dd[ptr[i]]; else break;
@@ -103,17 +110,20 @@ void myins(char *ptr,int len,uint32_t asn){
   for(cidr=0,i++;i<len;i++)cidr=cidr*10+dd[ptr[i]];
   if(cidr<8||cidr>24)return;
   q=hv4(ip4,cidr);
-  if(v4[q]==NULL){
-    v4[q]=(struct v4 *)malloc(sizeof(struct v4));
-    if(v4[q]==NULL)exit(0);
+  if(v4i[q]==0){
+    v4i[q]=nv4;
     nv4++;
     newinfo++;
+    aiv4=v4+v4i[q];
   }
-  else if((v4[q]->ip!=ip4)||(v4[q]->cidr!=cidr))coll4++;
-  v4[q]->ip=ip4;
-  v4[q]->cidr=cidr;
-  v4[q]->asn=asn;
-  v4[q]->ts=ts;
+  else {
+    aiv4=v4+v4i[q];
+    if((aiv4->ip!=ip4)||(aiv4->cidr!=cidr))coll4++;
+  }
+  aiv4->ip=ip4;
+  aiv4->cidr=cidr;
+  aiv4->asn=asn;
+  aiv4->ts=ts;
   return;
 }
 
@@ -204,12 +214,6 @@ void sigint_handler(int sig){
 
   pthread_mutex_lock(&lock);
   switch(sig){
-    case 34:
-            for(aaa=0,i=0;i<HASHELM;i++)if(v4[i]!=NULL)aaa++;
-
-        printf("run %lu %lu %lu\n",nv4,nv6,aaa);
-break;
-    
     case 36:
       for(nv4=0,i=0;i<HASHELM;i++)if(v4[i]!=NULL)nv4++;
       for(nv6=0,i=0;i<HASHELM;i++)if(v6[i]!=NULL)nv6++;
@@ -324,50 +328,61 @@ int main(void) {
   struct lws_context *context;
   pthread_t whois_thread;
   FILE *fp;
-  uint32_t i,j,q;
-  struct v4 av4;
-  struct v6 av6;
+  uint32_t i,j,q,anv4,anv6;
+  struct v4 av4,*aiv4;
+  struct v6 av6,*aiv6;
 
   trx=tnew=tstart=time(NULL);
-  v4=(struct v4 **)malloc(HASHELM*sizeof(struct v4 *));
+  v4=(struct v4 *)malloc(V4MAX*sizeof(struct v4));
   if(v4==NULL)exit(0);
-  for(i=0;i<HASHELM;i++)v4[i]=NULL;
-  v6=(struct v6 **)malloc(HASHELM*sizeof(struct v6 *));
+  v4i=(uint32_t)malloc(HASHELM*sizeof(uint32_t));
+  if(v4i==NULL)exit(0);
+  for(i=0;i<HASHELM;i++)v4i[i]=0;
+  nv4=1;
+  v6=(struct v6 *)malloc(V6MAX*sizeof(struct v6));
   if(v6==NULL)exit(0);
-  for(i=0;i<HASHELM;i++)v6[i]=NULL;
+  v6i=(uint32_t)malloc(HASHELM*sizeof(uint32_t));
+  if(v6i==NULL)exit(0);
+  for(i=0;i<HASHELM;i++)v6i[i]=0;
+  nv6=1;
+  
   lbuf=(char *)malloc(LBUF);
   if(lbuf==NULL)exit(0);
 
   fp=fopen(BGPFILE,"rb");
   if(fp!=NULL){
-    fread(&nv4,4,1,fp);
-    fread(&nv6,4,1,fp);
-    for(j=0;j<nv4;j++){
+    fread(&anv4,4,1,fp);
+    fread(&anv6,4,1,fp);
+    for(j=0;j<anv4;j++){
       fread(&av4,sizeof(struct v4),1,fp);
       q=hv4(av4.ip,av4.cidr);
-      v4[q]=(struct v4 *)malloc(sizeof(struct v4));
-      if(v4[q]==NULL)exit(0);
-      v4[q]->ip=av4.ip;
-      v4[q]->cidr=av4.cidr;
-      v4[q]->asn=av4.asn;
-      v4[q]->ts=av4.ts;
+      if(v4i[q]==0){
+        v4i[q]=nv4;
+        nv4++;
+      }
+      aiv4=v4+v4i[q];
+      aiv4->ip=av4.ip;
+      aiv4->cidr=av4.cidr;
+      aiv4->asn=av4.asn;
+      aiv4->ts=av4.ts;
     }
-    for(j=0;j<nv6;j++){
+    for(j=0;j<anv6;j++){
       fread(&av6,sizeof(struct v6),1,fp);
       q=hv6(av6.ip,av6.cidr);
-      v6[q]=(struct v6 *)malloc(sizeof(struct v6));
-      if(v6[q]==NULL)exit(0);
-      v6[q]->ip=av6.ip;
-      v6[q]->cidr=av6.cidr;
-      v6[q]->asn=av6.asn;
-      v6[q]->ts=av6.ts;
+      if(v6i[q]==0){
+        v6i[q]=nv6;
+        nv6++;
+      }
+      aiv6=v6+v6i[q];
+      aiv6->ip=av6.ip;
+      aiv6->cidr=av6.cidr;
+      aiv6->asn=av6.asn;
+      aiv6->ts=av6.ts;
     }
     fclose(fp);
   }
   mask4[0]=0; for(i=1;i<33;i++)mask4[i]=~((1U<<(32-i))-1);
   mask6[0]=0; for(i=1;i<65;i++)mask6[i]=~((1UL<<(64-i))-1);
-  signal(34,sigint_handler);
-  signal(35,sigint_handler);
   signal(36,sigint_handler);
   signal(37,sigint_handler);
   memset(&info,0,sizeof(info));
