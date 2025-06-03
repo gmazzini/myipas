@@ -9,7 +9,7 @@
 #define LBUF 100000
 #define HASHBIT 25
 #define HASHELM (1UL<<HASHBIT)
-#define HASHOUT ((~0UL)>>(32-HASHBIT))
+#define HASHOUT ((1UL<<HASHBIT)-1) 
 #define V4MAX 1800000
 #define V6MAX 400000
 
