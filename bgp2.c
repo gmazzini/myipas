@@ -56,24 +56,6 @@ uint32_t hv6(uint64_t ip,uint8_t cidr){
   return (uint32_t)(x&0x00FFFFFF);
 }
 
-uint32_t hv6(uint64_t ip6,uint8_t cidr){
-  uint64_t h1=0x9747b28c,key;
-  key=(ip6&0xFFFFFFFFFFFFFF00ULL)|cidr;
-  key*=0x87c37b91114253d5ULL;
-  key=(key<<31)|(key>>(64-31));
-  key*=0x4cf5ad432745937fULL;
-  h1^=key;
-  h1=(h1 << 27) | (h1 >> (64 - 27));
-  h1=h1*5+0x52dce729;
-  h1^=8;
-  h1^=h1>>33;
-  h1*=0xff51afd7ed558ccdULL;
-  h1^=h1>>33;
-  h1*=0xc4ceb9fe1a85ec53ULL;
-  h1^=h1>>33;
-  return (uint32_t)(h1&0xFFFFFF);
-}
-
 void myins(char *ptr,int len,uint32_t asn){
   uint32_t ts,ip4,q;
   uint64_t ip6;
