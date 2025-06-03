@@ -65,6 +65,8 @@ void myins(char *ptr,int len,uint32_t asn){
   struct v4 *aiv4;
   struct v6 *aiv6;
 
+  printf("%lu %.*s\n",asn,len,ptr);
+
   ts=time(NULL);
   for(i=0;i<len;i++)if(ptr[i]==':'){
     for(j=0;j<4;j++)b[j]=0;
