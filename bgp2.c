@@ -353,6 +353,8 @@ printf("%lu %lu\n",anv4,anv6);
       if(j==0)continue;
       q=hv4(av4.ip,av4.cidr);
       if(v4i[q]==0){
+
+printf(">> %lu %lu\n",j,nv4);        
         v4i[q]=nv4;
         nv4++;
       }
@@ -362,6 +364,9 @@ printf("%lu %lu\n",anv4,anv6);
       aiv4->asn=av4.asn;
       aiv4->ts=av4.ts;
     }
+
+    exit(0);
+    
     for(j=0;j<anv6;j++){
       fread(&av6,sizeof(struct v6),1,fp);
       if(j==0)continue;
