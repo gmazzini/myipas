@@ -330,7 +330,7 @@ int main(void) {
   struct v4 av4,*aiv4;
   struct v6 av6,*aiv6;
 
-  trx=tnew=tstart=time(NULL);
+  tnew=tstart=time(NULL);
   v4=(struct v4 *)malloc(V4MAX*sizeof(struct v4));
   if(v4==NULL)exit(0);
   v4i=(uint32_t *)malloc(HASHELM*sizeof(uint32_t));
@@ -382,9 +382,41 @@ int main(void) {
     }
     fclose(fp);
   }
-
   signal(36,sigint_handler);
   signal(37,sigint_handler);
+  
+  pthread_create(&whois_thread,NULL,whois_server_thread,NULL);
+  start_ws:
+  
+  memset(&info,0,sizeof(info));
+  info.port=CONTEXT_PORT_NO_LISTEN;
+  info.protocols=protocols;
+  info.options=LWS_SERVER_OPTION_DO_SSL_GLOBAL_INIT;
+  context=lws_create_context(&info);
+  memset(&ccinfo,0,sizeof(ccinfo));
+  ccinfo.context=context;
+  ccinfo.address="ris-live.ripe.net";
+  ccinfo.port=443;
+  ccinfo.path="/v1/ws/";
+  ccinfo.host=ccinfo.address;
+  ccinfo.origin=ccinfo.address;
+  ccinfo.protocol=protocols[0].name;
+  ccinfo.ssl_connection=LCCSCF_USE_SSL;
+  web_socket=lws_client_connect_via_info(&ccinfo);
+  trx=time(NULL);
+  while(!interrupted){
+    lws_service(context,100);
+    if(time(NULL)-trx>TIMEOUT_RX){
+      lws_context_destroy(context);
+      context=NULL;
+      sleep(2);
+      goto start_ws;
+    }
+  }
+  
+  lws_context_destroy(context);
+  pthread_join(whois_thread, NULL);
+/*
   memset(&info,0,sizeof(info));
   info.port=CONTEXT_PORT_NO_LISTEN;
   info.protocols=protocols;
@@ -410,5 +442,6 @@ int main(void) {
   }
   lws_context_destroy(context);
   pthread_join(whois_thread,NULL);
+  */
   return 0;
 }
