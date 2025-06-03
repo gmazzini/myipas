@@ -43,9 +43,16 @@ static const signed char dd[256]={
 uint32_t hv4(uint32_t ip,uint8_t cidr){
   uint32_t x;
   x=(ip&mask4[cidr])>>8;
+  printf("Stage1 x = %08X\n", x);
+
   x=(x^(cidr*0x45D9F3B))*0x119DE1F3;
+    printf("Stage2 x = %08X\n", x);
+
   x^=x>>16;
   x^=x>>8;
+
+    printf("Final x = %08X\n", x);
+
   return x&HASHOUT;
 }
 
