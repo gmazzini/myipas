@@ -404,8 +404,8 @@ int main(void) {
   while(!interrupted){
     lws_service(context,100);
      if (time(NULL) - trx > 60) {
-        fprintf(stderr, "Timeout: nessun pacchetto ricevuto da %d secondi, riavvio WebSocket\n", TIMEOUT_RX);
-        interrupted = 1;  // oppure triggera una ri-connessione manuale
+        fprintf(stderr, "Timeout\n");
+        interrupted = 1;
     }
   }
   lws_context_destroy(context);
