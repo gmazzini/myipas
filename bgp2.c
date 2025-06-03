@@ -408,6 +408,7 @@ int main(void) {
   while(!interrupted){
     lws_service(context,100);
     if(time(NULL)-trx>TIMEOUT_RX){
+    fprintf(stderr, "Timeout\n");
       lws_context_destroy(context);
       context=NULL;
       sleep(2);
