@@ -336,13 +336,13 @@ int main(void) {
   trx=tnew=tstart=time(NULL);
   v4=(struct v4 *)malloc(V4MAX*sizeof(struct v4));
   if(v4==NULL)exit(0);
-  v4i=(uint32_t)malloc(HASHELM*sizeof(uint32_t));
+  v4i=(uint32_t *)malloc(HASHELM*sizeof(uint32_t));
   if(v4i==NULL)exit(0);
   for(i=0;i<HASHELM;i++)v4i[i]=0;
   nv4=1;
   v6=(struct v6 *)malloc(V6MAX*sizeof(struct v6));
   if(v6==NULL)exit(0);
-  v6i=(uint32_t)malloc(HASHELM*sizeof(uint32_t));
+  v6i=(uint32_t *)malloc(HASHELM*sizeof(uint32_t));
   if(v6i==NULL)exit(0);
   for(i=0;i<HASHELM;i++)v6i[i]=0;
   nv6=1;
