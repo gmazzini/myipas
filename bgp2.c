@@ -39,15 +39,7 @@ static const signed char dd[256]={
 };
 
 uint32_t hv4(uint32_t ip,uint8_t cidr){
-  uint32_t h=0x811C9DC5;
-  h^=ip;
-  h*=0x01000193;
-  h^=cidr;
-  h*=0x85ebca6b;
-  h^=h>>16;
-  h*=0xc2b2ae35;
-  h^=h>>13;
-  return h&0x00FFFFFF;
+  return ((ip>>8)+cidr-8)&0x00FFFFFF;
 }
 
 uint32_t hv6(uint64_t ip6,uint8_t cidr){
