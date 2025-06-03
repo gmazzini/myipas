@@ -95,7 +95,6 @@ void myins(char *ptr,int len,uint32_t asn){
     aiv6->ts=ts;
     return;
   }
-  printf("%lu %.*s\n",asn,len,ptr);
   for(i=-1,j=0;j<4;j++)for(a[j]=0,i++;i<len;i++)if((ptr[i]!='.'&&j<3) || (ptr[i]!='/'&&j==3))a[j]=a[j]*10+dd[ptr[i]]; else break;
   for(ip4=0,j=0;j<4;j++){ip4<<=8; ip4|=a[j];}
   for(cidr=0,i++;i<len;i++)cidr=cidr*10+dd[ptr[i]];
@@ -179,6 +178,7 @@ int callback_ris(struct lws *wsi,enum lws_callback_reasons reason,void *user,voi
       interrupted=1;
       break;
     case LWS_CALLBACK_CLIENT_RECEIVE_PONG:
+      printf("pong\n");
       break;
     case LWS_CALLBACK_TIMER:
       const char *ping_msg = "{\"type\": \"ping\"}";
@@ -214,7 +214,7 @@ void sigint_handler(int sig){
       break;
 
     case 37:
-      if(server_fd>=0)shutdown(server_fd,SHUT_RDWR);;
+      if(server_fd>=0)shutdown(server_fd,SHUT_RDWR);
       interrupted=1;
       break;
   }
@@ -376,8 +376,6 @@ int main(void) {
     }
     fclose(fp);
   }
-  
-  printf("run %lu %lu %lu %lu\n",nv4,nv6,anv4,anv6);
 
   signal(36,sigint_handler);
   signal(37,sigint_handler);
