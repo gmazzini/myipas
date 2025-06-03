@@ -344,7 +344,8 @@ int main(void) {
   if(v6i==NULL)exit(0);
   for(i=0;i<HASHELM;i++)v6i[i]=0;
   nv6=1;
-  
+  mask4[0]=0; for(i=1;i<33;i++)mask4[i]=~((1U<<(32-i))-1);
+  mask6[0]=0; for(i=1;i<65;i++)mask6[i]=~((1UL<<(64-i))-1);
   lbuf=(char *)malloc(LBUF);
   if(lbuf==NULL)exit(0);
 
@@ -392,9 +393,7 @@ printf("%lu %u %lu %lu %lu\n",av4.ip,av4.cidr,q,nv4,v4i[q]);
   }
   
   printf("run %lu %lu %lu %lu\n",nv4,nv6,anv4,anv6);
-  
-  mask4[0]=0; for(i=1;i<33;i++)mask4[i]=~((1U<<(32-i))-1);
-  mask6[0]=0; for(i=1;i<65;i++)mask6[i]=~((1UL<<(64-i))-1);
+
   signal(36,sigint_handler);
   signal(37,sigint_handler);
   memset(&info,0,sizeof(info));
