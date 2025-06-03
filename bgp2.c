@@ -352,13 +352,12 @@ printf("%lu %lu\n",anv4,anv6);
       fread(&av4,sizeof(struct v4),1,fp);
       if(j==0)continue;
       q=hv4(av4.ip,av4.cidr);
-      if(v4i[q]==0){
+printf("%lu %u %lu %lu %lu\n",av4.ip,av4.cidr,q,nv4,v4i[q]);      
 
-printf(">> %lu %lu\n",j,nv4);        
+      if(v4i[q]==0){   
         v4i[q]=nv4;
         nv4++;
       }
-else       printf("|| %lu %u %lu %lu\n",av4.ip,av4.cidr,q,nv4);      
       aiv4=v4+v4i[q];
       aiv4->ip=av4.ip;
       aiv4->cidr=av4.cidr;
