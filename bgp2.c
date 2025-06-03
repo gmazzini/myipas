@@ -138,7 +138,6 @@ int callback_ris(struct lws *wsi,enum lws_callback_reasons reason,void *user,voi
     case LWS_CALLBACK_CLIENT_RECEIVE:
       rxinfo++;
       trx=time(NULL);
-
       if(follow+len>=LBUF-1){follow=0; break;}
       memcpy(lbuf+follow,in,len);
       follow+=len;
@@ -147,17 +146,6 @@ int callback_ris(struct lws *wsi,enum lws_callback_reasons reason,void *user,voi
       ptr=lbuf;
       len=follow;
       follow=0;
-
-
-      /*
-      ptr=(char *)in;
-      if(ptr[len-1]!='}'){memcpy(lbuf+follow,ptr,len); follow+=len;  break;}
-      if(follow>0){memcpy(lbuf+follow,ptr,len); len+=follow; follow=0; ptr=lbuf;}        
-      ptr[len]='\0';
-      */
-
-
-      
       if(strstr(ptr, "\"type\":\"pong\"")!= NULL){
         printf("pong\n");
         break;
@@ -415,6 +403,10 @@ int main(void) {
   pthread_create(&whois_thread,NULL,whois_server_thread,NULL);
   while(!interrupted){
     lws_service(context,100);
+     if (time(NULL) - trx > 60) {
+        fprintf(stderr, "Timeout: nessun pacchetto ricevuto da %d secondi, riavvio WebSocket\n", TIMEOUT_RX);
+        interrupted = 1;  // oppure triggera una ri-connessione manuale
+    }
   }
   lws_context_destroy(context);
   pthread_join(whois_thread,NULL);
