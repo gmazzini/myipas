@@ -43,16 +43,9 @@ static const signed char dd[256]={
 uint32_t hv4(uint32_t ip,uint8_t cidr){
   uint32_t x;
   x=(ip&mask4[cidr])>>8;
-  printf("Stage1 x = %08X\n", x);
-
   x=(x^(cidr*0x45D9F3B))*0x119DE1F3;
-    printf("Stage2 x = %08X\n", x);
-
   x^=x>>16;
   x^=x>>8;
-
-    printf("Final x = %08X\n", x);
-
   return x&HASHOUT;
 }
 
@@ -353,15 +346,10 @@ int main(void) {
   if(fp!=NULL){
     fread(&anv4,4,1,fp);
     fread(&anv6,4,1,fp);
-
-printf("%lu %lu\n",anv4,anv6);
-
     for(j=0;j<anv4;j++){
       fread(&av4,sizeof(struct v4),1,fp);
       if(j==0)continue;
       q=hv4(av4.ip,av4.cidr);
-printf("%lu %u %lu %lu %lu\n",av4.ip,av4.cidr,q,nv4,v4i[q]);      
-
       if(v4i[q]==0){   
         v4i[q]=nv4;
         nv4++;
@@ -372,9 +360,6 @@ printf("%lu %u %lu %lu %lu\n",av4.ip,av4.cidr,q,nv4,v4i[q]);
       aiv4->asn=av4.asn;
       aiv4->ts=av4.ts;
     }
-
-    exit(0);
-    
     for(j=0;j<anv6;j++){
       fread(&av6,sizeof(struct v6),1,fp);
       if(j==0)continue;
