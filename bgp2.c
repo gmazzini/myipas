@@ -47,6 +47,15 @@ uint32_t hv4(uint32_t ip,uint8_t cidr){
   return x&0x00FFFFFF;
 }
 
+uint32_t hv6(uint64_t ip,uint8_t cidr){
+  uint64_t x;
+  x=(ip&mask6[cidr])>>16;
+  x=(x^(cidr*0x9E3779B97F4A7C15ULL))*0xC2B2AE3D27D4EB4FULL;
+  x^=x>>33;
+  x^=x>>17;
+  return (uint32_t)(x&0x00FFFFFF);
+}
+
 uint32_t hv6(uint64_t ip6,uint8_t cidr){
   uint64_t h1=0x9747b28c,key;
   key=(ip6&0xFFFFFFFFFFFFFF00ULL)|cidr;
