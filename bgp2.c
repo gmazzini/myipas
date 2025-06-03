@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <time.h>
 #define BGPFILE "/home/www/fulltable/bgp.raw"
+#define TIMEOUT_RX 60
 #define LBUF 100000
 #define HASHBIT 28
 #define HASHELM (1UL<<HASHBIT)
