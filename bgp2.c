@@ -7,7 +7,7 @@
 #include <time.h>
 #define BGPFILE "/home/www/fulltable/bgp.raw"
 #define LBUF 100000
-#define HASHBIT 27
+#define HASHBIT 28
 #define HASHELM (1UL<<HASHBIT)
 #define HASHOUT ((1UL<<HASHBIT)-1) 
 #define V4MAX 1800000
