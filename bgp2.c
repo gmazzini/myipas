@@ -210,7 +210,6 @@ struct lws_protocols protocols[]={
 
 void sigint_handler(int sig){
   FILE *fp;
-  uint32_t i,aaa;
 
   pthread_mutex_lock(&lock);
   switch(sig){
