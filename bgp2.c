@@ -138,10 +138,26 @@ int callback_ris(struct lws *wsi,enum lws_callback_reasons reason,void *user,voi
     case LWS_CALLBACK_CLIENT_RECEIVE:
       rxinfo++;
       trx=time(NULL);
+
+      if(follow+len>=LBUF-1){follow=0; break;}
+      memcpy(lbuf+follow,in,len);
+      follow+=len;
+      if(!lws_is_final_fragment(wsi))break;
+      lbuf[follow]='\0';
+      ptr=lbuf;
+      len=follow;
+      follow=0;
+
+
+      /*
       ptr=(char *)in;
       if(ptr[len-1]!='}'){memcpy(lbuf+follow,ptr,len); follow+=len;  break;}
       if(follow>0){memcpy(lbuf+follow,ptr,len); len+=follow; follow=0; ptr=lbuf;}        
       ptr[len]='\0';
+      */
+
+
+      
       if(strstr(ptr, "\"type\":\"pong\"")!= NULL){
         printf("pong\n");
         break;
