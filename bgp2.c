@@ -64,9 +64,7 @@ void myins(char *ptr,int len,uint32_t asn){
   long i,j;
   struct v4 *aiv4;
   struct v6 *aiv6;
-
-  printf("%lu %.*s\n",asn,len,ptr);
-
+  
   ts=time(NULL);
   for(i=0;i<len;i++)if(ptr[i]==':'){
     for(j=0;j<4;j++)b[j]=0;
@@ -95,6 +93,7 @@ void myins(char *ptr,int len,uint32_t asn){
     aiv6->ts=ts;
     return;
   }
+  printf("%lu %.*s\n",asn,len,ptr);
   for(i=-1,j=0;j<4;j++)for(a[j]=0,i++;i<len;i++)if((ptr[i]!='.'&&j<3) || (ptr[i]!='/'&&j==3))a[j]=a[j]*10+dd[ptr[i]]; else break;
   for(ip4=0,j=0;j<4;j++){ip4<<=8; ip4|=a[j];}
   for(cidr=0,i++;i<len;i++)cidr=cidr*10+dd[ptr[i]];
