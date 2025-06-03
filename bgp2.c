@@ -394,7 +394,7 @@ int main(void) {
   ccinfo.ssl_connection=LCCSCF_USE_SSL;
   web_socket=lws_client_connect_via_info(&ccinfo);
 
-  printf("run %lu %lu\n",nv4,nv6);
+  printf("run %lu %lu %lu %lu\n",nv4,nv6,av4,anv6);
 
   pthread_create(&whois_thread,NULL,whois_server_thread,NULL);
   while(!interrupted){
