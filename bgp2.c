@@ -348,7 +348,7 @@ int main(void) {
 
 printf("%lu %lu\n",anv4,anv6);
 
-    
+    for(j=0;j<anv4;j++){
       fread(&av4,sizeof(struct v4),1,fp);
       if(j==0)continue;
       q=hv4(av4.ip,av4.cidr);
