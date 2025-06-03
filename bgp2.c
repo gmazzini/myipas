@@ -147,10 +147,6 @@ int callback_ris(struct lws *wsi,enum lws_callback_reasons reason,void *user,voi
       ptr=lbuf;
       len=follow;
       follow=0;
-      if(strstr(ptr, "\"type\":\"pong\"")!= NULL){
-        printf("pong\n");
-        break;
-      }
       buf1=strstr(ptr,"\"path\":["); if(buf1==NULL)break;
       buf1+=8;
       buf2=strstr(buf1,"]"); if(buf2==NULL)break;
@@ -186,13 +182,6 @@ int callback_ris(struct lws *wsi,enum lws_callback_reasons reason,void *user,voi
     case LWS_CALLBACK_CLOSED:
       fprintf(stderr,"Closed Connection\n");
       interrupted=1;
-      break;
-    case LWS_CALLBACK_TIMER:
-      const char *ping_msg = "{\"type\": \"ping\"}";
-      msg_len=strlen(ping_msg);
-      memcpy(&aux[LWS_PRE],ping_msg,msg_len);
-      lws_write(wsi,&aux[LWS_PRE],msg_len,LWS_WRITE_TEXT);
-      lws_set_timer_usecs(wsi,10*LWS_USEC_PER_SEC);
       break;
     default:
       break;
