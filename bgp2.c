@@ -140,7 +140,11 @@ int callback_ris(struct lws *wsi,enum lws_callback_reasons reason,void *user,voi
       ptr=(char *)in;
       if(ptr[len-1]!='}'){memcpy(lbuf+follow,ptr,len); follow+=len;  break;}
       if(follow>0){memcpy(lbuf+follow,ptr,len); len+=follow; follow=0; ptr=lbuf;}        
-      ptr[len]='\0';  
+      ptr[len]='\0';
+      if(strstr(ptr, "\"type\":\"pong\"")!= NULL){
+        printf("pong\n");
+        break;
+      }
       buf1=strstr(ptr,"\"path\":["); if(buf1==NULL)break;
       buf1+=8;
       buf2=strstr(buf1,"]"); if(buf2==NULL)break;
@@ -176,9 +180,6 @@ int callback_ris(struct lws *wsi,enum lws_callback_reasons reason,void *user,voi
     case LWS_CALLBACK_CLOSED:
       fprintf(stderr,"Closed Connection\n");
       interrupted=1;
-      break;
-    case LWS_CALLBACK_CLIENT_RECEIVE_PONG:
-      printf("pong\n");
       break;
     case LWS_CALLBACK_TIMER:
       const char *ping_msg = "{\"type\": \"ping\"}";
