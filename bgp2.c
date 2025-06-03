@@ -375,6 +375,9 @@ int main(void) {
     }
     fclose(fp);
   }
+  
+  printf("run %lu %lu %lu %lu\n",nv4,nv6,anv4,anv6);
+  
   mask4[0]=0; for(i=1;i<33;i++)mask4[i]=~((1U<<(32-i))-1);
   mask6[0]=0; for(i=1;i<65;i++)mask6[i]=~((1UL<<(64-i))-1);
   signal(36,sigint_handler);
@@ -393,8 +396,6 @@ int main(void) {
   ccinfo.protocol=protocols[0].name;
   ccinfo.ssl_connection=LCCSCF_USE_SSL;
   web_socket=lws_client_connect_via_info(&ccinfo);
-
-  printf("run %lu %lu %lu %lu\n",nv4,nv6,av4,anv6);
 
   pthread_create(&whois_thread,NULL,whois_server_thread,NULL);
   while(!interrupted){
