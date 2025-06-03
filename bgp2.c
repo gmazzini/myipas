@@ -208,7 +208,6 @@ void sigint_handler(int sig){
       fwrite(v6,sizeof(struct v6),nv6,fp);
       fclose(fp);
       break;
-
     case 37:
       if(server_fd>=0)shutdown(server_fd,SHUT_RDWR);
       interrupted=1;
@@ -407,32 +406,5 @@ int main(void) {
   
   lws_context_destroy(context);
   pthread_join(whois_thread, NULL);
-/*
-  memset(&info,0,sizeof(info));
-  info.port=CONTEXT_PORT_NO_LISTEN;
-  info.protocols=protocols;
-  info.options=LWS_SERVER_OPTION_DO_SSL_GLOBAL_INIT;
-  context=lws_create_context(&info);
-  ccinfo.context=context;
-  ccinfo.address="ris-live.ripe.net";
-  ccinfo.port=443;
-  ccinfo.path="/v1/ws/";
-  ccinfo.host=ccinfo.address;
-  ccinfo.origin=ccinfo.address;
-  ccinfo.protocol=protocols[0].name;
-  ccinfo.ssl_connection=LCCSCF_USE_SSL;
-  web_socket=lws_client_connect_via_info(&ccinfo);
-
-  pthread_create(&whois_thread,NULL,whois_server_thread,NULL);
-  while(!interrupted){
-    lws_service(context,100);
-     if (time(NULL) - trx > 60) {
-        fprintf(stderr, "Timeout\n");
-        interrupted = 1;
-    }
-  }
-  lws_context_destroy(context);
-  pthread_join(whois_thread,NULL);
-  */
   return 0;
 }
