@@ -289,7 +289,7 @@ void *whois_server_thread(void *arg){
         for(ip6=0,j=0;j<4;j++){ip6<<=16; ip6|=b[j];}
         for(cidr=48;cidr>=16;cidr--){
           q=hv6(ip6,cidr);
-          if(v6i[q]!=0{
+          if(v6i[q]!=0){
             aiv6=v6+v6i[q];
             tt=(time_t)aiv6->ts;
             tm_info=localtime(&tt);
