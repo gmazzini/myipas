@@ -4,7 +4,8 @@ echo "On the basis of RIPE RIS data sets https://www.ris.ripe.net/\n";
 echo "List of data collectors https://ris.ripe.net/docs/route-collectors\n";
 echo "Real time collection\n";
 echo "Data is hourly published\n";
-echo "Retention is 30 days\n";
+echo "IPv4 collection from /8 to /24\n";
+echo "IPv6 collection from /16 to /48\n";
 echo "Real time query in IPv4 and IPv6 is open with whois, e.g. whois -h ipas.mazzini.org 1.1.1.1\n\n";
 
 function oo($txt,$ff){
