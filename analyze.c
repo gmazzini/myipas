@@ -25,7 +25,7 @@ int main(){
   uint64_t totv4,totv6;
   uint8_t j;
   FILE *fp;
-  uint32_t i,vv[100],q,elmv4,elmv6;
+  uint32_t i,vv[100],nv4,nv6;
   time_t tr;
 
   stat=(struct stat *)malloc(ASN*sizeof(struct stat));
