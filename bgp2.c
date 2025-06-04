@@ -204,15 +204,16 @@ struct lws_protocols protocols[]={
 
 void sigint_handler(int sig){
   FILE *fp;
+  uint32_t aux;
 
   pthread_mutex_lock(&lock);
   switch(sig){
     case 36:
       fp=fopen(BGPFILE,"wb");
-      fwrite(&nv4,4,1,fp);
-      fwrite(&nv6,4,1,fp);
-      fwrite(v4,sizeof(struct v4),nv4,fp);
-      fwrite(v6,sizeof(struct v6),nv6,fp);
+      aux=nv4-1; fwrite(&aux,4,1,fp);
+      aux=nv6-1; fwrite(&aux,4,1,fp);
+      fwrite(v4+1,sizeof(struct v4),nv4-1,fp);
+      fwrite(v6+1,sizeof(struct v6),nv6-1,fp);
       fclose(fp);
       break;
     case 37:
@@ -350,7 +351,6 @@ int main(void) {
     fread(&anv6,4,1,fp);
     for(j=0;j<anv4;j++){
       fread(&av4,sizeof(struct v4),1,fp);
-      if(j==0)continue;
       q=hv4(av4.ip,av4.cidr);
       if(v4i[q]==0){   
         v4i[q]=nv4;
@@ -364,7 +364,6 @@ int main(void) {
     }
     for(j=0;j<anv6;j++){
       fread(&av6,sizeof(struct v6),1,fp);
-      if(j==0)continue;
       q=hv6(av6.ip,av6.cidr);
       if(v6i[q]==0){
         v6i[q]=nv6;
