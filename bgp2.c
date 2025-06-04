@@ -210,10 +210,10 @@ void sigint_handler(int sig){
   switch(sig){
     case 36:
       fp=fopen(BGPFILE,"wb");
-      aux=nv4-1; fwrite(&aux,4,1,fp);
-      aux=nv6-1; fwrite(&aux,4,1,fp);
-      fwrite(v4+1,sizeof(struct v4),nv4-1,fp);
-      fwrite(v6+1,sizeof(struct v6),nv6-1,fp);
+      fwrite(&nv4,4,1,fp);
+      fwrite(&nv6,4,1,fp);
+      fwrite(v4,sizeof(struct v4),nv4,fp);
+      fwrite(v6,sizeof(struct v6),nv6,fp);
       fclose(fp);
       break;
     case 37:
@@ -333,12 +333,14 @@ int main(void) {
   v4i=(uint32_t *)malloc(HASHELM*sizeof(uint32_t));
   if(v4i==NULL)exit(0);
   for(i=0;i<HASHELM;i++)v4i[i]=0;
+  v4[0].ip=0; v4[0].cidr=0; v4[0].asn=0; v4[0].ts=0;
   nv4=1;
   v6=(struct v6 *)malloc(V6MAX*sizeof(struct v6));
   if(v6==NULL)exit(0);
   v6i=(uint32_t *)malloc(HASHELM*sizeof(uint32_t));
   if(v6i==NULL)exit(0);
   for(i=0;i<HASHELM;i++)v6i[i]=0;
+  v6[0].ip=0; v6[0].cidr=0; v6[0].asn=0; v6[0].ts=0;
   nv6=1;
   mask4[0]=0; for(i=1;i<33;i++)mask4[i]=~((1U<<(32-i))-1);
   mask6[0]=0; for(i=1;i<65;i++)mask6[i]=~((1UL<<(64-i))-1);
