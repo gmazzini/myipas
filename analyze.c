@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <time.h>
 #define BGPFILE "/home/www/fulltable/bgp.raw"
-#define ASN 200000 
+#define ASN 300000 
 
 int main(){
   struct v4 {
