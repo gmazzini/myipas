@@ -32,7 +32,7 @@ struct v6 {
 pthread_mutex_t lock=PTHREAD_MUTEX_INITIALIZER;
 int server_fd=-1;
 uint8_t interrupted=0;
-uint32_t follow=0,mask4[33],rxinfo=0,newinfo=0,tstart,trx,tnew,coll4=0,coll6=0,nv4,nv6,*v4i,*v6i;
+uint32_t follow=0,mask4[33],rxinfo=0,newinfo=0,tstart,trx,tnew,coll4=0,coll6=0,nv4,nv6,*v4i,*v6i,query=0;
 uint64_t mask6[65];
 struct lws *web_socket=NULL;
 char *subscribe_message="{\"type\": \"ris_subscribe\", \"data\": {\"type\": \"UPDATE\", \"host\": \"rrc00\"}}";
@@ -268,6 +268,7 @@ void *whois_server_thread(void *arg){
         write(client_fd,buf,strlen(buf));
       }
       else {
+        query++;
         len=n;
         nfound=0;
         for(i=0;i<len;i++)if(buf[i]=='.')break;
@@ -304,7 +305,7 @@ void *whois_server_thread(void *arg){
             }
           }
         }
-        sprintf(buf,"--\n%u match found\n%lu v4 elm\n%lu v6 elm\n",nfound,nv4-1,nv6-1);
+        sprintf(buf,"--\n%u match found\n%lu v4 elm\n%lu v6 elm\n%lu query\n",nfound,nv4-1,nv6-1,query);
         write(client_fd,buf,strlen(buf));
       }
       pthread_mutex_unlock(&lock);
