@@ -59,7 +59,7 @@ int main(){
     for(totv4=0,j=8;j<=24;j++)totv4+=stat[i].v4[j]*(1UL<<(32-j));
     for(totv6=0,j=16;j<=48;j++)totv6+=stat[i].v6[j]*(1UL<<(128-j));
     if(totv4==0&&totv6==0)continue;
-    printf("asn:%lu",);
+    printf("asn:%lu",i);
     printf(" v4:%llu",totv4); for(j=8;j<=24;j++)printf(",%lu",stat[i].v4[j]);
     printf(" v6:%llu",totv6); for(j=16;j<=48;j++)printf(",%lu",stat[i].v6[j]);
     printf("\n");
