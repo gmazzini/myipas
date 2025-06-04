@@ -257,19 +257,15 @@ void *whois_server_thread(void *arg){
       pthread_mutex_lock(&lock);
       buf[n]='\0';
       if(strcmp(buf,"stats")==0){
-          tt=(time_t)tstart; tm_info=localtime(&tt); strftime(buft,15,"%Y%m%d%H%M%S",tm_info);
-      sprintf(buf,"--\n%u match found\n%lu v4 elm\n%lu v4 collisions\n%lu v6 elm\n%lu v6 collisions\n%s start\n",nfound,nv4,coll4,nv6,coll6,buft);
-      write(client_fd,buf,strlen(buf));
-      tt=(time_t)trx;
-      tm_info=localtime(&tt);
-      strftime(buft,15,"%Y%m%d%H%M%S",tm_info);
-      sprintf(buf,"%lu %s rx info\n",rxinfo,buft);
-      write(client_fd,buf,strlen(buf));
-      tt=(time_t)tnew;
-      tm_info=localtime(&tt);
-      strftime(buft,15,"%Y%m%d%H%M%S",tm_info);
-      sprintf(buf,"%lu %s new info\n",newinfo,buft);
-      write(client_fd,buf,strlen(buf));
+        tt=(time_t)tstart; tm_info=localtime(&tt); strftime(buft,15,"%Y%m%d%H%M%S",tm_info);
+        sprintf(buf,"%s start\n%lu v4 elm\n%lu v4 collisions\n%lu v6 elm\n%lu v6 collisions\n",bufts,nv4,coll4,nv6,coll6);
+        write(client_fd,buf,strlen(buf));
+        tt=(time_t)trx; tm_info=localtime(&tt); strftime(buft,15,"%Y%m%d%H%M%S",tm_info);
+        sprintf(buf,"%lu %s rx info\n",rxinfo,buft);
+        write(client_fd,buf,strlen(buf));
+        tt=(time_t)tnew; tm_info=localtime(&tt); strftime(buft,15,"%Y%m%d%H%M%S",tm_info);
+        sprintf(buf,"%lu %s new info\n",newinfo,buft);
+        write(client_fd,buf,strlen(buf));
       }
       else {
         len=n;
@@ -308,7 +304,7 @@ void *whois_server_thread(void *arg){
             }
           }
         }
-        sprintf(buf,"--\n%u match found\n%lu v4 elm\n%lu v6 elm\n",nfound,nv4,nv6);
+        sprintf(buf,"--\n%u match found\n%lu v4 elm\n%lu v6 elm\n",nfound,nv4-1,nv6-1);
         write(client_fd,buf,strlen(buf));
       }
       pthread_mutex_unlock(&lock);
