@@ -8,9 +8,12 @@
 #define BGPFILE "/home/www/fulltable/bgp.raw"
 #define TIMEOUT_RX 20
 #define LBUF 100000
-#define HASHBIT 28
-#define HASHELM (1UL<<HASHBIT)
-#define HASHOUT ((1UL<<HASHBIT)-1) 
+#define V4HASHBIT 28
+#define V6HASHBIT 28
+#define V4HASHELM (1UL<<V4HASHBIT)
+#define V4HASHOUT ((1UL<<V4HASHBIT)-1) 
+#define V6HASHELM (1UL<<V6HASHBIT)
+#define V6HASHOUT ((1UL<<V6HASHBIT)-1) 
 #define V4MAX 1800000
 #define V6MAX 400000
 
@@ -47,7 +50,7 @@ uint32_t hv4(uint32_t ip,uint8_t cidr){
   x=(x^(cidr*0x45D9F3B))*0x119DE1F3;
   x^=x>>16;
   x^=x>>8;
-  return x&HASHOUT;
+  return x&V4HASHOUT;
 }
 
 uint32_t hv6(uint64_t ip,uint8_t cidr){
@@ -56,7 +59,7 @@ uint32_t hv6(uint64_t ip,uint8_t cidr){
   x=(x^(cidr*0x9E3779B97F4A7C15ULL))*0xC2B2AE3D27D4EB4FULL;
   x^=x>>33;
   x^=x>>17;
-  return (uint32_t)(x&HASHOUT);
+  return (uint32_t)(x&V6HASHOUT);
 }
 
 void myins(char *ptr,int len,uint32_t asn){
@@ -329,16 +332,16 @@ int main(void) {
   tnew=tstart=time(NULL);
   v4=(struct v4 *)malloc(V4MAX*sizeof(struct v4));
   if(v4==NULL)exit(0);
-  v4i=(uint32_t *)malloc(HASHELM*sizeof(uint32_t));
+  v4i=(uint32_t *)malloc(V4HASHELM*sizeof(uint32_t));
   if(v4i==NULL)exit(0);
-  for(i=0;i<HASHELM;i++)v4i[i]=0;
+  for(i=0;i<V4HASHELM;i++)v4i[i]=0;
   v4[0].ip=0; v4[0].cidr=0; v4[0].asn=0; v4[0].ts=0;
   nv4=1;
   v6=(struct v6 *)malloc(V6MAX*sizeof(struct v6));
   if(v6==NULL)exit(0);
-  v6i=(uint32_t *)malloc(HASHELM*sizeof(uint32_t));
+  v6i=(uint32_t *)malloc(V6HASHELM*sizeof(uint32_t));
   if(v6i==NULL)exit(0);
-  for(i=0;i<HASHELM;i++)v6i[i]=0;
+  for(i=0;i<V6HASHELM;i++)v6i[i]=0;
   v6[0].ip=0; v6[0].cidr=0; v6[0].asn=0; v6[0].ts=0;
   nv6=1;
   mask4[0]=0; for(i=1;i<33;i++)mask4[i]=~((1U<<(32-i))-1);
