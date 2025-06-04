@@ -2,6 +2,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <time.h>
+#define BGPFILE "/home/www/fulltable/bgp.raw"
+
 #define BKP4FILE "/home/www/fulltable/bkp4.raw"
 #define BKP6FILE "/home/www/fulltable/bkp6.raw"
 #define HASHELM 16777216
