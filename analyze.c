@@ -42,13 +42,13 @@ int main(){
   fread(&nv6,4,1,fp);
   for(i=0;i<nv4;i++){
     fread(&v4,sizeof(struct v4),1,fp);
-    if(v4.asn==0||v4.cidr<8||v4.cidr>24)continue;
+    if(v4.asn==0||v4.cidr<8||v4.cidr>24||v4.asn>=ASN)continue;
     vv[(tr-v4.ts)/86400]++;
     stat[v4.asn].v4[v4.cidr-8]++;
   }
   for(i=0;i<nv6;i++){
     fread(&v6,sizeof(struct v6),1,fp);
-    if(v6.asn==0||v6.cidr<16||v6.cidr>48)continue;
+    if(v6.asn==0||v6.cidr<16||v6.cidr>48||v6.asn>=ASN)continue;
     vv[(tr-v6.ts)/86400]++;
     stat[v6.asn].v6[v6.cidr-16]++;
   }
