@@ -12,14 +12,13 @@ struct v4 {
   uint8_t cidr;
   uint32_t asn;
   uint32_t ts;
-} *v4;
+};
 struct v6 {
   uint64_t ip;
   uint8_t cidr;
   uint32_t asn;
   uint32_t ts;
-} *v6;
-uint32_t nv4,nv6;
+};
 
 int cmp_v4(const void *a, const void *b){
   struct v4 *x = (struct v4 *)a;
@@ -42,11 +41,13 @@ int cmp_v6(const void *a, const void *b){
 }
 
 int main(){
-  uint32_t i,j,q,c4[33],c6[129],ip4;
+  uint32_t i,j,q,c4[33],c6[129],ip4,nv4,nv6;
   uint8_t a[4];
   uint16_t b[4];
   uint64_t ip6;
   FILE *fp;
+  struct v4 *v4;
+  struct v6 *v6;
   
   fp=fopen(BGPFILE,"rb");
   if(fp==NULL)exit(0);
