@@ -83,7 +83,7 @@ int main(){
   fprintf(fp,"# v6_tot: %lu\n",nv6);
   for(i=0;i<129;i++)if(c6[i]>0)fprintf(fp,"# v6_cidr%d: %lu\n",i,c6[i]);
   for(i=0;i<nv6;i++){
-    f(v6[i].cidr==0||v6[i].asn==0)continue;
+    if(v6[i].cidr==0||v6[i].asn==0)continue;
     for(ip6=v6[i].ip,q=0;q<64;q++)if(ip6&1)break; else ip6>>=1;
     for(ip6=v6[i].ip,j=0;j<4;j++){b[j]=ip6&0xffff; ip6>>=16;}
     if(q>=48)fprintf(fp,"%x::",b[3]);
