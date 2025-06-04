@@ -32,7 +32,7 @@ struct v6 {
 pthread_mutex_t lock=PTHREAD_MUTEX_INITIALIZER;
 int server_fd=-1;
 uint8_t interrupted=0;
-uint32_t follow=0,mask4[33],rxinfo=0,newinfo=0,tstart,trx,tnew,coll4=0,coll6=0,nv4,nv6,*v4i,*v6i,query=0;
+uint32_t follow=0,mask4[33],rxinfo=0,newinfo=0,tstart,trx,tnew,coll4=0,coll6=0,nv4,nv6,*v4i,*v6i,query=0,start;
 uint64_t mask6[65];
 struct lws *web_socket=NULL;
 char *subscribe_message="{\"type\": \"ris_subscribe\", \"data\": {\"type\": \"UPDATE\", \"host\": \"rrc00\"}}";
@@ -264,7 +264,7 @@ void *whois_server_thread(void *arg){
         sprintf(buf,"%lu %s rx info\n",rxinfo,buft);
         write(client_fd,buf,strlen(buf));
         tt=(time_t)tnew; tm_info=localtime(&tt); strftime(buft,15,"%Y%m%d%H%M%S",tm_info);
-        sprintf(buf,"%lu %s new info\n",newinfo,buft);
+        sprintf(buf,"%lu %s new info\n%lu start\n",newinfo,buft,start);
         write(client_fd,buf,strlen(buf));
       }
       else {
@@ -400,10 +400,11 @@ int main(void) {
   ccinfo.ssl_connection=LCCSCF_USE_SSL;
   web_socket=lws_client_connect_via_info(&ccinfo);
   trx=time(NULL);
+  start=1;
   while(!interrupted){
     lws_service(context,100);
     if(time(NULL)-trx>TIMEOUT_RX){
-    fprintf(stderr, "Timeout\n");
+      start++;
       lws_context_destroy(context);
       context=NULL;
       sleep(2);
