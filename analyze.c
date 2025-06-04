@@ -22,7 +22,7 @@ int main(){
     uint32_t v4[17]; // 8 to 24
     uint32_t v6[33];   // 16 to 48
   } *stat;
-  uint64_t tot;
+  uint64_t totv4,totv6;
   uint8_t j;
   FILE *fp;
   uint32_t i,vv[100],q,elmv4,elmv6;
@@ -55,14 +55,13 @@ int main(){
   fclose(fp);
 
   for(i=0;i<100;i++)printf("dd:%lu %llu\n",i,vv[i]);
-  for(i=0;i<HASHELM;i++)if(ptr[i]!=NULL){
-    printf("asn:%lu",ptr[i]->asn);
-    for(tot=0,j=8;j<=24;j++)tot+=ptr[i]->v4[j]*(1UL<<(32-j));
-    printf(" v4:%llu",tot);
-    for(j=8;j<=24;j++)printf(",%lu",ptr[i]->v4[j]);
-    for(tot=0,j=16;j<=48;j++)tot+=ptr[i]->v6[j]*(1UL<<(128-j));
-    printf(" v6:%llu",tot);
-    for(j=16;j<=48;j++)printf(",%lu",ptr[i]->v6[j]);
+  for(i=0;i<ASN;i++){
+    for(totv4=0,j=8;j<=24;j++)totv4+=stat[i].v4[j]*(1UL<<(32-j));
+    for(totv6=0,j=16;j<=48;j++)totv6+=stat[i].v6[j]*(1UL<<(128-j));
+    if(totv4==0&&totv6==0)continue;
+    printf("asn:%lu",);
+    printf(" v4:%llu",totv4); for(j=8;j<=24;j++)printf(",%lu",stat[i].v4[j]);
+    printf(" v6:%llu",totv6); for(j=16;j<=48;j++)printf(",%lu",stat[i].v6[j]);
     printf("\n");
   }  
 }
