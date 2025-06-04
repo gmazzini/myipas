@@ -8,7 +8,7 @@
 #define BGPFILE "/home/www/fulltable/bgp.raw"
 #define TIMEOUT_RX 20
 #define LBUF 100000
-#define V4HASHBIT 28
+#define V4HASHBIT 29
 #define V6HASHBIT 28
 #define V4HASHELM (1UL<<V4HASHBIT)
 #define V4HASHOUT ((1UL<<V4HASHBIT)-1) 
