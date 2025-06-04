@@ -256,49 +256,8 @@ void *whois_server_thread(void *arg){
     if(n>0){
       pthread_mutex_lock(&lock);
       buf[n]='\0';
-      len=n;
-      nfound=0;
-      for(i=0;i<len;i++)if(buf[i]=='.')break;
-      if(i<len){
-        for(j=0;j<4;j++)a[j]=0;
-        for(i=-1,j=0;j<4;j++)for(a[j]=0,i++;i<len;i++)if((buf[i]!='.'&&j<3) || (buf[i]!='\0'&&j==3))a[j]=a[j]*10+dd[buf[i]]; else break;
-        for(ip4=0,j=0;j<4;j++){ip4<<=8; ip4|=a[j];}
-        for(cidr=24;cidr>=8;cidr--){
-          q=hv4(ip4,cidr);
-          if(v4i[q]!=0){
-            aiv4=v4+v4i[q];
-            tt=(time_t)aiv4->ts;
-            tm_info=localtime(&tt);
-            strftime(buft,15,"%Y%m%d%H%M%S",tm_info);
-            sprintf(buf,"%u %lu %s\n",cidr,aiv4->asn,buft);
-            write(client_fd,buf,strlen(buf));
-            nfound++;
-          }
-        }
-      }
-      else {
-        for(j=0;j<4;j++)b[j]=0;
-        for(i=-1,j=0;j<4;j++){
-          for(i++;i<len;i++)if(buf[i]!=':' && buf[i]!='\0')b[j]=b[j]*16+dd[buf[i]]; else break;
-          if(buf[i]=='\0' || buf[i+1]==':')break;
-        }
-        for(ip6=0,j=0;j<4;j++){ip6<<=16; ip6|=b[j];}
-        for(cidr=48;cidr>=16;cidr--){
-          q=hv6(ip6,cidr);
-          if(v6i[q]!=0){
-            aiv6=v6+v6i[q];
-            tt=(time_t)aiv6->ts;
-            tm_info=localtime(&tt);
-            strftime(buft,15,"%Y%m%d%H%M%S",tm_info);
-            sprintf(buf,"%u %lu %s\n",cidr,aiv6->asn,buft);
-            write(client_fd,buf,strlen(buf));
-            nfound++;
-          }
-        }
-      }
-      tt=(time_t)tstart;
-      tm_info=localtime(&tt);
-      strftime(buft,15,"%Y%m%d%H%M%S",tm_info);
+      if(strcmp(buf,"stats")==0){
+          tt=(time_t)tstart; tm_info=localtime(&tt); strftime(buft,15,"%Y%m%d%H%M%S",tm_info);
       sprintf(buf,"--\n%u match found\n%lu v4 elm\n%lu v4 collisions\n%lu v6 elm\n%lu v6 collisions\n%s start\n",nfound,nv4,coll4,nv6,coll6,buft);
       write(client_fd,buf,strlen(buf));
       tt=(time_t)trx;
@@ -311,8 +270,49 @@ void *whois_server_thread(void *arg){
       strftime(buft,15,"%Y%m%d%H%M%S",tm_info);
       sprintf(buf,"%lu %s new info\n",newinfo,buft);
       write(client_fd,buf,strlen(buf));
+      }
+      else {
+        len=n;
+        nfound=0;
+        for(i=0;i<len;i++)if(buf[i]=='.')break;
+        if(i<len){
+          for(j=0;j<4;j++)a[j]=0;
+          for(i=-1,j=0;j<4;j++)for(a[j]=0,i++;i<len;i++)if((buf[i]!='.'&&j<3) || (buf[i]!='\0'&&j==3))a[j]=a[j]*10+dd[buf[i]]; else break;
+          for(ip4=0,j=0;j<4;j++){ip4<<=8; ip4|=a[j];}
+          for(cidr=24;cidr>=8;cidr--){
+            q=hv4(ip4,cidr);
+            if(v4i[q]!=0){
+              aiv4=v4+v4i[q];
+              tt=(time_t)aiv4->ts; tm_info=localtime(&tt); strftime(buft,15,"%Y%m%d%H%M%S",tm_info);
+              sprintf(buf,"%u %lu %s\n",cidr,aiv4->asn,buft);
+              write(client_fd,buf,strlen(buf));
+              nfound++;
+            }
+          }
+        }
+        else {
+          for(j=0;j<4;j++)b[j]=0;
+          for(i=-1,j=0;j<4;j++){
+            for(i++;i<len;i++)if(buf[i]!=':' && buf[i]!='\0')b[j]=b[j]*16+dd[buf[i]]; else break;
+            if(buf[i]=='\0' || buf[i+1]==':')break;
+          }
+          for(ip6=0,j=0;j<4;j++){ip6<<=16; ip6|=b[j];}
+          for(cidr=48;cidr>=16;cidr--){
+            q=hv6(ip6,cidr);
+            if(v6i[q]!=0){
+              aiv6=v6+v6i[q];
+              tt=(time_t)aiv6->ts; tm_info=localtime(&tt); strftime(buft,15,"%Y%m%d%H%M%S",tm_info);
+              sprintf(buf,"%u %lu %s\n",cidr,aiv6->asn,buft);
+              write(client_fd,buf,strlen(buf));
+              nfound++;
+            }
+          }
+        }
+        sprintf(buf,"--\n%u match found\n%lu v4 elm\n%lu v6 elm\n",nfound,nv4,nv6);
+        write(client_fd,buf,strlen(buf));
+      }
       pthread_mutex_unlock(&lock);
-    }
+    }    
     close(client_fd);
   }
   close(server_fd);
