@@ -256,7 +256,7 @@ void *whois_server_thread(void *arg){
     if(n>0){
       pthread_mutex_lock(&lock);
       buf[n]='\0';
-      if(strcmp(buf,"stats")==0){
+      if(strcmp(buf,"stats\n")==0){
         tt=(time_t)tstart; tm_info=localtime(&tt); strftime(buft,15,"%Y%m%d%H%M%S",tm_info);
         sprintf(buf,"%s start\n%lu v4 elm\n%lu v4 collisions\n%lu v6 elm\n%lu v6 collisions\n",buft,nv4,coll4,nv6,coll6);
         write(client_fd,buf,strlen(buf));
