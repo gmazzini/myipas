@@ -86,7 +86,7 @@ void myins(char *ptr,int len,uint32_t asn){
     if(v6i[q]==0){
       v6i[q]=nv6;
       nv6++;
-      newinfo++;
+      newinfo++; tnew=time(NULL);
       aiv6=v6+v6i[q];
     }
     else {
@@ -107,7 +107,7 @@ void myins(char *ptr,int len,uint32_t asn){
   if(v4i[q]==0){
     v4i[q]=nv4;
     nv4++;
-    newinfo++;
+    newinfo++; tnew=time(NULL);
     aiv4=v4+v4i[q];
   }
   else {
