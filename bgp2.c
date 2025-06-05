@@ -69,6 +69,7 @@ char *mydata(uint32_t x){
   tt=(time_t)x; 
   tm_info=localtime(&tt); 
   strftime(buft,15,"%Y%m%d%H%M%S",tm_info);
+  return buft;
 }
 
 void myproc(char *ptr,int len,uint32_t asn){
