@@ -32,7 +32,7 @@ struct v6 {
 pthread_mutex_t lock=PTHREAD_MUTEX_INITIALIZER;
 int server_fd=-1;
 uint8_t interrupted=0;
-uint32_t follow=0,mask4[33],rxv4=0,rxv6=0,newv4=0,newv6=0,tstart,trx,tnew,coll4=0,coll6=0,nv4,nv6,*v4i,*v6i,query=0,start;
+uint32_t follow=0,mask4[33],rxv4=0,rxv6=0,newv4=0,newv6=0,tstart,trx,tnew,coll4=0,coll6=0,nv4,nv6,*v4i,*v6i,query=0,restart=0;
 uint64_t mask6[65];
 struct lws *web_socket=NULL;
 char *subscribe_message="{\"type\": \"ris_subscribe\", \"data\": {\"type\": \"UPDATE\", \"host\": \"rrc00\"}}";
@@ -267,12 +267,11 @@ void *whois_server_thread(void *arg){
       pthread_mutex_lock(&lock);
       buf[n]='\0';
       if(strncmp(buf,"stat",4)==0){
-        sprintf(buf,"%s start\n%lu v4 elm\n%lu v4 collisions\n%lu v6 elm\n%lu v6 collisions\n",mydata(tstart),nv4-1,coll4,nv6-1,coll6);
-        write(client_fd,buf,strlen(buf));
-        sprintf(buf,"%lu %s rx info\n",rxinfo,mydata(trx));
-        write(client_fd,buf,strlen(buf));
-        sprintf(buf,"%lu %s new info\n%lu start\n",newinfo,mydata(tnew),start);
-        write(client_fd,buf,strlen(buf));
+        sprintf(buf,"%s Tstart\n%lu Nrestart\n",mydata(tstart),restart); write(client_fd,buf,strlen(buf));
+        sprintf(buf,"%s Trx\n",mydata(trx)); write(client_fd,buf,strlen(buf));
+        sprintf(buf,"%s Tnew\n",mydata(tnew)); write(client_fd,buf,strlen(buf));
+        sprintf(buf,"%lu Nelm v4\n%lu Ncollision v4\n%lu Nrx v4\n%lu Nnew v4\n",nv4,coll4,rxv4,newv4); write(client_fd,buf,strlen(buf));
+        sprintf(buf,"%lu Nelm v6\n%lu Ncollision v6\n%lu Nrx v6\n%lu Nnew v6\n",nv6,coll6,rxv6,newv6); write(client_fd,buf,strlen(buf));
       }
       else {
         query++;
@@ -287,8 +286,7 @@ void *whois_server_thread(void *arg){
             q=hv4(ip4,cidr);
             if(v4i[q]!=0){
               aiv4=v4+v4i[q];
-              sprintf(buf,"%u %lu %s\n",cidr,aiv4->asn,mydata(aiv4->ts));
-              write(client_fd,buf,strlen(buf));
+              sprintf(buf,"%u %lu %s\n",cidr,aiv4->asn,mydata(aiv4->ts)); write(client_fd,buf,strlen(buf));
               nfound++;
             }
           }
@@ -304,14 +302,12 @@ void *whois_server_thread(void *arg){
             q=hv6(ip6,cidr);
             if(v6i[q]!=0){
               aiv6=v6+v6i[q];
-              sprintf(buf,"%u %lu %s\n",cidr,aiv6->asn,mydata(aiv6->ts));
-              write(client_fd,buf,strlen(buf));
+              sprintf(buf,"%u %lu %s\n",cidr,aiv6->asn,mydata(aiv6->ts)); write(client_fd,buf,strlen(buf));
               nfound++;
             }
           }
         }
-        sprintf(buf,"--\n%u match found\n%lu v4 elm\n%lu v6 elm\n%lu query\n",nfound,nv4-1,nv6-1,query);
-        write(client_fd,buf,strlen(buf));
+        sprintf(buf,"--\n%u match found\n%lu v4 elm\n%lu v6 elm\n%lu query\n",nfound,nv4-1,nv6-1,query); write(client_fd,buf,strlen(buf));
       }
       pthread_mutex_unlock(&lock);
     }    
@@ -405,11 +401,10 @@ int main(void) {
   ccinfo.ssl_connection=LCCSCF_USE_SSL;
   web_socket=lws_client_connect_via_info(&ccinfo);
   trx=time(NULL);
-  start=1;
   while(!interrupted){
     lws_service(context,100);
     if(time(NULL)-trx>TIMEOUT_RX){
-      start++;
+      restart++;
       lws_context_destroy(context);
       context=NULL;
       sleep(2);
