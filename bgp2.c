@@ -328,6 +328,7 @@ int main(void) {
   struct v4 av4,*aiv4;
   struct v6 av6,*aiv6;
 
+  setlocale(LC_NUMERIC,"en_US.UTF-8");
   tnew=tstart=time(NULL);
   v4=(struct v4 *)malloc(V4MAX*sizeof(struct v4));
   if(v4==NULL)exit(0);
