@@ -268,11 +268,11 @@ void *whois_server_thread(void *arg){
       pthread_mutex_lock(&lock);
       buf[n]='\0';
       if(strncmp(buf,"stat",4)==0){
-        sprintf(buf,"%s Tstart\n%lu Nrestart\n",mydata(tstart),restart); write(client_fd,buf,strlen(buf));
+        sprintf(buf,"%s Tstart\n%'lu Nrestart\n",mydata(tstart),restart); write(client_fd,buf,strlen(buf));
         sprintf(buf,"%s Trx\n",mydata(trx)); write(client_fd,buf,strlen(buf));
         sprintf(buf,"%s Tnew\n",mydata(tnew)); write(client_fd,buf,strlen(buf));
-        sprintf(buf,"%lu Nelm v4\n%lu Ncollision v4\n%lu Nrx v4\n%lu Nnew v4\n",nv4,coll4,rxv4,newv4); write(client_fd,buf,strlen(buf));
-        sprintf(buf,"%lu Nelm v6\n%lu Ncollision v6\n%lu Nrx v6\n%lu Nnew v6\n",nv6,coll6,rxv6,newv6); write(client_fd,buf,strlen(buf));
+        sprintf(buf,"%'lu Nelm v4\n%'lu Ncollision v4\n%'lu Nrx v4\n%'lu Nnew v4\n",nv4,coll4,rxv4,newv4); write(client_fd,buf,strlen(buf));
+        sprintf(buf,"%'lu Nelm v6\n%'lu Ncollision v6\n%'lu Nrx v6\n%'lu Nnew v6\n",nv6,coll6,rxv6,newv6); write(client_fd,buf,strlen(buf));
       }
       else {
         query++;
