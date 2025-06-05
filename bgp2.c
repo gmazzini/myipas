@@ -32,7 +32,7 @@ struct v6 {
 pthread_mutex_t lock=PTHREAD_MUTEX_INITIALIZER;
 int server_fd=-1;
 uint8_t interrupted=0;
-uint32_t follow=0,mask4[33],rxinfo=0,newinfo=0,tstart,trx,tnew,coll4=0,coll6=0,nv4,nv6,*v4i,*v6i,query=0,start;
+uint32_t follow=0,mask4[33],rxv4=0,rxv6=0,newv4=0,newv6=0,tstart,trx,tnew,coll4=0,coll6=0,nv4,nv6,*v4i,*v6i,query=0,start;
 uint64_t mask6[65];
 struct lws *web_socket=NULL;
 char *subscribe_message="{\"type\": \"ris_subscribe\", \"data\": {\"type\": \"UPDATE\", \"host\": \"rrc00\"}}";
@@ -62,7 +62,16 @@ uint32_t hv6(uint64_t ip,uint8_t cidr){
   return (uint32_t)(x&V6HASHOUT);
 }
 
-void myins(char *ptr,int len,uint32_t asn){
+char *mydata(uint32_t x){
+  time_t tt;
+  struct tm *tm_info;
+  static char buft[30];
+  tt=(time_t)x; 
+  tm_info=localtime(&tt); 
+  strftime(buft,15,"%Y%m%d%H%M%S",tm_info);
+}
+
+void myproc(char *ptr,int len,uint32_t asn){
   uint32_t ts,ip4,q;
   uint64_t ip6;
   uint8_t a[4],cidr;
@@ -73,6 +82,7 @@ void myins(char *ptr,int len,uint32_t asn){
   
   ts=time(NULL);
   for(i=0;i<len;i++)if(ptr[i]==':'){
+    rxv4++;
     for(j=0;j<4;j++)b[j]=0;
     for(i=-1,j=0;j<4;j++){
       for(i++;i<len;i++)if(ptr[i]!=':' && ptr[i]!='/')b[j]=b[j]*16+dd[ptr[i]]; else break;
@@ -86,7 +96,8 @@ void myins(char *ptr,int len,uint32_t asn){
     if(v6i[q]==0){
       v6i[q]=nv6;
       nv6++;
-      newinfo++; tnew=time(NULL);
+      newv6++; 
+      tnew=time(NULL);
       aiv6=v6+v6i[q];
     }
     else {
@@ -99,6 +110,7 @@ void myins(char *ptr,int len,uint32_t asn){
     aiv6->ts=ts;
     return;
   }
+  rxv6++;
   for(i=-1,j=0;j<4;j++)for(a[j]=0,i++;i<len;i++)if((ptr[i]!='.'&&j<3) || (ptr[i]!='/'&&j==3))a[j]=a[j]*10+dd[ptr[i]]; else break;
   for(ip4=0,j=0;j<4;j++){ip4<<=8; ip4|=a[j];}
   for(cidr=0,i++;i<len;i++)cidr=cidr*10+dd[ptr[i]];
@@ -107,7 +119,8 @@ void myins(char *ptr,int len,uint32_t asn){
   if(v4i[q]==0){
     v4i[q]=nv4;
     nv4++;
-    newinfo++; tnew=time(NULL);
+    newv4++; 
+    tnew=time(NULL);
     aiv4=v4+v4i[q];
   }
   else {
@@ -140,7 +153,6 @@ int callback_ris(struct lws *wsi,enum lws_callback_reasons reason,void *user,voi
       lws_write(wsi,&aux[LWS_PRE],msg_len,LWS_WRITE_TEXT);
       break;
     case LWS_CALLBACK_CLIENT_RECEIVE:
-      rxinfo++;
       trx=time(NULL);
       if(follow+len>=LBUF-1){follow=0; break;}
       memcpy(lbuf+follow,in,len);
@@ -169,11 +181,11 @@ int callback_ris(struct lws *wsi,enum lws_callback_reasons reason,void *user,voi
       for(;;){
         buf3=strstr(buf1,",");
         if(buf3!=NULL){
-          myins(buf1+1,buf3-buf1-2,asn);
+          myproc(buf1+1,buf3-buf1-2,asn);
           buf1=buf3+1;
         }
         else {
-          myins(buf1+1,buf2-buf1-2,asn);
+          myproc(buf1+1,buf2-buf1-2,asn);
           break;
         }
       }
@@ -229,15 +241,13 @@ void sigint_handler(int sig){
 void *whois_server_thread(void *arg){
   int client_fd,opt;
   struct sockaddr_in addr;
-  char buf[200],buft[15];
+  char buf[200];
   ssize_t n;
   uint8_t a[4],cidr,nfound;
   int i,j,len;
   uint16_t b[4];
   uint32_t ip4,q;
   uint64_t ip6;
-  time_t tt;
-  struct tm *tm_info;
   struct v4 *aiv4;
   struct v6 *aiv6;
 
@@ -257,14 +267,11 @@ void *whois_server_thread(void *arg){
       pthread_mutex_lock(&lock);
       buf[n]='\0';
       if(strncmp(buf,"stat",4)==0){
-        tt=(time_t)tstart; tm_info=localtime(&tt); strftime(buft,15,"%Y%m%d%H%M%S",tm_info);
-        sprintf(buf,"%s start\n%lu v4 elm\n%lu v4 collisions\n%lu v6 elm\n%lu v6 collisions\n",buft,nv4-1,coll4,nv6-1,coll6);
+        sprintf(buf,"%s start\n%lu v4 elm\n%lu v4 collisions\n%lu v6 elm\n%lu v6 collisions\n",mydata(tstart),nv4-1,coll4,nv6-1,coll6);
         write(client_fd,buf,strlen(buf));
-        tt=(time_t)trx; tm_info=localtime(&tt); strftime(buft,15,"%Y%m%d%H%M%S",tm_info);
-        sprintf(buf,"%lu %s rx info\n",rxinfo,buft);
+        sprintf(buf,"%lu %s rx info\n",rxinfo,mydata(trx));
         write(client_fd,buf,strlen(buf));
-        tt=(time_t)tnew; tm_info=localtime(&tt); strftime(buft,15,"%Y%m%d%H%M%S",tm_info);
-        sprintf(buf,"%lu %s new info\n%lu start\n",newinfo,buft,start);
+        sprintf(buf,"%lu %s new info\n%lu start\n",newinfo,mydata(tnew),start);
         write(client_fd,buf,strlen(buf));
       }
       else {
@@ -280,8 +287,7 @@ void *whois_server_thread(void *arg){
             q=hv4(ip4,cidr);
             if(v4i[q]!=0){
               aiv4=v4+v4i[q];
-              tt=(time_t)aiv4->ts; tm_info=localtime(&tt); strftime(buft,15,"%Y%m%d%H%M%S",tm_info);
-              sprintf(buf,"%u %lu %s\n",cidr,aiv4->asn,buft);
+              sprintf(buf,"%u %lu %s\n",cidr,aiv4->asn,mydata(aiv4->ts));
               write(client_fd,buf,strlen(buf));
               nfound++;
             }
@@ -298,8 +304,7 @@ void *whois_server_thread(void *arg){
             q=hv6(ip6,cidr);
             if(v6i[q]!=0){
               aiv6=v6+v6i[q];
-              tt=(time_t)aiv6->ts; tm_info=localtime(&tt); strftime(buft,15,"%Y%m%d%H%M%S",tm_info);
-              sprintf(buf,"%u %lu %s\n",cidr,aiv6->asn,buft);
+              sprintf(buf,"%u %lu %s\n",cidr,aiv6->asn,mydata(aiv6->ts));
               write(client_fd,buf,strlen(buf));
               nfound++;
             }
