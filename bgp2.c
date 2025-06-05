@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <time.h>
+#include <locale.h>
 #define BGPFILE "/home/www/fulltable/bgp.raw"
 #define TIMEOUT_RX 20
 #define LBUF 100000
