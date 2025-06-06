@@ -59,7 +59,6 @@ uint32_t hv4(uint32_t ip,uint8_t cidr){
   uint32_t x,y;
   x=(ip&mask4[cidr])>>8;
   y=cidr-8;
-  x|=(y<<24);
   return x;
 }
 #endif
