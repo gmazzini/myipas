@@ -57,8 +57,10 @@ uint32_t hv4(uint32_t ip,uint8_t cidr){
 #else
 uint32_t hv4(uint32_t ip,uint8_t cidr){
   uint32_t x,y;
+  if(cidr<8||cidr>24)return 0;
   x=(ip&mask4[cidr])>>8;
   y=cidr-8;
+  x|=(y<<24);
   return x;
 }
 #endif
