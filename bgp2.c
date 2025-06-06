@@ -9,8 +9,8 @@
 #define BGPFILE "/home/www/fulltable/bgp.raw"
 #define TIMEOUT_RX 20
 #define LBUF 100000
-#define V4HASHBIT 29
-#define V6HASHBIT 28
+#define V4HASHBIT 28
+#define V6HASHBIT 29
 #define V4HASHELM (1UL<<V4HASHBIT)
 #define V4HASHOUT ((1UL<<V4HASHBIT)-1) 
 #define V6HASHELM (1UL<<V6HASHBIT)
@@ -45,7 +45,7 @@ static const signed char dd[256]={
   ['a']=10,['b']=11,['c']=12,['d']=13,['e']=14,['f']=15
 };
 
-#if V4HASHBIT < 29
+#if V4HASHBIT < 28
 uint32_t hv4(uint32_t ip,uint8_t cidr){
   uint32_t x;
   x=(ip&mask4[cidr])>>8;
@@ -58,8 +58,13 @@ uint32_t hv4(uint32_t ip,uint8_t cidr){
 uint32_t hv4(uint32_t ip,uint8_t cidr){
   uint32_t x,y;
   if(cidr<8||cidr>24)return 0;
+  if(cidr==8){
+    x=10UL<<16;
+    x|=((ip&0xff000000)>>16);
+    return x;
+  }
   x=(ip&mask4[cidr])>>8;
-  y=cidr-8;
+  y=cidr-9;
   x|=(y<<24);
   return x;
 }
