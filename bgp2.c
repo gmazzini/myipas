@@ -45,6 +45,7 @@ static const signed char dd[256]={
   ['a']=10,['b']=11,['c']=12,['d']=13,['e']=14,['f']=15
 };
 
+#if V4HASHBIT < 29
 uint32_t hv4(uint32_t ip,uint8_t cidr){
   uint32_t x;
   x=(ip&mask4[cidr])>>8;
@@ -53,6 +54,11 @@ uint32_t hv4(uint32_t ip,uint8_t cidr){
   x^=x>>8;
   return x&V4HASHOUT;
 }
+#else
+uint32_t hv4(uint32_t ip,uint8_t cidr){
+  return (ip>>8)|((cidr-8)<<24);
+}
+#endif
 
 uint32_t hv6(uint64_t ip,uint8_t cidr){
   uint64_t x;
