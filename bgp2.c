@@ -289,8 +289,8 @@ void *whois_server_thread(void *arg){
         sprintf(buf,"%s Trx\n",mydata(trx)); write(client_fd,buf,strlen(buf));
         sprintf(buf,"%s Tnew\n",mydata(tnew)); write(client_fd,buf,strlen(buf));
         sprintf(buf,"%10lu Nrestart\n",restart); write(client_fd,buf,strlen(buf));
-        sprintf(buf,"%10lu Nelm v4\n%10lu Ncollision v4 [%6.4f%%]\n%10lu Nrx v4\n%10lu Nnew v4\n",nv4-1,coll4,(coll4+0.0)/(rxv4+0.01),rxv4,newv4); write(client_fd,buf,strlen(buf));
-        sprintf(buf,"%10lu Nelm v6\n%10lu Ncollision v6 [%6.4f%%]\n%10lu Nrx v6\n%10lu Nnew v6\n",nv6-1,coll6,(coll6+0.0)/(rxv6+0.01),rxv6,newv6); write(client_fd,buf,strlen(buf));
+        sprintf(buf,"%10lu Nelm v4\n%10lu Ncollision v4 [%6.4f%%]\n%10lu Nrx v4\n%10lu Nnew v4\n",nv4-1,coll4,100.0*(coll4+0.0)/(rxv4+0.01),rxv4,newv4); write(client_fd,buf,strlen(buf));
+        sprintf(buf,"%10lu Nelm v6\n%10lu Ncollision v6 [%6.4f%%]\n%10lu Nrx v6\n%10lu Nnew v6\n",nv6-1,coll6,100.0*(coll6+0.0)/(rxv6+0.01),rxv6,newv6); write(client_fd,buf,strlen(buf));
       }
       else {
         query++;
