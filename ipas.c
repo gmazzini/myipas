@@ -1,6 +1,7 @@
-// Gianluca Mazzini @2015- Version 4.03
+// Gianluca Mazzini @2015- Version 4.04
 #include <arpa/inet.h>
 #include <stdint.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -180,7 +181,7 @@ static void html_head(const char *title){
   printf("nav{display:flex;gap:18px;padding:12px 0}.top h1{margin:0 0 4px}h2{margin-top:28px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}");
   printf(".card{background:white;border:1px solid #dfe2e6;border-radius:10px;padding:16px}.big{font-size:1.8rem;font-weight:700}");
   printf("table{width:100%%;border-collapse:collapse;background:white}th,td{text-align:left;padding:8px;border-bottom:1px solid #e5e7eb}");
-  printf(".barrow{display:grid;grid-template-columns:56px 1fr 100px;gap:8px;align-items:center;margin:5px 0}.bar{height:14px;background:#dbe7ff;border-radius:3px;overflow:hidden}.fill{height:100%%;background:#4f7fdc}");
+  printf(".barrow{display:grid;grid-template-columns:56px 1fr 170px;gap:8px;align-items:center;margin:5px 0}.bar{height:14px;background:#dbe7ff;border-radius:3px;overflow:hidden}.fill{height:100%%;background:#4f7fdc}");
   printf("form{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}input{padding:8px;border:1px solid #b8bdc5;border-radius:6px;min-width:220px}button{padding:8px 14px;border:0;border-radius:6px;background:#175cd3;color:white}");
   printf(".muted{color:#667085}.error{background:#fff1f0;border:1px solid #f1b7b2;padding:12px;border-radius:8px}</style></head><body>");
   printf("<header class=\"top\"><h1>IPAS</h1><div class=\"muted\">IP prefix and autonomous system archive</div>");
@@ -330,17 +331,25 @@ static int scan_summary(struct summary *s){
 
 static void cidr_bars(uint32_t *c,int first,int last){
   char nbuf[48];
+  uint64_t total;
   uint32_t max,width;
+  double pct;
   int i;
 
   max=1;
-  for(i=first;i<=last;i++)if(c[i]>max)max=c[i];
-  for(i=first;i<=last;i++)if(c[i]){
-    width=(uint32_t)(((uint64_t)c[i]*100)/max);
-    if(width==0)width=1;
-    format_u64(c[i],nbuf,sizeof(nbuf));
-    printf("<div class=\"barrow\"><div>/%d</div><div class=\"bar\"><div class=\"fill\" style=\"width:%u%%\"></div></div><div>%s</div></div>",i,width,nbuf);
+  total=0;
+  for(i=first;i<=last;i++){
+    if(c[i]>max)max=c[i];
+    total+=c[i];
   }
+  for(i=first;i<=last;i++)if(c[i]){
+    width=(uint32_t)(100.0*log((double)c[i]+1.0)/log((double)max+1.0));
+    if(width==0)width=1;
+    pct=total?100.0*(double)c[i]/(double)total:0.0;
+    format_u64(c[i],nbuf,sizeof(nbuf));
+    printf("<div class=\"barrow\"><div>/%d</div><div class=\"bar\"><div class=\"fill\" style=\"width:%u%%\"></div></div><div>%s &nbsp; %.1f%%</div></div>",i,width,nbuf,pct);
+  }
+  printf("<div class=\"muted\">Bar length uses logarithmic scale; values and percentages are exact.</div>");
 }
 
 static void top_table(const char *title,struct top_as *top,const char *unit){
