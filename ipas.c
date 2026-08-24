@@ -1,4 +1,4 @@
-// Gianluca Mazzini @2015- Version 4.05
+// Gianluca Mazzini @2015- Version 4.06
 #include <arpa/inet.h>
 #include <stdint.h>
 #include <math.h>
@@ -294,7 +294,7 @@ static int scan_summary(struct summary *s){
   struct v4disk d4;
   struct v6disk d6;
   struct asspace *map;
-  uint32_t i,now,cap,used;
+  uint32_t i,snapshot,cap,used;
   uint64_t space;
 
   memset(s,0,sizeof(*s));
@@ -302,7 +302,7 @@ static int scan_summary(struct summary *s){
   cap=0;
   used=0;
   if(!open_raw(&f,&s->n4,&s->n6,&s->st))return 0;
-  now=(uint32_t)time(NULL);
+  snapshot=(uint32_t)s->st.st_mtime;
   for(i=0;i<s->n4;i++){
     if(fread(&d4,sizeof(d4),1,f)!=1){fclose(f); free(map); return 0;}
     if(d4.cidr>=8&&d4.cidr<=24){
@@ -312,7 +312,7 @@ static int scan_summary(struct summary *s){
     }
     if(s->oldest4==0||d4.ts<s->oldest4)s->oldest4=d4.ts;
     if(d4.ts>s->newest4)s->newest4=d4.ts;
-    age_add(s,d4.ts,now);
+    age_add(s,d4.ts,snapshot);
   }
   for(i=0;i<s->n6;i++){
     if(fread(&d6,sizeof(d6),1,f)!=1){fclose(f); free(map); return 0;}
@@ -323,7 +323,7 @@ static int scan_summary(struct summary *s){
     }
     if(s->oldest6==0||d6.ts<s->oldest6)s->oldest6=d6.ts;
     if(d6.ts>s->newest6)s->newest6=d6.ts;
-    age_add(s,d6.ts,now);
+    age_add(s,d6.ts,snapshot);
   }
   fclose(f);
   for(i=0;i<cap;i++)if(map[i].asn){
