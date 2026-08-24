@@ -1,4 +1,4 @@
-// Gianluca Mazzini @2015- Version 4.04
+// Gianluca Mazzini @2015- Version 4.05
 #include <arpa/inet.h>
 #include <stdint.h>
 #include <math.h>
@@ -67,7 +67,7 @@ struct summary {
   uint32_t newest4;
   uint32_t oldest6;
   uint32_t newest6;
-  uint64_t age[5];
+  uint64_t age[10];
   struct top_as top4[TOPN];
   struct top_as top6[TOPN];
   struct stat st;
@@ -277,11 +277,16 @@ static void age_add(struct summary *s,uint32_t ts,uint32_t now){
   uint32_t age;
 
   age=ts>now?0:now-ts;
-  if(age<3600)s->age[0]++;
-  else if(age<86400)s->age[1]++;
-  else if(age<604800)s->age[2]++;
-  else if(age<2592000)s->age[3]++;
-  else s->age[4]++;
+  if(age<300)s->age[0]++;
+  else if(age<900)s->age[1]++;
+  else if(age<3600)s->age[2]++;
+  else if(age<21600)s->age[3]++;
+  else if(age<86400)s->age[4]++;
+  else if(age<259200)s->age[5]++;
+  else if(age<604800)s->age[6]++;
+  else if(age<2592000)s->age[7]++;
+  else if(age<7776000)s->age[8]++;
+  else s->age[9]++;
 }
 
 static int scan_summary(struct summary *s){
@@ -367,9 +372,10 @@ static void top_table(const char *title,struct top_as *top,const char *unit){
 static void summary_page(void){
   struct summary s;
   char mt[32],o4[32],n4[32],o6[32],n6[32],v4buf[48],v6buf[48];
-  char agebuf[5][48];
+  char agebuf[10][48];
   struct tm *tmv;
   time_t mtm;
+  int i;
 
   if(!scan_summary(&s)){html_error("Cannot read or validate the RAW snapshot."); return;}
   mtm=s.st.st_mtime;
@@ -381,11 +387,7 @@ static void summary_page(void){
   format_time(s.newest6,n6,sizeof(n6));
   format_u64(s.n4,v4buf,sizeof(v4buf));
   format_u64(s.n6,v6buf,sizeof(v6buf));
-  format_u64(s.age[0],agebuf[0],sizeof(agebuf[0]));
-  format_u64(s.age[1],agebuf[1],sizeof(agebuf[1]));
-  format_u64(s.age[2],agebuf[2],sizeof(agebuf[2]));
-  format_u64(s.age[3],agebuf[3],sizeof(agebuf[3]));
-  format_u64(s.age[4],agebuf[4],sizeof(agebuf[4]));
+  for(i=0;i<10;i++)format_u64(s.age[i],agebuf[i],sizeof(agebuf[i]));
   html_head("Summary");
   printf("<div class=\"grid\"><div class=\"card\"><div class=\"muted\">IPv4 prefixes</div><div class=\"big\">%s</div></div>",v4buf);
   printf("<div class=\"card\"><div class=\"muted\">IPv6 prefixes</div><div class=\"big\">%s</div></div>",v6buf);
@@ -399,9 +401,11 @@ static void summary_page(void){
   top_table("IPv4",s.top4,"Addresses");
   top_table("IPv6",s.top6,"/48 equivalents");
   printf("</div><p class=\"muted\">Fast ranking from the same RAW scan used by the summary. Overlapping more-specific prefixes are included here; the individual ASN analysis removes overlaps.</p>");
-  printf("<h2>Route freshness</h2><div class=\"card\"><table><tr><th>Age</th><th>Prefixes</th></tr>");
-  printf("<tr><td>&lt; 1 hour</td><td>%s</td></tr><tr><td>1-24 hours</td><td>%s</td></tr><tr><td>1-7 days</td><td>%s</td></tr><tr><td>7-30 days</td><td>%s</td></tr><tr><td>&gt; 30 days</td><td>%s</td></tr>",
+  printf("<h2>Route freshness</h2><div class=\"card\"><table><tr><th>Age since last update</th><th>Prefixes</th></tr>");
+  printf("<tr><td>&lt; 5 min</td><td>%s</td></tr><tr><td>5-15 min</td><td>%s</td></tr><tr><td>15-60 min</td><td>%s</td></tr><tr><td>1-6 h</td><td>%s</td></tr><tr><td>6-24 h</td><td>%s</td></tr>",
     agebuf[0],agebuf[1],agebuf[2],agebuf[3],agebuf[4]);
+  printf("<tr><td>1-3 d</td><td>%s</td></tr><tr><td>3-7 d</td><td>%s</td></tr><tr><td>7-30 d</td><td>%s</td></tr><tr><td>30-90 d</td><td>%s</td></tr><tr><td>&gt; 90 d</td><td>%s</td></tr>",
+    agebuf[5],agebuf[6],agebuf[7],agebuf[8],agebuf[9]);
   printf("</table></div>");
   html_foot();
 }

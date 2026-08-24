@@ -12,7 +12,7 @@ The persistent `bgp.raw` file is the source of truth. Patricia tries, HTML views
 ## Versions
 
 - `bgp3.c`: Version 4.08
-- `ipas.c`: Version 4.04
+- `ipas.c`: Version 4.05
 
 The version number of a program is increased only when its source file changes. Documentation, Makefile and other support-file changes do not change program versions.
 
@@ -311,6 +311,7 @@ It reads only a completed RAW snapshot from disk and provides:
 - RAW size and snapshot modification time;
 - CIDR distribution charts for IPv4 and IPv6;
   CIDR charts use a logarithmic bar scale while showing exact counts and percentages.
+  Route freshness uses ten age buckets from less than 5 minutes through more than 90 days.
 - route freshness distribution;
 - offline IPv4/IPv6 address lookup;
 - ASN analysis;
