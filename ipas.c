@@ -1,4 +1,4 @@
-// Gianluca Mazzini @2015- Version 4.06
+// Gianluca Mazzini @2015- Version 4.07
 #include <arpa/inet.h>
 #include <stdint.h>
 #include <math.h>
@@ -12,6 +12,7 @@
 #define MAX_QUERY 2048
 #define MAX_MATCH 64
 #define TOPN 10
+#define TOPAGE 5
 #define ASMAP_INIT 16384U
 
 struct v4disk {
@@ -56,6 +57,7 @@ struct asspace {
   uint32_t asn;
   uint64_t v4;
   uint64_t v6;
+  uint32_t age[10];
 };
 
 struct summary {
@@ -70,10 +72,12 @@ struct summary {
   uint64_t age[10];
   struct top_as top4[TOPN];
   struct top_as top6[TOPN];
+  struct top_as topage[10][TOPAGE];
   struct stat st;
 };
 
 static const char *rawfile;
+static const char *age_label[10]={"&lt; 5 min","5-15 min","15-60 min","1-6 h","6-24 h","1-3 d","3-7 d","7-30 d","30-90 d","&gt; 90 d"};
 
 static void format_time(uint32_t ts,char *buf,size_t len){
   time_t t;
@@ -230,7 +234,7 @@ static int asmap_grow(struct asspace **map,uint32_t *cap){
   return 1;
 }
 
-static int asmap_add(struct asspace **map,uint32_t *cap,uint32_t *used,uint32_t asn,uint64_t v4,uint64_t v6){
+static int asmap_add(struct asspace **map,uint32_t *cap,uint32_t *used,uint32_t asn,uint64_t v4,uint64_t v6,int age){
   uint32_t pos;
 
   if(asn==0)return 1;
@@ -243,15 +247,16 @@ static int asmap_add(struct asspace **map,uint32_t *cap,uint32_t *used,uint32_t 
   }
   (*map)[pos].v4+=v4;
   (*map)[pos].v6+=v6;
+  if(age>=0&&age<10)(*map)[pos].age[age]++;
   return 1;
 }
 
-static void top_add(struct top_as *top,uint32_t asn,uint64_t space){
+static void top_add(struct top_as *top,int n,uint32_t asn,uint64_t space){
   int i,j;
 
   if(asn==0||space==0)return;
-  for(i=0;i<TOPN;i++)if(space>top[i].space||(space==top[i].space&&(top[i].asn==0||asn<top[i].asn))){
-    for(j=TOPN-1;j>i;j--)top[j]=top[j-1];
+  for(i=0;i<n;i++)if(space>top[i].space||(space==top[i].space&&(top[i].asn==0||asn<top[i].asn))){
+    for(j=n-1;j>i;j--)top[j]=top[j-1];
     top[i].asn=asn;
     top[i].space=space;
     return;
@@ -273,20 +278,20 @@ static void format_u64(uint64_t v,char *buf,size_t len){
   snprintf(buf,len,"%s",out);
 }
 
-static void age_add(struct summary *s,uint32_t ts,uint32_t now){
+static int age_bucket(uint32_t ts,uint32_t now){
   uint32_t age;
 
   age=ts>now?0:now-ts;
-  if(age<300)s->age[0]++;
-  else if(age<900)s->age[1]++;
-  else if(age<3600)s->age[2]++;
-  else if(age<21600)s->age[3]++;
-  else if(age<86400)s->age[4]++;
-  else if(age<259200)s->age[5]++;
-  else if(age<604800)s->age[6]++;
-  else if(age<2592000)s->age[7]++;
-  else if(age<7776000)s->age[8]++;
-  else s->age[9]++;
+  if(age<300)return 0;
+  if(age<900)return 1;
+  if(age<3600)return 2;
+  if(age<21600)return 3;
+  if(age<86400)return 4;
+  if(age<259200)return 5;
+  if(age<604800)return 6;
+  if(age<2592000)return 7;
+  if(age<7776000)return 8;
+  return 9;
 }
 
 static int scan_summary(struct summary *s){
@@ -296,6 +301,7 @@ static int scan_summary(struct summary *s){
   struct asspace *map;
   uint32_t i,snapshot,cap,used;
   uint64_t space;
+  int bucket,j;
 
   memset(s,0,sizeof(*s));
   map=NULL;
@@ -308,27 +314,30 @@ static int scan_summary(struct summary *s){
     if(d4.cidr>=8&&d4.cidr<=24){
       s->c4[d4.cidr]++;
       space=1ULL<<(32-d4.cidr);
-      if(!asmap_add(&map,&cap,&used,d4.asn,space,0)){fclose(f); free(map); return 0;}
+      bucket=age_bucket(d4.ts,snapshot);
+      s->age[bucket]++;
+      if(!asmap_add(&map,&cap,&used,d4.asn,space,0,bucket)){fclose(f); free(map); return 0;}
     }
     if(s->oldest4==0||d4.ts<s->oldest4)s->oldest4=d4.ts;
     if(d4.ts>s->newest4)s->newest4=d4.ts;
-    age_add(s,d4.ts,snapshot);
   }
   for(i=0;i<s->n6;i++){
     if(fread(&d6,sizeof(d6),1,f)!=1){fclose(f); free(map); return 0;}
     if(d6.cidr>=16&&d6.cidr<=48){
       s->c6[d6.cidr]++;
       space=1ULL<<(48-d6.cidr);
-      if(!asmap_add(&map,&cap,&used,d6.asn,0,space)){fclose(f); free(map); return 0;}
+      bucket=age_bucket(d6.ts,snapshot);
+      s->age[bucket]++;
+      if(!asmap_add(&map,&cap,&used,d6.asn,0,space,bucket)){fclose(f); free(map); return 0;}
     }
     if(s->oldest6==0||d6.ts<s->oldest6)s->oldest6=d6.ts;
     if(d6.ts>s->newest6)s->newest6=d6.ts;
-    age_add(s,d6.ts,snapshot);
   }
   fclose(f);
   for(i=0;i<cap;i++)if(map[i].asn){
-    top_add(s->top4,map[i].asn,map[i].v4);
-    top_add(s->top6,map[i].asn,map[i].v6);
+    top_add(s->top4,TOPN,map[i].asn,map[i].v4);
+    top_add(s->top6,TOPN,map[i].asn,map[i].v6);
+    for(j=0;j<10;j++)top_add(s->topage[j],TOPAGE,map[i].asn,map[i].age[j]);
   }
   free(map);
   return 1;
@@ -369,6 +378,18 @@ static void top_table(const char *title,struct top_as *top,const char *unit){
   printf("</table></div>");
 }
 
+static void age_top_as(struct top_as *top){
+  char nbuf[48];
+  int i;
+
+  for(i=0;i<TOPAGE&&top[i].asn;i++){
+    if(i)printf(" &nbsp; ");
+    format_u64(top[i].space,nbuf,sizeof(nbuf));
+    printf("<a href=\"?action=asn&amp;asn=%u\">AS%u</a>(%s)",top[i].asn,top[i].asn,nbuf);
+  }
+  if(top[0].asn==0)printf("-");
+}
+
 static void summary_page(void){
   struct summary s;
   char mt[32],o4[32],n4[32],o6[32],n6[32],v4buf[48],v6buf[48];
@@ -401,12 +422,13 @@ static void summary_page(void){
   top_table("IPv4",s.top4,"Addresses");
   top_table("IPv6",s.top6,"/48 equivalents");
   printf("</div><p class=\"muted\">Fast ranking from the same RAW scan used by the summary. Overlapping more-specific prefixes are included here; the individual ASN analysis removes overlaps.</p>");
-  printf("<h2>Route freshness</h2><div class=\"card\"><table><tr><th>Age since last update</th><th>Prefixes</th></tr>");
-  printf("<tr><td>&lt; 5 min</td><td>%s</td></tr><tr><td>5-15 min</td><td>%s</td></tr><tr><td>15-60 min</td><td>%s</td></tr><tr><td>1-6 h</td><td>%s</td></tr><tr><td>6-24 h</td><td>%s</td></tr>",
-    agebuf[0],agebuf[1],agebuf[2],agebuf[3],agebuf[4]);
-  printf("<tr><td>1-3 d</td><td>%s</td></tr><tr><td>3-7 d</td><td>%s</td></tr><tr><td>7-30 d</td><td>%s</td></tr><tr><td>30-90 d</td><td>%s</td></tr><tr><td>&gt; 90 d</td><td>%s</td></tr>",
-    agebuf[5],agebuf[6],agebuf[7],agebuf[8],agebuf[9]);
-  printf("</table></div>");
+  printf("<h2>Route freshness</h2><div class=\"card\"><table><tr><th>Age since last update</th><th>Prefixes</th><th>Top AS by prefixes</th></tr>");
+  for(i=0;i<10;i++){
+    printf("<tr><td>%s</td><td>%s</td><td>",age_label[i],agebuf[i]);
+    age_top_as(s.topage[i]);
+    printf("</td></tr>");
+  }
+  printf("</table><div class=\"muted\">Top AS counts are current prefixes whose last update falls in the same age range.</div></div>");
   html_foot();
 }
 
@@ -564,10 +586,12 @@ static void asn_page(const char *text){
   struct v4disk d4;
   struct v6disk d6;
   struct ranges r4,r6;
-  uint32_t n4,n6,i,asn,c4[33],c6[65],oldest,newest,count4,count6;
-  uint64_t space4,space6;
+  uint32_t n4,n6,i,asn,c4[33],c6[65],oldest,newest,count4,count6,snapshot;
+  uint64_t space4,space6,age[10],agetotal;
   unsigned long v;
-  char *end,t1[32],t2[32],count4buf[48],count6buf[48],space4buf[48],space6buf[48];
+  char *end,t1[32],t2[32],count4buf[48],count6buf[48],space4buf[48],space6buf[48],agebuf[10][48];
+  double pct;
+  int bucket,j;
 
   v=strtoul(text,&end,10);
   if(*text=='\0'||*end!='\0'||v==0||v>0xffffffffUL){html_error("Invalid ASN."); return;}
@@ -577,11 +601,15 @@ static void asn_page(const char *text){
   memset(c6,0,sizeof(c6));
   memset(&r4,0,sizeof(r4));
   memset(&r6,0,sizeof(r6));
+  memset(age,0,sizeof(age));
+  snapshot=(uint32_t)st.st_mtime;
   oldest=0; newest=0; count4=0; count6=0;
   for(i=0;i<n4;i++){
     if(fread(&d4,sizeof(d4),1,f)!=1)break;
     if(d4.asn==asn&&d4.cidr>=8&&d4.cidr<=24){
       count4++; c4[d4.cidr]++;
+      bucket=age_bucket(d4.ts,snapshot);
+      age[bucket]++;
       if(oldest==0||d4.ts<oldest)oldest=d4.ts;
       if(d4.ts>newest)newest=d4.ts;
       if(!range_push(&r4,d4.ip,(uint64_t)d4.ip+(1ULL<<(32-d4.cidr)))){fclose(f); free(r4.v); free(r6.v); html_error("Out of memory."); return;}
@@ -591,6 +619,8 @@ static void asn_page(const char *text){
     if(fread(&d6,sizeof(d6),1,f)!=1)break;
     if(d6.asn==asn&&d6.cidr>=16&&d6.cidr<=48){
       count6++; c6[d6.cidr]++;
+      bucket=age_bucket(d6.ts,snapshot);
+      age[bucket]++;
       if(oldest==0||d6.ts<oldest)oldest=d6.ts;
       if(d6.ts>newest)newest=d6.ts;
       if(!range_push(&r6,d6.ip>>16,(d6.ip>>16)+(1ULL<<(48-d6.cidr)))){fclose(f); free(r4.v); free(r6.v); html_error("Out of memory."); return;}
@@ -607,11 +637,19 @@ static void asn_page(const char *text){
   format_u64(count6,count6buf,sizeof(count6buf));
   format_u64(space4,space4buf,sizeof(space4buf));
   format_u64(space6,space6buf,sizeof(space6buf));
+  agetotal=(uint64_t)count4+count6;
+  for(j=0;j<10;j++)format_u64(age[j],agebuf[j],sizeof(agebuf[j]));
   html_head("ASN analysis");
   printf("<h2>AS%u</h2><div class=\"grid\"><div class=\"card\"><div class=\"muted\">IPv4 prefixes</div><div class=\"big\">%s</div></div>",asn,count4buf);
   printf("<div class=\"card\"><div class=\"muted\">Unique IPv4 addresses</div><div class=\"big\">%s</div></div>",space4buf);
   printf("<div class=\"card\"><div class=\"muted\">IPv6 prefixes</div><div class=\"big\">%s</div></div>",count6buf);
   printf("<div class=\"card\"><div class=\"muted\">Unique IPv6 /48 equivalents</div><div class=\"big\">%s</div></div></div>",space6buf);
+  printf("<h2>Route freshness</h2><div class=\"card\"><table><tr><th>Age since last update</th><th>Prefixes</th><th>Share</th></tr>");
+  for(j=0;j<10;j++){
+    pct=agetotal?100.0*(double)age[j]/(double)agetotal:0.0;
+    printf("<tr><td>%s</td><td>%s</td><td>%.1f%%</td></tr>",age_label[j],agebuf[j],pct);
+  }
+  printf("</table></div>");
   if(count4){printf("<h2>IPv4 CIDR distribution</h2><div class=\"card\">"); cidr_bars(c4,8,24); printf("</div>");}
   if(count6){printf("<h2>IPv6 CIDR distribution</h2><div class=\"card\">"); cidr_bars(c6,16,48); printf("</div>");}
   printf("<p class=\"muted\">Unique space removes overlap between prefixes announced by the same ASN. Update range: %s to %s.</p>",t1,t2);
