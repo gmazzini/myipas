@@ -1,4 +1,4 @@
-// Gianluca Mazzini @2015- Version 4.07
+// Gianluca Mazzini @2015- Version 4.08
 #include <arpa/inet.h>
 #include <stdint.h>
 #include <math.h>
@@ -587,9 +587,10 @@ static void asn_page(const char *text){
   struct v6disk d6;
   struct ranges r4,r6;
   uint32_t n4,n6,i,asn,c4[33],c6[65],oldest,newest,count4,count6,snapshot;
-  uint64_t space4,space6,age[10],agetotal;
+  uint64_t space4,space6,age4[10],age6[10],agetotal,total;
   unsigned long v;
-  char *end,t1[32],t2[32],count4buf[48],count6buf[48],space4buf[48],space6buf[48],agebuf[10][48];
+  char *end,t1[32],t2[32],count4buf[48],count6buf[48],space4buf[48],space6buf[48];
+  char agebuf[10][48],age4buf[10][48],age6buf[10][48];
   double pct;
   int bucket,j;
 
@@ -601,7 +602,8 @@ static void asn_page(const char *text){
   memset(c6,0,sizeof(c6));
   memset(&r4,0,sizeof(r4));
   memset(&r6,0,sizeof(r6));
-  memset(age,0,sizeof(age));
+  memset(age4,0,sizeof(age4));
+  memset(age6,0,sizeof(age6));
   snapshot=(uint32_t)st.st_mtime;
   oldest=0; newest=0; count4=0; count6=0;
   for(i=0;i<n4;i++){
@@ -609,7 +611,7 @@ static void asn_page(const char *text){
     if(d4.asn==asn&&d4.cidr>=8&&d4.cidr<=24){
       count4++; c4[d4.cidr]++;
       bucket=age_bucket(d4.ts,snapshot);
-      age[bucket]++;
+      age4[bucket]++;
       if(oldest==0||d4.ts<oldest)oldest=d4.ts;
       if(d4.ts>newest)newest=d4.ts;
       if(!range_push(&r4,d4.ip,(uint64_t)d4.ip+(1ULL<<(32-d4.cidr)))){fclose(f); free(r4.v); free(r6.v); html_error("Out of memory."); return;}
@@ -620,7 +622,7 @@ static void asn_page(const char *text){
     if(d6.asn==asn&&d6.cidr>=16&&d6.cidr<=48){
       count6++; c6[d6.cidr]++;
       bucket=age_bucket(d6.ts,snapshot);
-      age[bucket]++;
+      age6[bucket]++;
       if(oldest==0||d6.ts<oldest)oldest=d6.ts;
       if(d6.ts>newest)newest=d6.ts;
       if(!range_push(&r6,d6.ip>>16,(d6.ip>>16)+(1ULL<<(48-d6.cidr)))){fclose(f); free(r4.v); free(r6.v); html_error("Out of memory."); return;}
@@ -638,16 +640,22 @@ static void asn_page(const char *text){
   format_u64(space4,space4buf,sizeof(space4buf));
   format_u64(space6,space6buf,sizeof(space6buf));
   agetotal=(uint64_t)count4+count6;
-  for(j=0;j<10;j++)format_u64(age[j],agebuf[j],sizeof(agebuf[j]));
+  for(j=0;j<10;j++){
+    total=age4[j]+age6[j];
+    format_u64(total,agebuf[j],sizeof(agebuf[j]));
+    format_u64(age4[j],age4buf[j],sizeof(age4buf[j]));
+    format_u64(age6[j],age6buf[j],sizeof(age6buf[j]));
+  }
   html_head("ASN analysis");
   printf("<h2>AS%u</h2><div class=\"grid\"><div class=\"card\"><div class=\"muted\">IPv4 prefixes</div><div class=\"big\">%s</div></div>",asn,count4buf);
   printf("<div class=\"card\"><div class=\"muted\">Unique IPv4 addresses</div><div class=\"big\">%s</div></div>",space4buf);
   printf("<div class=\"card\"><div class=\"muted\">IPv6 prefixes</div><div class=\"big\">%s</div></div>",count6buf);
   printf("<div class=\"card\"><div class=\"muted\">Unique IPv6 /48 equivalents</div><div class=\"big\">%s</div></div></div>",space6buf);
-  printf("<h2>Route freshness</h2><div class=\"card\"><table><tr><th>Age since last update</th><th>Prefixes</th><th>Share</th></tr>");
+  printf("<h2>Route freshness</h2><div class=\"card\"><table><tr><th>Age since last update</th><th>Total</th><th>IPv4</th><th>IPv6</th><th>Share</th></tr>");
   for(j=0;j<10;j++){
-    pct=agetotal?100.0*(double)age[j]/(double)agetotal:0.0;
-    printf("<tr><td>%s</td><td>%s</td><td>%.1f%%</td></tr>",age_label[j],agebuf[j],pct);
+    total=age4[j]+age6[j];
+    pct=agetotal?100.0*(double)total/(double)agetotal:0.0;
+    printf("<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%.1f%%</td></tr>",age_label[j],agebuf[j],age4buf[j],age6buf[j],pct);
   }
   printf("</table></div>");
   if(count4){printf("<h2>IPv4 CIDR distribution</h2><div class=\"card\">"); cidr_bars(c4,8,24); printf("</div>");}
